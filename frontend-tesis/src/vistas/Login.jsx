@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexto/ContextoAuth';
 import logo from '../assets/logo.png';
 import './Login.css';
@@ -102,11 +102,8 @@ const Login = () => {
         </form>
 
         <div className="login-footer">
-          <p>
-            ¿No tienes una cuenta?{' '}
-            <Link to="/register" className="link">
-              Regístrate aquí
-            </Link>
+          <p className="footer-note">
+            Solo administradores pueden acceder a este panel
           </p>
         </div>
       </div>

@@ -187,6 +187,13 @@
   font-weight: 500;
 }
 
+.footer-note {
+  color: var(--gray);
+  font-size: 13px;
+  font-weight: 500;
+  font-style: italic;
+}
+
 .link {
   color: var(--primary-red);
   text-decoration: none;

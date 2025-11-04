@@ -2,6 +2,7 @@ import { useAuth } from '../contexto/ContextoAuth';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from '../componentes/Navbar';
+import CrearAdmin from '../componentes/CrearAdmin';
 import './Tablero.css';
 
 const Tablero = () => {
@@ -9,6 +10,8 @@ const Tablero = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('contenidos');
   const [showProfile, setShowProfile] = useState(false);
+  const [showCrearAdmin, setShowCrearAdmin] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Datos de ejemplo para noticias y eventos
   const [noticias, setNoticias] = useState([
@@ -51,10 +54,19 @@ const Tablero = () => {
     setNoticias(noticias.filter(noticia => noticia.id !== id));
   };
 
+  const handleSuccessCrearAdmin = (message) => {
+    setShowCrearAdmin(false);
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 5000);
+  };
+
   return (
     <div className="dashboard-container">
       <Navbar brandName="Campus AR Platform">
         <div className="navbar-user-section">
+          <button onClick={() => setShowCrearAdmin(true)} className="btn-create-admin">
+            + Crear Administrador
+          </button>
           <button onClick={() => setShowProfile(!showProfile)} className="btn-profile">
             👤 {user?.nombre}
           </button>
@@ -65,6 +77,12 @@ const Tablero = () => {
       </Navbar>
 
       <div className="dashboard-content">
+        {/* Mensaje de éxito */}
+        {successMessage && (
+          <div className="success-message">
+            <span>✓ {successMessage}</span>
+          </div>
+        )}
         {/* Tabs de navegación */}
         <div className="tabs-container">
           <button 
@@ -86,6 +104,14 @@ const Tablero = () => {
             🎯 AR
           </button>
         </div>
+
+        {/* Modal de crear administrador */}
+        {showCrearAdmin && (
+          <CrearAdmin 
+            onClose={() => setShowCrearAdmin(false)}
+            onSuccess={handleSuccessCrearAdmin}
+          />
+        )}
 
         {/* Modal de perfil */}
         {showProfile && (

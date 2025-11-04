@@ -193,3 +193,63 @@ export const actualizarPerfil = async (req, res) => {
     });
   }
 };
+
+// Crear administrador (solo admin)
+export const crearAdministrador = async (req, res) => {
+  try {
+    const { nombre, email, password } = req.body;
+
+    // Validar que todos los campos estén presentes
+    if (!nombre || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Por favor proporcione todos los campos requeridos'
+      });
+    }
+
+    // Verificar que el usuario autenticado sea admin
+    if (req.usuario.rol !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Solo los administradores pueden crear nuevas cuentas'
+      });
+    }
+
+    // Verificar si el usuario ya existe
+    const usuarioExiste = await User.findOne({ email });
+    if (usuarioExiste) {
+      return res.status(400).json({
+        success: false,
+        message: 'El email ya está registrado'
+      });
+    }
+
+    // Crear nuevo administrador
+    const usuario = await User.create({
+      nombre,
+      email,
+      password,
+      rol: 'admin' // Siempre crear como admin
+    });
+
+    if (usuario) {
+      res.status(201).json({
+        success: true,
+        message: 'Administrador creado exitosamente',
+        data: {
+          _id: usuario._id,
+          nombre: usuario.nombre,
+          email: usuario.email,
+          rol: usuario.rol
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error en crearAdministrador:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al crear el administrador',
+      error: error.message
+    });
+  }
+};

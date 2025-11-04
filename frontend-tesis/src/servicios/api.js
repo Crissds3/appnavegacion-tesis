@@ -91,6 +91,16 @@ export const authService = {
       throw error.response?.data || { success: false, message: 'Error al actualizar perfil' };
     }
   },
+
+  // Crear nuevo administrador (solo admin)
+  crearAdministrador: async (adminData) => {
+    try {
+      const response = await api.post('/auth/crear-admin', adminData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al crear administrador' };
+    }
+  },
 };
 
 export default api;
