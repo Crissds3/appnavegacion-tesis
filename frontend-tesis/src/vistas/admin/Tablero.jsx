@@ -1,6 +1,6 @@
 import { useAuth } from '../../contexto/ContextoAuth';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import CrearAdmin from '../../componentes/admin/CrearAdmin';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
@@ -13,6 +13,8 @@ const Tablero = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showCrearAdmin, setShowCrearAdmin] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [administradores, setAdministradores] = useState([]);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -23,7 +25,58 @@ const Tablero = () => {
     setShowCrearAdmin(false);
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(''), 5000);
+    // Recargar lista de administradores
+    if (activeTab === 'admin') {
+      cargarAdministradores();
+    }
   };
+
+  const cargarAdministradores = async () => {
+    setLoadingAdmins(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/administradores', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAdministradores(data.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar administradores:', error);
+    } finally {
+      setLoadingAdmins(false);
+    }
+  };
+
+  const handleEliminarAdmin = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este administrador?')) return;
+    
+    try {
+      const response = await fetch(`http://localhost:5000/api/auth/administradores/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setSuccessMessage('Administrador eliminado exitosamente');
+        setTimeout(() => setSuccessMessage(''), 5000);
+        cargarAdministradores();
+      }
+    } catch (error) {
+      console.error('Error al eliminar administrador:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'admin') {
+      cargarAdministradores();
+    }
+  }, [activeTab]);
 
   return (
     <div className="dashboard-container">
@@ -190,9 +243,59 @@ const Tablero = () => {
                     <span>Crear Nuevo Administrador</span>
                   </button>
                 </div>
-                <div className="empty-state">
-                  <p>👥 Lista de administradores en desarrollo...</p>
-                </div>
+
+                {loadingAdmins ? (
+                  <div className="loading-state">Cargando administradores...</div>
+                ) : administradores.length === 0 ? (
+                  <div className="empty-state">
+                    <p>👥 No hay administradores registrados</p>
+                  </div>
+                ) : (
+                  <div className="admins-table-container">
+                    <table className="admins-table">
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Email</th>
+                          <th>Fecha de Registro</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {administradores.map((admin) => (
+                          <tr key={admin._id}>
+                            <td>
+                              <div className="admin-name-cell">
+                                <div className="admin-avatar-small">
+                                  {admin.nombre?.charAt(0)}
+                                </div>
+                                <span>{admin.nombre}</span>
+                              </div>
+                            </td>
+                            <td>{admin.email}</td>
+                            <td>{new Date(admin.createdAt).toLocaleDateString('es-CL')}</td>
+                            <td>
+                              <div className="admin-table-actions">
+                                {admin._id !== user?._id && (
+                                  <button
+                                    onClick={() => handleEliminarAdmin(admin._id)}
+                                    className="btn-delete-admin"
+                                    title="Eliminar administrador"
+                                  >
+                                    🗑️
+                                  </button>
+                                )}
+                                {admin._id === user?._id && (
+                                  <span className="current-user-badge">Tú</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}

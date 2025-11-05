@@ -194,7 +194,7 @@ export const actualizarPerfil = async (req, res) => {
   }
 };
 
-// Crear administrador (solo admin)
+// Crear administrador
 export const crearAdministrador = async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
@@ -207,7 +207,7 @@ export const crearAdministrador = async (req, res) => {
       });
     }
 
-    // Verificar que el usuario autenticado sea admin
+    // Verificar
     if (req.usuario.rol !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -215,7 +215,6 @@ export const crearAdministrador = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario ya existe
     const usuarioExiste = await User.findOne({ email });
     if (usuarioExiste) {
       return res.status(400).json({
@@ -224,7 +223,6 @@ export const crearAdministrador = async (req, res) => {
       });
     }
 
-    // Crear nuevo administrador
     const usuario = await User.create({
       nombre,
       email,
@@ -249,6 +247,84 @@ export const crearAdministrador = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al crear el administrador',
+      error: error.message
+    });
+  }
+};
+
+// Obtener todos los administradores
+export const obtenerAdministradores = async (req, res) => {
+  try {
+    if (req.usuario.rol !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes permisos para realizar esta acción'
+      });
+    }
+
+    const administradores = await User.find({ rol: 'admin' })
+      .select('-password')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: administradores
+    });
+  } catch (error) {
+    console.error('Error en obtenerAdministradores:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener administradores',
+      error: error.message
+    });
+  }
+};
+
+// Eliminar administrador
+export const eliminarAdministrador = async (req, res) => {
+  try {
+    if (req.usuario.rol !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes permisos para realizar esta acción'
+      });
+    }
+
+    // No permitir que un administrador se elimine a sí mismo
+    if (req.params.id === req.usuario.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'No puedes eliminarte a ti mismo'
+      });
+    }
+
+    const administrador = await User.findById(req.params.id);
+
+    if (!administrador) {
+      return res.status(404).json({
+        success: false,
+        message: 'Administrador no encontrado'
+      });
+    }
+
+    if (administrador.rol !== 'admin') {
+      return res.status(400).json({
+        success: false,
+        message: 'El usuario no es un administrador'
+      });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Administrador eliminado exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en eliminarAdministrador:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar administrador',
       error: error.message
     });
   }

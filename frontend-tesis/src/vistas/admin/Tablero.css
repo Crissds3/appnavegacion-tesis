@@ -483,6 +483,112 @@
   border: 2px dashed #e0e0e0;
 }
 
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #E53935;
+  font-size: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+/* Tabla de administradores */
+.admins-table-container {
+  margin-top: 20px;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+}
+
+.admins-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.admins-table thead {
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+}
+
+.admins-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 600;
+  color: white;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+.admins-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+}
+
+.admins-table tbody tr:hover {
+  background: #fafafa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.admins-table td {
+  padding: 18px 20px;
+  font-size: 14px;
+  color: #555;
+}
+
+.admin-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-avatar-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.admin-table-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-delete-admin {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.btn-delete-admin:hover {
+  background: #ffebee;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.current-user-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: white;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .main-content {
