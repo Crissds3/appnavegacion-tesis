@@ -1,6 +1,7 @@
 .inicio-container {
   min-height: 100vh;
   background: var(--white);
+  font-family: 'Inter', sans-serif;
 }
 
 .hero-section {

@@ -103,4 +103,118 @@ export const authService = {
   },
 };
 
+// Servicios de noticias
+export const noticiasService = {
+  // Obtener noticias públicas (con filtros opcionales)
+  getNoticias: async (filtros = {}) => {
+    try {
+      const params = new URLSearchParams();
+      if (filtros.tipo) params.append('tipo', filtros.tipo);
+      if (filtros.categoria) params.append('categoria', filtros.categoria);
+      if (filtros.destacado !== undefined) params.append('destacado', filtros.destacado);
+      
+      const queryString = params.toString();
+      const url = queryString ? `/noticias/publicas?${queryString}` : '/noticias/publicas';
+      
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener noticias' };
+    }
+  },
+
+  // Obtener una noticia por ID
+  getNoticiaById: async (id) => {
+    try {
+      const response = await api.get(`/noticias/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener noticia' };
+    }
+  },
+
+  // Obtener todas las noticias (admin)
+  getAllNoticias: async () => {
+    try {
+      const response = await api.get('/noticias');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener noticias' };
+    }
+  },
+
+  // Crear noticia (admin)
+  createNoticia: async (noticiaData) => {
+    try {
+      const response = await api.post('/noticias', noticiaData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al crear noticia' };
+    }
+  },
+
+  // Actualizar noticia (admin)
+  updateNoticia: async (id, noticiaData) => {
+    try {
+      const response = await api.put(`/noticias/${id}`, noticiaData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al actualizar noticia' };
+    }
+  },
+
+  // Eliminar noticia (admin)
+  deleteNoticia: async (id) => {
+    try {
+      const response = await api.delete(`/noticias/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al eliminar noticia' };
+    }
+  },
+};
+
+// Servicios de información universitaria
+export const infoService = {
+  // Obtener toda la información pública
+  getInfo: async () => {
+    try {
+      const response = await api.get('/info/publica');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener información' };
+    }
+  },
+
+  // Obtener información por sección
+  getInfoBySeccion: async (seccion) => {
+    try {
+      const response = await api.get(`/info/publica/${seccion}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener información' };
+    }
+  },
+
+  // Obtener todas las secciones (admin)
+  getAllSecciones: async () => {
+    try {
+      const response = await api.get('/info');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener secciones' };
+    }
+  },
+
+  // Actualizar información (admin)
+  updateInfo: async (infoData) => {
+    try {
+      const response = await api.put('/info', infoData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al actualizar información' };
+    }
+  },
+};
+
 export default api;

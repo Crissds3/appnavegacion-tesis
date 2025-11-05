@@ -1,0 +1,261 @@
+.navbar {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(229, 57, 53, 0.1);
+  animation: slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.navbar-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.logo-section::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #E53935, #FF5252);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+}
+
+.logo-section:hover::after {
+  width: 100%;
+}
+
+.logo-section:hover {
+  transform: translateY(-2px);
+}
+
+.logo-img {
+  height: 50px;
+  width: auto;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo-section:hover .logo-img {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 12px rgba(229, 57, 53, 0.3));
+}
+
+.brand-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1A1A1A 0%, #757575 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  font-family: 'Inter', sans-serif;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btn-admin,
+.btn-back,
+.btn-logout {
+  padding: 0.75rem 1.75rem;
+  background: transparent;
+  color: #E53935;
+  border: 2px solid #E53935;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.95rem;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-admin::before,
+.btn-back::before,
+.btn-logout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-admin:hover::before,
+.btn-back:hover::before,
+.btn-logout:hover::before {
+  left: 100%;
+}
+
+.btn-admin:hover,
+.btn-back:hover {
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: #FFFFFF;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.4);
+  border-color: transparent;
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: #FFFFFF;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+  border-color: transparent;
+}
+
+.btn-admin:active,
+.btn-back:active,
+.btn-logout:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(229, 57, 53, 0.3);
+}
+
+@media (max-width: 768px) {
+  .navbar-content {
+    padding: 0 1.5rem;
+    height: 60px;
+  }
+
+  .brand-name {
+    font-size: 1.2rem;
+  }
+
+  .logo-img {
+    height: 40px;
+  }
+
+  .btn-admin,
+  .btn-back,
+  .btn-logout {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .nav-actions {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-content {
+    padding: 0 1rem;
+    height: auto;
+    min-height: 60px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo-section {
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+  }
+
+  .logo-img {
+    height: 35px;
+  }
+
+  .nav-actions {
+    flex: 1;
+    justify-content: flex-end;
+    min-width: auto;
+  }
+
+  .btn-admin,
+  .btn-back,
+  .btn-logout {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+
+  /* Hacer botones más pequeños en móviles muy pequeños */
+  .navbar-buttons {
+    gap: 4px;
+  }
+
+  .btn-wayfinding,
+  .btn-noticias,
+  .btn-inicio {
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar-content {
+    padding: 0 0.75rem;
+  }
+
+  .logo-section {
+    min-width: 160px;
+  }
+
+  .brand-name {
+    font-size: 0.9rem;
+  }
+
+  .logo-img {
+    height: 30px;
+  }
+
+  .btn-admin,
+  .btn-back,
+  .btn-logout {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.7rem;
+  }
+
+  .btn-wayfinding,
+  .btn-noticias,
+  .btn-inicio {
+    padding: 0.4rem 0.7rem !important;
+    font-size: 0.7rem !important;
+  }
+}

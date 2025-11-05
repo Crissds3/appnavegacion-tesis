@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
+import noticiaRoutes from './routes/noticiaRoutes.js';
+import infoRoutes from './routes/infoRoutes.js';
 
 dotenv.config();
 
@@ -28,6 +30,12 @@ app.get('/api/health', (req, res) => {
 
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
+
+// Rutas de noticias
+app.use('/api/noticias', noticiaRoutes);
+
+// Rutas de información universitaria
+app.use('/api/info', infoRoutes);
 
 // Manejador de rutas no encontradas
 app.use((req, res) => {

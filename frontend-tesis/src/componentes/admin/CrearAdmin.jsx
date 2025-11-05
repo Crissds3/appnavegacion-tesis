@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexto/ContextoAuth';
-import logo from '../assets/logo.png';
-import './Register.css';
+import './CrearAdmin.css';
 
-const Register = () => {
+const CrearAdmin = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -13,9 +10,6 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const { register } = useAuth();
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -50,30 +44,28 @@ const Register = () => {
     }
 
     try {
+      const { authService } = await import('../../servicios/api');
       const { confirmPassword, ...dataToSend } = formData;
-      const result = await register(dataToSend);
+      const result = await authService.crearAdministrador(dataToSend);
 
       if (result.success) {
-        navigate('/dashboard');
+        onSuccess(result.message || 'Administrador creado exitosamente');
       } else {
-        setError(result.message || 'Error al registrar usuario');
+        setError(result.message || 'Error al crear administrador');
       }
     } catch (err) {
-      setError('Error al conectar con el servidor');
+      setError(err.message || 'Error al conectar con el servidor');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <div className="register-logo">
-          <img src={logo} alt="Logo" className="logo-image" />
-        </div>
-        <div className="register-header">
-          <h1>Crear Cuenta</h1>
-          <p>Regístrate para comenzar</p>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Crear Nuevo Administrador</h2>
+          <button onClick={onClose} className="btn-close-modal">✕</button>
         </div>
 
         {error && (
@@ -82,7 +74,7 @@ const Register = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="register-form">
+        <form onSubmit={handleSubmit} className="admin-form">
           <div className="form-group">
             <label htmlFor="nombre">Nombre completo</label>
             <input
@@ -91,7 +83,7 @@ const Register = () => {
               name="nombre"
               value={formData.nombre}
               onChange={handleChange}
-              placeholder="Juan Pérez"
+              placeholder="Nombre del administrador"
               autoComplete="name"
               disabled={loading}
             />
@@ -105,7 +97,7 @@ const Register = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="tu@email.com"
+              placeholder="admin@ejemplo.com"
               autoComplete="email"
               disabled={loading}
             />
@@ -140,22 +132,23 @@ const Register = () => {
             />
           </div>
 
-          <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? 'Registrando...' : 'Registrarse'}
-          </button>
+          <div className="modal-actions">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="btn-cancel"
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? 'Creando...' : 'Crear Administrador'}
+            </button>
+          </div>
         </form>
-
-        <div className="register-footer">
-          <p>
-            ¿Ya tienes una cuenta?{' '}
-            <Link to="/login" className="link">
-              Inicia sesión aquí
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default CrearAdmin;

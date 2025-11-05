@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexto/ContextoAuth';
-import Navbar from '../componentes/Navbar';
+import { useAuth } from '../../contexto/ContextoAuth';
+import Navbar from '../../componentes/compartidos/Navbar';
 import './Inicio.css';
 
 const Inicio = () => {
@@ -8,7 +8,7 @@ const Inicio = () => {
   const { isAuthenticated } = useAuth();
 
   const handleGetStarted = () => {
-    navigate('/principal');
+    navigate('/estudiante');
   };
 
   const handleAdminLogin = () => {
