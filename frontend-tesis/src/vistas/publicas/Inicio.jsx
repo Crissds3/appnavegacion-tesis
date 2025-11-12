@@ -44,11 +44,10 @@ const Inicio = () => {
         <div className="hero-content">
           <div className="hero-badge">🎓 Sistema de Navegación Universitaria</div>
           <h1 className="hero-title">
-            Navega tu Universidad con <span className="highlight">Confianza</span>
+            Navega e infórmate sobre tu <span className="highlight">Universidad</span>
           </h1>
           <p className="hero-subtitle">
-            Descubre el sistema wayfinding inteligente que te ayuda a encontrar cualquier 
-            lugar del campus, mantenerte informado y aprovechar al máximo tu experiencia universitaria.
+            Conoce información relevante de la Universidad de Talca en Curicó y encuentra tu camino dentro del campus de manera fácil y rápida.
           </p>
           <div className="hero-buttons">
             <button onClick={handleGetStarted} className="btn-primary">
