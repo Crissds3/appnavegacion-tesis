@@ -5,6 +5,7 @@ import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import noticiaRoutes from './routes/noticiaRoutes.js';
 import infoRoutes from './routes/infoRoutes.js';
+import carreraRoutes from './routes/carreraRoutes.js';
 
 dotenv.config();
 
@@ -36,6 +37,9 @@ app.use('/api/noticias', noticiaRoutes);
 
 // Rutas de información universitaria
 app.use('/api/info', infoRoutes);
+
+// Rutas de carreras
+app.use('/api/carreras', carreraRoutes);
 
 // Manejador de rutas no encontradas
 app.use((req, res) => {

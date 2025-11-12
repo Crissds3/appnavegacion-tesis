@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import CrearAdmin from '../../componentes/admin/CrearAdmin';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
+import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversidad';
 import './Tablero.css';
 
 const Tablero = () => {
@@ -168,31 +169,9 @@ const Tablero = () => {
             <div className="tab-content">
               <GestionNoticias />
 
-              <div className="section-card" style={{ marginTop: '30px' }}>
-                <div className="section-header">
-                  <h2>Información Estática de la Universidad</h2>
-                  <p className="section-subtitle">
-                    Actualiza información sobre la universidad y las carreras
-                  </p>
-                </div>
-                <div className="info-grid">
-                  <div className="info-item">
-                    <h4>Misión</h4>
-                    <p>Configurar la misión institucional</p>
-                    <button className="btn-secondary-sm">Editar</button>
-                  </div>
-                  <div className="info-item">
-                    <h4>Visión</h4>
-                    <p>Configurar la visión institucional</p>
-                    <button className="btn-secondary-sm">Editar</button>
-                  </div>
-                  <div className="info-item">
-                    <h4>Carreras</h4>
-                    <p>Gestionar información de carreras</p>
-                    <button className="btn-secondary-sm">Editar</button>
-                  </div>
-                </div>
-              </div>
+              <div className="section-divider"></div>
+
+              <GestionInfoUniversidad />
             </div>
           )}
 

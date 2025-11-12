@@ -70,8 +70,11 @@ const Principal = () => {
     <div className="principal-container">
       <Navbar brandName="Módulo informativo">
         <div className="navbar-buttons">
+          <button onClick={() => navigate('/sobre-universidad')} className="btn-info-universidad">
+            🏛️ Sobre la Universidad
+          </button>
           <button onClick={() => navigate('/wayfinding')} className="btn-wayfinding">
-             Navegación
+            🗺️ Wayfinding
           </button>
           <button onClick={() => navigate('/')} className="btn-inicio">
             Inicio
@@ -82,7 +85,7 @@ const Principal = () => {
       <main className="main-content">
         <div className="feed-noticias">
           <div className="feed-noticias-header">
-            <h1>Noticias y Eventos</h1>
+            <h1>Noticias y eventos</h1>
             <p className="feed-subtitle">Mantente informado sobre las últimas novedades del campus</p>
           </div>
 

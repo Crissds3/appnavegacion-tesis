@@ -217,4 +217,67 @@ export const infoService = {
   },
 };
 
+// Servicios de carreras
+export const carrerasService = {
+  // Obtener todas las carreras públicas
+  getCarreras: async () => {
+    try {
+      const response = await api.get('/carreras/publicas');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener carreras' };
+    }
+  },
+
+  // Obtener una carrera por ID
+  getCarreraById: async (id) => {
+    try {
+      const response = await api.get(`/carreras/publica/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener carrera' };
+    }
+  },
+
+  // Obtener todas las carreras (admin)
+  getAllCarreras: async () => {
+    try {
+      const response = await api.get('/carreras');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener carreras' };
+    }
+  },
+
+  // Crear carrera (admin)
+  createCarrera: async (carreraData) => {
+    try {
+      const response = await api.post('/carreras', carreraData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al crear carrera' };
+    }
+  },
+
+  // Actualizar carrera (admin)
+  updateCarrera: async (id, carreraData) => {
+    try {
+      const response = await api.put(`/carreras/${id}`, carreraData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al actualizar carrera' };
+    }
+  },
+
+  // Eliminar carrera (admin)
+  deleteCarrera: async (id) => {
+    try {
+      const response = await api.delete(`/carreras/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al eliminar carrera' };
+    }
+  },
+};
+
 export default api;

@@ -6,6 +6,7 @@ import Login from './vistas/auth/Login';
 import Tablero from './vistas/admin/Tablero';
 import Principal from './vistas/estudiante/Principal';
 import Wayfinding from './vistas/estudiante/Wayfinding';
+import SobreUniversidad from './vistas/estudiante/SobreUniversidad';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/estudiante" element={<Principal />} />
           <Route path="/wayfinding" element={<Wayfinding />} />
           <Route path="/principal" element={<Principal />} />
+          <Route path="/sobre-universidad" element={<SobreUniversidad />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/dashboard"

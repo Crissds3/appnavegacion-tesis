@@ -294,6 +294,12 @@
   animation: fadeIn 0.4s ease;
 }
 
+.section-divider {
+  height: 2px;
+  background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+  margin: 40px 0;
+}
+
 .section-card {
   background: white;
   border-radius: 16px;

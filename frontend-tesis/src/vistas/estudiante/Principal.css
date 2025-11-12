@@ -17,6 +17,7 @@
 }
 
 .btn-wayfinding,
+.btn-info-universidad,
 .btn-inicio {
   padding: 10px 20px;
   border: none;
@@ -26,6 +27,18 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Inter', sans-serif;
+}
+
+.btn-info-universidad {
+  background: #E53935;
+  color: white;
+  border: 2px solid white;
+}
+
+.btn-info-universidad:hover {
+  background: #e06660;
+  color: white;
+  transform: translateY(-2px);
 }
 
 .btn-wayfinding {
@@ -52,12 +65,10 @@
   transform: translateY(-2px);
 }
 
-/* Feed de Noticias */
 .feed-noticias {
   font-family: 'Inter', sans-serif;
 }
 
-/* Header estilo Wayfinding */
 .feed-noticias-header {
   text-align: center;
   border-radius: 20px;
