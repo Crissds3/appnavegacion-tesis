@@ -80,7 +80,7 @@ const Tablero = () => {
 
   return (
     <div className="dashboard-container">
-      <Navbar brandName="Campus AR Platform">
+      <Navbar brandName="Sistema de gestión de información">
         <div className="navbar-user-section">
           <div className="user-info-wrapper">
             <button onClick={() => setShowProfile(!showProfile)} className="btn-user-profile">
