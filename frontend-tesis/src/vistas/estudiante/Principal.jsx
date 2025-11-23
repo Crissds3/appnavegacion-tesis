@@ -135,10 +135,10 @@ const Principal = () => {
                           className="card-destacada"
                           onClick={() => abrirNoticia(noticia._id)}
                         >
-                          {noticia.imagenUrl && (
+                          {(noticia.imagenBase64 || noticia.imagenUrl) && (
                             <div 
                               className="card-imagen"
-                              style={{ backgroundImage: `url(${noticia.imagenUrl})` }}
+                              style={{ backgroundImage: `url(${noticia.imagenBase64 || noticia.imagenUrl})` }}
                             >
                               <div className="card-overlay"></div>
                             </div>
@@ -179,10 +179,10 @@ const Principal = () => {
                           className="card-noticia"
                           onClick={() => abrirNoticia(noticia._id)}
                         >
-                          {noticia.imagenUrl && (
+                          {(noticia.imagenBase64 || noticia.imagenUrl) && (
                             <div 
                               className="card-imagen-small"
-                              style={{ backgroundImage: `url(${noticia.imagenUrl})` }}
+                              style={{ backgroundImage: `url(${noticia.imagenBase64 || noticia.imagenUrl})` }}
                             />
                           )}
                           <div className="card-content">
@@ -225,10 +225,10 @@ const Principal = () => {
               <div className="modal-noticia" onClick={(e) => e.stopPropagation()}>
                 <button className="btn-cerrar-modal" onClick={cerrarNoticia}>×</button>
                 
-                {noticiaSeleccionada.imagenUrl && (
+                {(noticiaSeleccionada.imagenBase64 || noticiaSeleccionada.imagenUrl) && (
                   <div 
                     className="modal-imagen"
-                    style={{ backgroundImage: `url(${noticiaSeleccionada.imagenUrl})` }}
+                    style={{ backgroundImage: `url(${noticiaSeleccionada.imagenBase64 || noticiaSeleccionada.imagenUrl})` }}
                   />
                 )}
 

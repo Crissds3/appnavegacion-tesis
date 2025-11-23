@@ -211,6 +211,24 @@
   font-size: 14px;
   color: #666;
   line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.carrera-enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #E53935;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  padding: 6px 0;
+}
+
+.carrera-enlace:hover {
+  color: #C62828;
+  gap: 8px;
 }
 
 .carrera-acciones {

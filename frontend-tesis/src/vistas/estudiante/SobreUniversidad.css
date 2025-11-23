@@ -540,6 +540,26 @@
   margin-top: 32px;
   padding-top: 24px;
   border-top: 2px solid #f5f5f5;
+  text-align: center;
+}
+
+.btn-enlace-oficial {
+  display: inline-block;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+}
+
+.btn-enlace-oficial:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.4);
+  background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
 }
 
 .modal-facultad {

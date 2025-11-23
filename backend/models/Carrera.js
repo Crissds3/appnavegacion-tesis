@@ -7,12 +7,6 @@ const carreraSchema = new mongoose.Schema({
     trim: true,
     unique: true
   },
-  codigo: {
-    type: String,
-    required: [true, 'El código es obligatorio'],
-    trim: true,
-    unique: true
-  },
   descripcion: {
     type: String,
     required: [true, 'La descripción es obligatoria']
@@ -27,49 +21,14 @@ const carreraSchema = new mongoose.Schema({
     enum: ['Presencial', 'Semi-presencial', 'Online'],
     default: 'Presencial'
   },
-  facultad: {
+  enlaceOficial: {
     type: String,
-    required: [true, 'La facultad es obligatoria'],
+    required: [true, 'El enlace a la página oficial es obligatorio'],
     trim: true
   },
-  grado: {
+  ubicacion: {
     type: String,
-    required: [true, 'El grado académico es obligatorio'],
     trim: true
-  },
-  requisitos: {
-    type: String,
-    default: ''
-  },
-  perfilEgreso: {
-    type: String,
-    default: ''
-  },
-  campoLaboral: {
-    type: String,
-    default: ''
-  },
-  mallaCurricular: {
-    type: String,
-    default: ''
-  },
-  contacto: {
-    email: {
-      type: String,
-      default: ''
-    },
-    telefono: {
-      type: String,
-      default: ''
-    },
-    oficina: {
-      type: String,
-      default: ''
-    }
-  },
-  imagenUrl: {
-    type: String,
-    default: ''
   },
   orden: {
     type: Number,

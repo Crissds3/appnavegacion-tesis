@@ -81,7 +81,7 @@ export const obtenerNoticiaPorId = async (req, res) => {
 // Crear noticia (admin)
 export const crearNoticia = async (req, res) => {
   try {
-    const { titulo, descripcion, contenido, tipo, categoria, imagenUrl, fechaEvento, ubicacionEvento, destacado } = req.body;
+    const { titulo, descripcion, contenido, tipo, categoria, imagenUrl, imagenBase64, fechaEvento, ubicacionEvento, destacado } = req.body;
 
     // Validar que el usuario sea admin
     if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
@@ -98,6 +98,7 @@ export const crearNoticia = async (req, res) => {
       tipo,
       categoria,
       imagenUrl,
+      imagenBase64,
       fechaEvento,
       ubicacionEvento,
       destacado: destacado || false,

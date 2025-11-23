@@ -2,7 +2,6 @@ import nodemailer from 'nodemailer';
 
 // Configuración del transportador de correo
 const crearTransporter = () => {
-  // Si tienes SendGrid API Key configurado
   if (process.env.SENDGRID_API_KEY) {
     return nodemailer.createTransport({
       host: 'smtp.sendgrid.net',
@@ -14,8 +13,6 @@ const crearTransporter = () => {
       }
     });
   }
-  
-  // Si no, usar configuración SMTP genérica (para desarrollo se puede usar Gmail, Mailtrap, etc.)
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: process.env.EMAIL_PORT || 587,
@@ -27,7 +24,6 @@ const crearTransporter = () => {
   });
 };
 
-// Función para enviar correo de recuperación de contraseña
 export const enviarEmailRecuperacion = async (opciones) => {
   try {
     const transporter = crearTransporter();
@@ -43,10 +39,10 @@ export const enviarEmailRecuperacion = async (opciones) => {
     console.log('Desde:', process.env.EMAIL_FROM);
     
     const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Correo enviado exitosamente:', info.messageId);
+    console.log('Correo enviado exitosamente:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error('❌ Error detallado al enviar correo:');
+    console.error('Error detallado al enviar correo:');
     console.error('Mensaje:', error.message);
     console.error('Código:', error.code);
     console.error('Response:', error.response);
@@ -105,7 +101,7 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
           display: inline-block;
           padding: 15px 35px;
           background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
-          color: #ffffff;
+          color: #ffffff !important;
           text-decoration: none;
           border-radius: 8px;
           font-weight: bold;
@@ -115,6 +111,7 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
         }
         .button:hover {
           transform: translateY(-2px);
+          color: #ffffff !important;
         }
         .warning {
           background-color: #FFF3CD;
@@ -145,7 +142,7 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Recuperación de Contraseña</h1>
+          <h1>Recuperación de Contraseña</h1>
         </div>
         <div class="content">
           <h2>Hola ${nombre},</h2>
@@ -157,7 +154,7 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
             Para restablecer tu contraseña, haz clic en el siguiente botón:
           </p>
           <div style="text-align: center;">
-            <a href="${resetUrl}" class="button">Restablecer Contraseña</a>
+            <a href="${resetUrl}" class="button" style="color: #ffffff !important;">Restablecer Contraseña</a>
           </div>
           <p style="font-size: 14px; color: #999999; margin-top: 20px;">
             Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:

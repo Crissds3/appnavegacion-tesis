@@ -26,22 +26,11 @@ const GestionInfoUniversidad = () => {
   const [editingCarrera, setEditingCarrera] = useState(null);
   const [carreraForm, setCarreraForm] = useState({
     nombre: '',
-    codigo: '',
     descripcion: '',
     duracion: '',
     modalidad: 'Presencial',
-    facultad: '',
-    grado: '',
-    requisitos: '',
-    perfilEgreso: '',
-    campoLaboral: '',
-    mallaCurricular: '',
-    contacto: {
-      email: '',
-      telefono: '',
-      oficina: ''
-    },
-    imagenUrl: '',
+    enlaceOficial: '',
+    ubicacion: '',
     orden: 0,
     activo: true
   });
@@ -153,22 +142,10 @@ const GestionInfoUniversidad = () => {
 
   const handleCarreraInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
-    if (name.startsWith('contacto.')) {
-      const contactoField = name.split('.')[1];
-      setCarreraForm(prev => ({
-        ...prev,
-        contacto: {
-          ...prev.contacto,
-          [contactoField]: value
-        }
-      }));
-    } else {
-      setCarreraForm(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
+    setCarreraForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleCarreraSubmit = async (e) => {
@@ -199,18 +176,11 @@ const GestionInfoUniversidad = () => {
       setEditingCarrera(carrera);
       setCarreraForm({
         nombre: carrera.nombre,
-        codigo: carrera.codigo,
         descripcion: carrera.descripcion,
         duracion: carrera.duracion,
         modalidad: carrera.modalidad,
-        facultad: carrera.facultad,
-        grado: carrera.grado,
-        requisitos: carrera.requisitos || '',
-        perfilEgreso: carrera.perfilEgreso || '',
-        campoLaboral: carrera.campoLaboral || '',
-        mallaCurricular: carrera.mallaCurricular || '',
-        contacto: carrera.contacto || { email: '', telefono: '', oficina: '' },
-        imagenUrl: carrera.imagenUrl || '',
+        enlaceOficial: carrera.enlaceOficial || '',
+        ubicacion: carrera.ubicacion || '',
         orden: carrera.orden,
         activo: carrera.activo
       });
@@ -218,18 +188,11 @@ const GestionInfoUniversidad = () => {
       setEditingCarrera(null);
       setCarreraForm({
         nombre: '',
-        codigo: '',
         descripcion: '',
         duracion: '',
         modalidad: 'Presencial',
-        facultad: '',
-        grado: '',
-        requisitos: '',
-        perfilEgreso: '',
-        campoLaboral: '',
-        mallaCurricular: '',
-        contacto: { email: '', telefono: '', oficina: '' },
-        imagenUrl: '',
+        enlaceOficial: '',
+        ubicacion: '',
         orden: 0,
         activo: true
       });
@@ -349,15 +312,22 @@ const GestionInfoUniversidad = () => {
                           {carrera.activo ? 'Activo' : 'Inactivo'}
                         </span>
                       </div>
-                      <p className="carrera-codigo">Código: {carrera.codigo}</p>
                       <p className="carrera-detalles">
-                        <strong>Facultad:</strong> {carrera.facultad} | 
-                        <strong> Duración:</strong> {carrera.duracion} | 
+                        <strong>Duración:</strong> {carrera.duracion} | 
                         <strong> Modalidad:</strong> {carrera.modalidad}
                       </p>
                       <p className="carrera-descripcion">
-                        {carrera.descripcion.substring(0, 120)}...
+                        {carrera.descripcion.length > 150 ? `${carrera.descripcion.substring(0, 150)}...` : carrera.descripcion}
                       </p>
+                      <a 
+                        href={carrera.enlaceOficial} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="carrera-enlace"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        🔗 Ver información completa
+                      </a>
                     </div>
                     <div className="carrera-acciones">
                       <button
@@ -487,28 +457,18 @@ const GestionInfoUniversidad = () => {
             </div>
             <form onSubmit={handleCarreraSubmit} className="modal-form">
               <div className="form-section">
-                <h4>Información Básica</h4>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Nombre de la Carrera *</label>
-                    <input
-                      type="text"
-                      name="nombre"
-                      value={carreraForm.nombre}
-                      onChange={handleCarreraInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Código *</label>
-                    <input
-                      type="text"
-                      name="codigo"
-                      value={carreraForm.codigo}
-                      onChange={handleCarreraInputChange}
-                      required
-                    />
-                  </div>
+                <h4>Información de la Carrera</h4>
+                
+                <div className="form-group">
+                  <label>Nombre de la Carrera *</label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    value={carreraForm.nombre}
+                    onChange={handleCarreraInputChange}
+                    placeholder="ej: Ingeniería Civil en Computación"
+                    required
+                  />
                 </div>
 
                 <div className="form-group">
@@ -518,32 +478,9 @@ const GestionInfoUniversidad = () => {
                     value={carreraForm.descripcion}
                     onChange={handleCarreraInputChange}
                     rows="4"
+                    placeholder="Describe brevemente la carrera..."
                     required
                   />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Facultad *</label>
-                    <input
-                      type="text"
-                      name="facultad"
-                      value={carreraForm.facultad}
-                      onChange={handleCarreraInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Grado Académico *</label>
-                    <input
-                      type="text"
-                      name="grado"
-                      value={carreraForm.grado}
-                      onChange={handleCarreraInputChange}
-                      placeholder="ej: Licenciatura, Ingeniería"
-                      required
-                    />
-                  </div>
                 </div>
 
                 <div className="form-row">
@@ -559,11 +496,12 @@ const GestionInfoUniversidad = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label>Modalidad</label>
+                    <label>Modalidad *</label>
                     <select
                       name="modalidad"
                       value={carreraForm.modalidad}
                       onChange={handleCarreraInputChange}
+                      required
                     >
                       {modalidadesDisponibles.map(mod => (
                         <option key={mod} value={mod}>{mod}</option>
@@ -571,93 +509,34 @@ const GestionInfoUniversidad = () => {
                     </select>
                   </div>
                 </div>
-              </div>
 
-              <div className="form-section">
-                <h4>Información Académica</h4>
                 <div className="form-group">
-                  <label>Requisitos de Ingreso</label>
-                  <textarea
-                    name="requisitos"
-                    value={carreraForm.requisitos}
+                  <label>Enlace a Página Oficial *</label>
+                  <input
+                    type="url"
+                    name="enlaceOficial"
+                    value={carreraForm.enlaceOficial}
                     onChange={handleCarreraInputChange}
-                    rows="3"
+                    placeholder="https://www.utalca.cl/carreras/..."
+                    required
                   />
+                  <small style={{ color: '#666', fontSize: '12px' }}>
+                    🔗 URL de la página oficial con información académica completa (malla curricular, perfil de egreso, etc.)
+                  </small>
                 </div>
 
                 <div className="form-group">
-                  <label>Perfil de Egreso</label>
-                  <textarea
-                    name="perfilEgreso"
-                    value={carreraForm.perfilEgreso}
-                    onChange={handleCarreraInputChange}
-                    rows="3"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Campo Laboral</label>
-                  <textarea
-                    name="campoLaboral"
-                    value={carreraForm.campoLaboral}
-                    onChange={handleCarreraInputChange}
-                    rows="3"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Malla Curricular (URL o texto)</label>
+                  <label>Ubicación (opcional)</label>
                   <input
                     type="text"
-                    name="mallaCurricular"
-                    value={carreraForm.mallaCurricular}
+                    name="ubicacion"
+                    value={carreraForm.ubicacion}
                     onChange={handleCarreraInputChange}
+                    placeholder="Ej: Campus Talca, Edificio D, 2do piso"
                   />
-                </div>
-              </div>
-
-              <div className="form-section">
-                <h4>Contacto e Información Adicional</h4>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Email de Contacto</label>
-                    <input
-                      type="email"
-                      name="contacto.email"
-                      value={carreraForm.contacto.email}
-                      onChange={handleCarreraInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Teléfono</label>
-                    <input
-                      type="tel"
-                      name="contacto.telefono"
-                      value={carreraForm.contacto.telefono}
-                      onChange={handleCarreraInputChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Oficina</label>
-                    <input
-                      type="text"
-                      name="contacto.oficina"
-                      value={carreraForm.contacto.oficina}
-                      onChange={handleCarreraInputChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>URL de Imagen</label>
-                    <input
-                      type="text"
-                      name="imagenUrl"
-                      value={carreraForm.imagenUrl}
-                      onChange={handleCarreraInputChange}
-                    />
-                  </div>
+                  <small style={{ color: '#666', fontSize: '12px' }}>
+                    📍 Ubicación física donde se imparte la carrera o ubicación de la oficina de información
+                  </small>
                 </div>
 
                 <div className="form-row">

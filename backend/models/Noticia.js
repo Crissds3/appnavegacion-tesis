@@ -30,6 +30,10 @@ const noticiaSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  imagenBase64: {
+    type: String,
+    default: ''
+  },
   fechaEvento: {
     type: Date
   },

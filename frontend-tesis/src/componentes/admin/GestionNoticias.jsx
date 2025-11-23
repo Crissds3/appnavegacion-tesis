@@ -9,6 +9,7 @@ const GestionNoticias = () => {
   const [editingNoticia, setEditingNoticia] = useState(null);
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
+  const [imagenPreview, setImagenPreview] = useState(null);
   
   const [formData, setFormData] = useState({
     titulo: '',
@@ -17,6 +18,7 @@ const GestionNoticias = () => {
     tipo: 'Noticia',
     categoria: 'Académico',
     imagenUrl: '',
+    imagenBase64: '',
     fechaEvento: '',
     ubicacionEvento: '',
     destacado: false,
@@ -65,6 +67,44 @@ const GestionNoticias = () => {
     }));
   };
 
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        mostrarMensaje('La imagen no debe superar 5MB', 'error');
+        return;
+      }
+
+      // Validar tipo
+      if (!file.type.startsWith('image/')) {
+        mostrarMensaje('Solo se permiten archivos de imagen', 'error');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setFormData(prev => ({
+          ...prev,
+          imagenBase64: base64String,
+          imagenUrl: '' // Limpiar URL si existe
+        }));
+        setImagenPreview(base64String);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const eliminarImagen = () => {
+    setFormData(prev => ({
+      ...prev,
+      imagenBase64: '',
+      imagenUrl: ''
+    }));
+    setImagenPreview(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -98,11 +138,20 @@ const GestionNoticias = () => {
       tipo: noticia.tipo,
       categoria: noticia.categoria,
       imagenUrl: noticia.imagenUrl || '',
+      imagenBase64: noticia.imagenBase64 || '',
       fechaEvento: noticia.fechaEvento ? noticia.fechaEvento.split('T')[0] : '',
       ubicacionEvento: noticia.ubicacionEvento || '',
       destacado: noticia.destacado,
       activo: noticia.activo,
     });
+    // Establecer preview con la imagen existente
+    if (noticia.imagenBase64) {
+      setImagenPreview(noticia.imagenBase64);
+    } else if (noticia.imagenUrl) {
+      setImagenPreview(noticia.imagenUrl);
+    } else {
+      setImagenPreview(null);
+    }
     setShowModal(true);
   };
 
@@ -137,6 +186,7 @@ const GestionNoticias = () => {
   const cerrarModal = () => {
     setShowModal(false);
     setEditingNoticia(null);
+    setImagenPreview(null);
     setFormData({
       titulo: '',
       descripcion: '',
@@ -144,6 +194,7 @@ const GestionNoticias = () => {
       tipo: 'Noticia',
       categoria: 'Académico',
       imagenUrl: '',
+      imagenBase64: '',
       fechaEvento: '',
       ubicacionEvento: '',
       destacado: false,
@@ -204,6 +255,7 @@ const GestionNoticias = () => {
           <table>
             <thead>
               <tr>
+                <th>Imagen</th>
                 <th>Título</th>
                 <th>Tipo</th>
                 <th>Categoría</th>
@@ -216,11 +268,39 @@ const GestionNoticias = () => {
             <tbody>
               {noticiasFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="no-data">No hay noticias disponibles</td>
+                  <td colSpan="8" className="no-data">No hay noticias disponibles</td>
                 </tr>
               ) : (
                 noticiasFiltradas.map(noticia => (
                   <tr key={noticia._id}>
+                    <td>
+                      {(noticia.imagenBase64 || noticia.imagenUrl) ? (
+                        <img 
+                          src={noticia.imagenBase64 || noticia.imagenUrl} 
+                          alt={noticia.titulo}
+                          style={{ 
+                            width: '50px', 
+                            height: '50px', 
+                            objectFit: 'cover', 
+                            borderRadius: '8px',
+                            border: '2px solid #e0e0e0'
+                          }}
+                        />
+                      ) : (
+                        <div style={{ 
+                          width: '50px', 
+                          height: '50px', 
+                          background: '#f0f0f0', 
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#999'
+                        }}>
+                          📷
+                        </div>
+                      )}
+                    </td>
                     <td>{noticia.titulo}</td>
                     <td>
                       <span className={`badge badge-${noticia.tipo.toLowerCase()}`}>
@@ -340,14 +420,27 @@ const GestionNoticias = () => {
               </div>
 
               <div className="form-group">
-                <label>URL de imagen</label>
+                <label>Imagen</label>
                 <input
-                  type="url"
-                  name="imagenUrl"
-                  value={formData.imagenUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://ejemplo.com/imagen.jpg"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImagenChange}
+                  className="input-file"
                 />
+                <small style={{ color: '#666', fontSize: '12px' }}>Tamaño máximo: 5MB. Formatos: JPG, PNG, GIF, WebP</small>
+                {imagenPreview && (
+                  <div className="imagen-preview">
+                    <img src={imagenPreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px', borderRadius: '8px' }} />
+                    <button 
+                      type="button" 
+                      onClick={eliminarImagen}
+                      className="btn-eliminar-imagen"
+                      style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                    >
+                      🗑️ Eliminar imagen
+                    </button>
+                  </div>
+                )}
               </div>
 
               {formData.tipo === 'Evento' && (
