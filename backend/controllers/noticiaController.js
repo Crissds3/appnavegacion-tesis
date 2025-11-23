@@ -84,7 +84,7 @@ export const crearNoticia = async (req, res) => {
     const { titulo, descripcion, contenido, tipo, categoria, imagenUrl, fechaEvento, ubicacionEvento, destacado } = req.body;
 
     // Validar que el usuario sea admin
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden crear noticias'
@@ -122,7 +122,7 @@ export const crearNoticia = async (req, res) => {
 // Actualizar noticia (admin)
 export const actualizarNoticia = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden actualizar noticias'
@@ -160,7 +160,7 @@ export const actualizarNoticia = async (req, res) => {
 // Eliminar noticia (admin)
 export const eliminarNoticia = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden eliminar noticias'

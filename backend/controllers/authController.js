@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
+import { enviarEmailRecuperacion, crearEmailRecuperacion } from '../config/email.js';
 
-// Generar JWT
 const generarToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d'
@@ -207,11 +208,11 @@ export const crearAdministrador = async (req, res) => {
       });
     }
 
-    // Verificar
-    if (req.usuario.rol !== 'admin') {
+    // Verificar que sea superadmin
+    if (req.usuario.rol !== 'superadmin') {
       return res.status(403).json({
         success: false,
-        message: 'Solo los administradores pueden crear nuevas cuentas'
+        message: 'Solo el administrador principal puede crear nuevas cuentas'
       });
     }
 
@@ -255,14 +256,14 @@ export const crearAdministrador = async (req, res) => {
 // Obtener todos los administradores
 export const obtenerAdministradores = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (req.usuario.rol !== 'superadmin') {
       return res.status(403).json({
         success: false,
         message: 'No tienes permisos para realizar esta acción'
       });
     }
 
-    const administradores = await User.find({ rol: 'admin' })
+    const administradores = await User.find({ rol: { $in: ['admin', 'superadmin'] } })
       .select('-password')
       .sort({ createdAt: -1 });
 
@@ -283,7 +284,7 @@ export const obtenerAdministradores = async (req, res) => {
 // Eliminar administrador
 export const eliminarAdministrador = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (req.usuario.rol !== 'superadmin') {
       return res.status(403).json({
         success: false,
         message: 'No tienes permisos para realizar esta acción'
@@ -325,6 +326,321 @@ export const eliminarAdministrador = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al eliminar administrador',
+      error: error.message
+    });
+  }
+};
+
+// Solicitar recuperación de contraseña
+export const solicitarRecuperacion = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Por favor proporcione un email'
+      });
+    }
+
+    // Buscar usuario por email
+    const usuario = await User.findOne({ email });
+
+    // Por seguridad, siempre devolvemos el mismo mensaje aunque el usuario no exista
+    if (!usuario) {
+      return res.json({
+        success: true,
+        message: 'Si el correo existe en nuestro sistema, recibirás un email con las instrucciones'
+      });
+    }
+
+    // Verificar que el usuario esté activo
+    if (!usuario.activo) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario desactivado. Contacte al administrador'
+      });
+    }
+
+    // Generar token de recuperación
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    
+    // Hash del token para guardar en la base de datos
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Establecer tiempo de expiración (1 hora)
+    const resetPasswordExpire = Date.now() + 60 * 60 * 1000;
+
+    // Guardar token y expiración en el usuario
+    usuario.resetPasswordToken = resetPasswordToken;
+    usuario.resetPasswordExpire = resetPasswordExpire;
+    await usuario.save({ validateBeforeSave: false });
+
+    // Crear URL de recuperación
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/restablecer-password/${resetToken}`;
+
+    try {
+      // Enviar email
+      await enviarEmailRecuperacion({
+        email: usuario.email,
+        subject: 'Recuperación de Contraseña',
+        html: crearEmailRecuperacion(usuario.nombre, resetUrl)
+      });
+
+      res.json({
+        success: true,
+        message: 'Si el correo existe en nuestro sistema, recibirás un email con las instrucciones'
+      });
+    } catch (error) {
+      // Si falla el envío del correo, limpiar los campos de recuperación
+      usuario.resetPasswordToken = undefined;
+      usuario.resetPasswordExpire = undefined;
+      await usuario.save({ validateBeforeSave: false });
+
+      console.error('Error al enviar email:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error al enviar el correo electrónico. Intente nuevamente más tarde'
+      });
+    }
+  } catch (error) {
+    console.error('Error en solicitarRecuperacion:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al procesar la solicitud',
+      error: error.message
+    });
+  }
+};
+
+// Restablecer contraseña
+export const restablecerPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Por favor proporcione el token y la nueva contraseña'
+      });
+    }
+
+    // Validar longitud mínima de contraseña
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe tener al menos 6 caracteres'
+      });
+    }
+
+    // Hash del token recibido para comparar con el de la base de datos
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Buscar usuario con el token y que no haya expirado
+    const usuario = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    }).select('+resetPasswordToken +resetPasswordExpire');
+
+    if (!usuario) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token inválido o expirado'
+      });
+    }
+
+    // Establecer nueva contraseña
+    usuario.password = password;
+    usuario.resetPasswordToken = undefined;
+    usuario.resetPasswordExpire = undefined;
+    await usuario.save();
+
+    res.json({
+      success: true,
+      message: 'Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña'
+    });
+  } catch (error) {
+    console.error('Error en restablecerPassword:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al restablecer la contraseña',
+      error: error.message
+    });
+  }
+};
+
+// Editar usuario (solo superadmin)
+export const editarUsuario = async (req, res) => {
+  try {
+    const { nombre, email, rol } = req.body;
+    const { id } = req.params;
+
+    // Validar que el usuario no se edite a sí mismo
+    if (id === req.usuario.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'No puedes editar tu propio usuario desde aquí. Usa el perfil'
+      });
+    }
+
+    // Buscar usuario
+    const usuario = await User.findById(id);
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    // No permitir crear otro superadmin
+    if (rol === 'superadmin') {
+      return res.status(400).json({
+        success: false,
+        message: 'No se puede asignar el rol de superadmin'
+      });
+    }
+
+    // Actualizar campos
+    if (nombre) usuario.nombre = nombre;
+    if (email) usuario.email = email;
+    if (rol) usuario.rol = rol;
+
+    await usuario.save();
+
+    res.json({
+      success: true,
+      message: 'Usuario actualizado exitosamente',
+      data: {
+        _id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol,
+        activo: usuario.activo
+      }
+    });
+  } catch (error) {
+    console.error('Error en editarUsuario:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al editar el usuario',
+      error: error.message
+    });
+  }
+};
+
+// Activar/Desactivar usuario (solo superadmin)
+export const toggleEstadoUsuario = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validar que el usuario no se desactive a sí mismo
+    if (id === req.usuario.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'No puedes desactivar tu propia cuenta'
+      });
+    }
+
+    // Buscar usuario
+    const usuario = await User.findById(id);
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    // No permitir desactivar otro superadmin
+    if (usuario.rol === 'superadmin') {
+      return res.status(400).json({
+        success: false,
+        message: 'No se puede modificar el estado de otro superadmin'
+      });
+    }
+
+    // Cambiar estado
+    usuario.activo = !usuario.activo;
+    await usuario.save();
+
+    res.json({
+      success: true,
+      message: `Usuario ${usuario.activo ? 'activado' : 'desactivado'} exitosamente`,
+      data: {
+        _id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol,
+        activo: usuario.activo
+      }
+    });
+  } catch (error) {
+    console.error('Error en toggleEstadoUsuario:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cambiar el estado del usuario',
+      error: error.message
+    });
+  }
+};
+
+// Resetear contraseña por admin (solo superadmin)
+export const resetearPasswordPorAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    // Validar contraseña
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe tener al menos 6 caracteres'
+      });
+    }
+
+    // Validar que no sea él mismo
+    if (id === req.usuario.id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Usa la opción de cambiar contraseña en tu perfil'
+      });
+    }
+
+    // Buscar usuario
+    const usuario = await User.findById(id);
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    // No permitir cambiar contraseña de otro superadmin
+    if (usuario.rol === 'superadmin') {
+      return res.status(400).json({
+        success: false,
+        message: 'No se puede cambiar la contraseña de otro superadmin'
+      });
+    }
+
+    // Actualizar contraseña
+    usuario.password = password;
+    await usuario.save();
+
+    res.json({
+      success: true,
+      message: 'Contraseña actualizada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en resetearPasswordPorAdmin:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al resetear la contraseña',
       error: error.message
     });
   }

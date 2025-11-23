@@ -3,6 +3,8 @@ import { AuthProvider } from './contexto/ContextoAuth';
 import RutaProtegida from './componentes/compartidos/RutaProtegida';
 import Inicio from './vistas/publicas/Inicio';
 import Login from './vistas/auth/Login';
+import SolicitarRecuperacion from './vistas/auth/SolicitarRecuperacion';
+import RestablecerPassword from './vistas/auth/RestablecerPassword';
 import Tablero from './vistas/admin/Tablero';
 import Principal from './vistas/estudiante/Principal';
 import Wayfinding from './vistas/estudiante/Wayfinding';
@@ -20,6 +22,8 @@ function App() {
           <Route path="/principal" element={<Principal />} />
           <Route path="/sobre-universidad" element={<SobreUniversidad />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/solicitar-recuperacion" element={<SolicitarRecuperacion />} />
+          <Route path="/restablecer-password/:token" element={<RestablecerPassword />} />
           <Route
             path="/dashboard"
             element={

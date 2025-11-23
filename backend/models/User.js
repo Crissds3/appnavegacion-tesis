@@ -23,12 +23,20 @@ const userSchema = new mongoose.Schema({
   },
   rol: {
     type: String,
-    enum: ['usuario', 'admin'],
+    enum: ['usuario', 'admin', 'superadmin'],
     default: 'usuario'
   },
   activo: {
     type: Boolean,
     default: true
+  },
+  resetPasswordToken: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpire: {
+    type: Date,
+    select: false
   },
   createdAt: {
     type: Date,

@@ -52,7 +52,7 @@ export const obtenerInfoPorSeccion = async (req, res) => {
 // Actualizar información (admin)
 export const actualizarInfo = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden actualizar la información'
@@ -110,7 +110,7 @@ export const actualizarInfo = async (req, res) => {
 // Obtener todas las secciones (admin)
 export const obtenerTodasSecciones = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Acceso no autorizado'

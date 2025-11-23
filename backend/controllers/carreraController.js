@@ -49,7 +49,7 @@ export const obtenerCarreraPorId = async (req, res) => {
 // Obtener todas las carreras (admin)
 export const obtenerTodasCarreras = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Acceso no autorizado'
@@ -78,7 +78,7 @@ export const obtenerTodasCarreras = async (req, res) => {
 // Crear carrera (admin)
 export const crearCarrera = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden crear carreras'
@@ -119,7 +119,7 @@ export const crearCarrera = async (req, res) => {
 // Actualizar carrera (admin)
 export const actualizarCarrera = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden actualizar carreras'
@@ -166,7 +166,7 @@ export const actualizarCarrera = async (req, res) => {
 // Eliminar carrera (admin)
 export const eliminarCarrera = async (req, res) => {
   try {
-    if (req.usuario.rol !== 'admin') {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
       return res.status(403).json({
         success: false,
         message: 'Solo los administradores pueden eliminar carreras'

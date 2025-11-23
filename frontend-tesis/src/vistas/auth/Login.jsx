@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexto/ContextoAuth';
 import logo from '../../assets/logo.png';
 import './Login.css';
@@ -114,6 +114,11 @@ const Login = () => {
         </form>
 
         <div className="login-footer">
+          <p>
+            <Link to="/solicitar-recuperacion" className="link">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </p>
           <p className="footer-note">
             Solo administradores pueden acceder a este panel
           </p>

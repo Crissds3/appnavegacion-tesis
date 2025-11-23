@@ -5,6 +5,7 @@ import Navbar from '../../componentes/compartidos/Navbar';
 import CrearAdmin from '../../componentes/admin/CrearAdmin';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
 import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversidad';
+import GestionUsuarios from '../../componentes/admin/GestionUsuarios';
 import './Tablero.css';
 
 const Tablero = () => {
@@ -99,7 +100,7 @@ const Tablero = () => {
                     <p className="profile-name">{user?.nombre}</p>
                     <p className="profile-email">{user?.email}</p>
                     <span className={`profile-badge badge-${user?.rol}`}>
-                      {user?.rol === 'admin' ? 'Administrador' : 'Usuario'}
+                      {user?.rol === 'superadmin' ? 'Super Admin' : user?.rol === 'admin' ? 'Administrador' : 'Usuario'}
                     </span>
                   </div>
                 </div>
@@ -148,12 +149,14 @@ const Tablero = () => {
             >
               AR
             </button>
-            <button 
-              className={`tab-button ${activeTab === 'admin' ? 'active' : ''}`}
-              onClick={() => setActiveTab('admin')}
-            >
-              Administradores
-            </button>
+            {user?.rol === 'superadmin' && (
+              <button 
+                className={`tab-button ${activeTab === 'admin' ? 'active' : ''}`}
+                onClick={() => setActiveTab('admin')}
+              >
+                Usuarios
+              </button>
+            )}
           </div>
 
           {/* Modal de crear administrador */}
@@ -207,13 +210,13 @@ const Tablero = () => {
             </div>
           )}
 
-          {activeTab === 'admin' && (
+          {activeTab === 'admin' && user?.rol === 'superadmin' && (
             <div className="tab-content">
               <div className="section-card">
                 <div className="section-header">
-                  <h2>Gestión de Administradores</h2>
+                  <h2>Gestión de Usuarios</h2>
                   <p className="section-subtitle">
-                    Administra los usuarios con permisos de administración
+                    Administra usuarios y sus permisos
                   </p>
                 </div>
                 <div className="admin-actions">
@@ -223,58 +226,7 @@ const Tablero = () => {
                   </button>
                 </div>
 
-                {loadingAdmins ? (
-                  <div className="loading-state">Cargando administradores...</div>
-                ) : administradores.length === 0 ? (
-                  <div className="empty-state">
-                    <p>👥 No hay administradores registrados</p>
-                  </div>
-                ) : (
-                  <div className="admins-table-container">
-                    <table className="admins-table">
-                      <thead>
-                        <tr>
-                          <th>Nombre</th>
-                          <th>Email</th>
-                          <th>Fecha de Registro</th>
-                          <th>Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {administradores.map((admin) => (
-                          <tr key={admin._id}>
-                            <td>
-                              <div className="admin-name-cell">
-                                <div className="admin-avatar-small">
-                                  {admin.nombre?.charAt(0)}
-                                </div>
-                                <span>{admin.nombre}</span>
-                              </div>
-                            </td>
-                            <td>{admin.email}</td>
-                            <td>{new Date(admin.createdAt).toLocaleDateString('es-CL')}</td>
-                            <td>
-                              <div className="admin-table-actions">
-                                {admin._id !== user?._id && (
-                                  <button
-                                    onClick={() => handleEliminarAdmin(admin._id)}
-                                    className="btn-delete-admin"
-                                    title="Eliminar administrador"
-                                  >
-                                    🗑️
-                                  </button>
-                                )}
-                                {admin._id === user?._id && (
-                                  <span className="current-user-badge">Tú</span>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                <GestionUsuarios />
               </div>
             </div>
           )}

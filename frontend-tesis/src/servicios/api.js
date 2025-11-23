@@ -101,6 +101,56 @@ export const authService = {
       throw error.response?.data || { success: false, message: 'Error al crear administrador' };
     }
   },
+
+  // Obtener lista de administradores (solo superadmin)
+  getAdministradores: async () => {
+    try {
+      const response = await api.get('/auth/administradores');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener administradores' };
+    }
+  },
+
+  // Editar usuario (solo superadmin)
+  editarUsuario: async (id, userData) => {
+    try {
+      const response = await api.put(`/auth/usuarios/${id}`, userData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al editar usuario' };
+    }
+  },
+
+  // Activar/Desactivar usuario (solo superadmin)
+  toggleEstadoUsuario: async (id) => {
+    try {
+      const response = await api.patch(`/auth/usuarios/${id}/toggle-estado`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al cambiar estado' };
+    }
+  },
+
+  // Resetear contraseña por admin (solo superadmin)
+  resetearPasswordPorAdmin: async (id, passwordData) => {
+    try {
+      const response = await api.patch(`/auth/usuarios/${id}/resetear-password`, passwordData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al resetear contraseña' };
+    }
+  },
+
+  // Eliminar administrador (solo superadmin)
+  eliminarAdministrador: async (id) => {
+    try {
+      const response = await api.delete(`/auth/administradores/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al eliminar administrador' };
+    }
+  },
 };
 
 // Servicios de noticias

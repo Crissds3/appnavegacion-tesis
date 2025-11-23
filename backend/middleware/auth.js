@@ -56,3 +56,14 @@ export const autorizarRoles = (...roles) => {
     next();
   };
 };
+
+// Middleware específico para verificar que sea superadmin
+export const soloSuperAdmin = (req, res, next) => {
+  if (req.usuario.rol !== 'superadmin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Solo el administrador principal puede realizar esta acción'
+    });
+  }
+  next();
+};
