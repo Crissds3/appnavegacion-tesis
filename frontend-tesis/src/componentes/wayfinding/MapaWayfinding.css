@@ -230,20 +230,46 @@
 
 /* Estilos para Leaflet Routing Machine */
 .routing-container {
-  display: none !important; /* Ocultar el panel de instrucciones predeterminado */
+  display: none !important;
 }
 
 .leaflet-routing-container {
-  display: none !important; /* Ocultar completamente el panel de instrucciones */
+  display: none !important;
 }
 
-/* Asegurar que la línea de ruta sea visible */
+/* Asegurar que la línea de ruta sea visible y esté encima */
 .leaflet-routing-line {
+  z-index: 1000 !important;
+  pointer-events: auto;
+}
+
+/* Línea de ruta siempre visible */
+.leaflet-overlay-pane svg {
+  z-index: 1000;
+}
+
+.leaflet-overlay-pane svg path {
+  stroke-width: 8px !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  fill: none !important;
+}
+
+.leaflet-overlay-pane svg path.ruta-principal {
+  stroke: #2563eb !important;
+  stroke-width: 8px !important;
+  stroke-opacity: 0.9 !important;
   z-index: 1000 !important;
 }
 
 .leaflet-interactive {
   pointer-events: auto;
+}
+
+/* Forzar visibilidad de todas las rutas */
+path[stroke] {
+  display: block !important;
+  visibility: visible !important;
 }
 
 /* Estilos alternativos si se quiere mostrar el panel */

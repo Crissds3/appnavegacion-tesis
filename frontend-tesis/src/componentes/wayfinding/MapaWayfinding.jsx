@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
@@ -20,6 +20,141 @@ const CAMPUS_BOUNDS = [
   [-35.000700, -71.228500]  
 ];
 
+// Caminos y vías principales del campus para routing interno
+// Estos puntos forman una red de caminos transitables basada en la topología real
+const CAMINOS_CAMPUS = [
+  // Entrada principal y zona norte
+  { id: 'entrada', lat: -35.001000, lng: -71.230900, conexiones: ['edificio_minas', 'cam_norte'] },
+  { id: 'edificio_minas', lat: -35.001369, lng: -71.230949, conexiones: ['entrada', 'cam_central_norte'] },
+  
+  // Camino central norte-sur (calle principal)
+  { id: 'cam_norte', lat: -35.001200, lng: -71.231100, conexiones: ['entrada', 'cam_central_norte'] },
+  { id: 'cam_central_norte', lat: -35.001800, lng: -71.230900, conexiones: ['edificio_minas', 'cam_norte', 'servicios_multiples', 'cam_central'] },
+  { id: 'cam_central', lat: -35.002200, lng: -71.230700, conexiones: ['cam_central_norte', 'cam_sur', 'estacionamiento'] },
+  { id: 'cam_sur', lat: -35.002600, lng: -71.230500, conexiones: ['cam_central', 'multicancha'] },
+  
+  // Servicios múltiples (zona central)
+  { id: 'servicios_multiples', lat: -35.002195, lng: -71.230251, conexiones: ['cam_central_norte', 'estacionamiento'] },
+  
+  // Zona estacionamiento
+  { id: 'estacionamiento', lat: -35.002400, lng: -71.230400, conexiones: ['cam_central', 'servicios_multiples', 'cam_sur'] },
+  
+  // Zona deportiva sur
+  { id: 'multicancha', lat: -35.003000, lng: -71.230300, conexiones: ['cam_sur'] },
+];
+
+// Función para calcular distancia euclidiana entre dos puntos
+function calcularDistancia(lat1, lng1, lat2, lng2) {
+  const R = 6371000; // Radio de la Tierra en metros
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lng2 - lng1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  return R * c; // Distancia en metros
+}
+
+// Función para encontrar el camino más cercano a un punto
+function encontrarCaminoCercano(lat, lng) {
+  let minDist = Infinity;
+  let caminoCercano = CAMINOS_CAMPUS[0];
+  
+  CAMINOS_CAMPUS.forEach(camino => {
+    const dist = calcularDistancia(lat, lng, camino.lat, camino.lng);
+    if (dist < minDist) {
+      minDist = dist;
+      caminoCercano = camino;
+    }
+  });
+  
+  console.log(`   🔍 Camino cercano encontrado: ${caminoCercano.id} (${minDist.toFixed(0)}m de distancia)`);
+  return caminoCercano;
+}
+
+// Algoritmo A* para encontrar la ruta más corta entre caminos
+function encontrarRutaEntreCaminos(caminoInicio, caminoFin) {
+  const visitados = new Set();
+  const cola = [[caminoInicio]];
+  const costos = new Map();
+  costos.set(caminoInicio.id, 0);
+  
+  while (cola.length > 0) {
+    // Ordenar por costo + heurística (distancia al objetivo)
+    cola.sort((a, b) => {
+      const ultimoA = a[a.length - 1];
+      const ultimoB = b[b.length - 1];
+      const costoA = costos.get(ultimoA.id) + calcularDistancia(ultimoA.lat, ultimoA.lng, caminoFin.lat, caminoFin.lng);
+      const costoB = costos.get(ultimoB.id) + calcularDistancia(ultimoB.lat, ultimoB.lng, caminoFin.lat, caminoFin.lng);
+      return costoA - costoB;
+    });
+    
+    const ruta = cola.shift();
+    const actual = ruta[ruta.length - 1];
+    
+    if (actual.id === caminoFin.id) {
+      console.log(`   🛣️ Ruta encontrada: ${ruta.map(c => c.id).join(' → ')}`);
+      return ruta;
+    }
+    
+    if (visitados.has(actual.id)) {
+      continue;
+    }
+    
+    visitados.add(actual.id);
+    
+    actual.conexiones.forEach(conexionId => {
+      const siguiente = CAMINOS_CAMPUS.find(c => c.id === conexionId);
+      if (siguiente && !visitados.has(siguiente.id)) {
+        const nuevoCosto = costos.get(actual.id) + calcularDistancia(actual.lat, actual.lng, siguiente.lat, siguiente.lng);
+        
+        if (!costos.has(siguiente.id) || nuevoCosto < costos.get(siguiente.id)) {
+          costos.set(siguiente.id, nuevoCosto);
+          cola.push([...ruta, siguiente]);
+        }
+      }
+    });
+  }
+  
+  console.log('   ⚠️ No se encontró ruta, usando línea directa');
+  return [caminoInicio, caminoFin]; // Fallback: línea directa
+}
+
+// Función para generar ruta con geometría detallada siguiendo caminos
+function generarRutaCampus(origenLat, origenLng, destinoLat, destinoLng) {
+  console.log(`   🎯 Generando ruta desde [${origenLat.toFixed(6)}, ${origenLng.toFixed(6)}]`);
+  console.log(`      hasta [${destinoLat.toFixed(6)}, ${destinoLng.toFixed(6)}]`);
+  
+  // Encontrar caminos más cercanos al origen y destino
+  const caminoOrigen = encontrarCaminoCercano(origenLat, origenLng);
+  const caminoDestino = encontrarCaminoCercano(destinoLat, destinoLng);
+  
+  // Si origen y destino están en el mismo camino o muy cerca
+  if (caminoOrigen.id === caminoDestino.id) {
+    console.log('   ℹ️ Origen y destino en el mismo nodo, ruta directa');
+    return [
+      [origenLat, origenLng],
+      [destinoLat, destinoLng]
+    ];
+  }
+  
+  // Encontrar ruta entre los caminos usando A*
+  const rutaCaminos = encontrarRutaEntreCaminos(caminoOrigen, caminoDestino);
+  
+  // Construir array de coordenadas
+  const coordenadas = [
+    [origenLat, origenLng], // Punto de inicio real
+    ...rutaCaminos.map(camino => [camino.lat, camino.lng]), // Caminos intermedios
+    [destinoLat, destinoLng] // Punto de destino real
+  ];
+  
+  return coordenadas;
+}
+
 const MapBounds = () => {
   const map = useMap();
   
@@ -31,33 +166,64 @@ const MapBounds = () => {
   return null;
 };
 
-// Componente para manejar el cálculo de rutas
-const RoutingMachine = ({ origen, destino, onRutaCalculada }) => {
+// Componente para manejar el cálculo de rutas con Leaflet Routing Machine
+// y extraer las coordenadas para dibujarlas manualmente
+const RoutingMachine = ({ origen, destino, onRutaCalculada, setCoordenadasRuta }) => {
   const map = useMap();
   const routingControlRef = useRef(null);
+  const prevOrigenRef = useRef(null);
+  const prevDestinoRef = useRef(null);
 
   useEffect(() => {
     if (!map) return;
 
-    // Limpiar ruta anterior si existe
+    // Verificar si origen o destino han cambiado realmente
+    const origenCambiado = JSON.stringify(origen) !== JSON.stringify(prevOrigenRef.current);
+    const destinoCambiado = JSON.stringify(destino) !== JSON.stringify(prevDestinoRef.current);
+
+    if (!origenCambiado && !destinoCambiado) {
+      return; // No hacer nada si no hay cambios
+    }
+
+    // Actualizar referencias
+    prevOrigenRef.current = origen;
+    prevDestinoRef.current = destino;
+
+    // Limpiar control anterior si existe
     if (routingControlRef.current) {
-      map.removeControl(routingControlRef.current);
+      try {
+        map.removeControl(routingControlRef.current);
+      } catch (e) {
+        // Ignorar errores
+      }
       routingControlRef.current = null;
     }
 
-    // Si hay origen y destino, crear la ruta
-    if (origen && destino) {
-      // GeoJSON: [lng, lat] -> Leaflet: [lat, lng]
-      const origenLat = origen.ubicacion.coordinates[1];
-      const origenLng = origen.ubicacion.coordinates[0];
-      const destinoLat = destino.ubicacion.coordinates[1];
-      const destinoLng = destino.ubicacion.coordinates[0];
+    // Limpiar coordenadas de ruta
+    if (setCoordenadasRuta) {
+      setCoordenadasRuta([]);
+    }
 
-      console.log('🚶 Calculando ruta:');
-      console.log(`   📍 Origen: [${origenLat}, ${origenLng}]`);
-      console.log(`   🎯 Destino: [${destinoLat}, ${destinoLng}]`);
+    // Solo crear ruta si hay origen Y destino
+    if (!origen || !destino) {
+      if (onRutaCalculada) {
+        onRutaCalculada(null);
+      }
+      return;
+    }
 
-      // Configurar Leaflet Routing Machine con perfil de caminata
+    // Obtener coordenadas
+    const origenLat = origen.ubicacion.coordinates[1];
+    const origenLng = origen.ubicacion.coordinates[0];
+    const destinoLat = destino.ubicacion.coordinates[1];
+    const destinoLng = destino.ubicacion.coordinates[0];
+
+    console.log('🚶 Calculando ruta con Leaflet Routing Machine');
+    console.log(`   📍 Origen: ${origen.nombre} [${origenLat}, ${origenLng}]`);
+    console.log(`   🎯 Destino: ${destino.nombre} [${destinoLat}, ${destinoLng}]`);
+
+    // Crear el control de routing (SOLO para cálculo, sin dibujar líneas)
+    try {
       routingControlRef.current = L.Routing.control({
         waypoints: [
           L.latLng(origenLat, origenLng),
@@ -65,107 +231,214 @@ const RoutingMachine = ({ origen, destino, onRutaCalculada }) => {
         ],
         router: L.Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1',
-          profile: 'foot', // Perfil de caminata/peatonal
+          profile: 'foot',
           language: 'es',
-          timeout: 30 * 1000
+          // CRÍTICO: Solicitar geometría completa para que la ruta siga las calles
+          useHints: false,
+          suppressDemoServerWarning: true
         }),
-        routeWhileDragging: false,
-        addWaypoints: false,
-        draggableWaypoints: false,
-        fitSelectedRoutes: true,
-        showAlternatives: false,
-        show: false, // Ocultar panel de instrucciones pero mostrar línea
         lineOptions: {
-          styles: [
-            { color: '#2196F3', opacity: 0.8, weight: 6 }
-          ],
-          extendToWaypoints: true,
-          missingRouteTolerance: 10
+          styles: [{ opacity: 0 }] // Línea invisible - usaremos Polyline
         },
-        createMarker: function() { return null; }, // No crear marcadores predeterminados
-        plan: L.Routing.plan(
-          [
-            L.latLng(origenLat, origenLng),
-            L.latLng(destinoLat, destinoLng)
-          ],
-          {
-            createMarker: function() { return null; },
-            draggableWaypoints: false,
-            addWaypoints: false
-          }
-        )
-      }).addTo(map);
+        show: false,
+        addWaypoints: false,
+        routeWhileDragging: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: false, // No ajustar automáticamente
+        showAlternatives: false,
+        createMarker: function() { return null; }
+      });
 
-      // Ocultar el contenedor de instrucciones después de agregar
-      setTimeout(() => {
-        const container = document.querySelector('.leaflet-routing-container');
-        if (container) {
-          container.style.display = 'none';
-        }
-      }, 100);
+      // NO agregar al mapa aún - esperar a que calcule la ruta
+      
+      console.log('🔧 Control de routing creado (sin agregar al mapa)');
 
-      // Evento cuando la ruta se calcula
+      // Evento: ruta calculada exitosamente
       routingControlRef.current.on('routesfound', function(e) {
         const routes = e.routes;
-        const summary = routes[0].summary;
+        const route = routes[0];
+        const summary = route.summary;
         
-        console.log('✅ Ruta calculada:');
-        console.log(`   📏 Distancia: ${(summary.totalDistance / 1000).toFixed(2)} km`);
-        console.log(`   ⏱️ Tiempo: ${Math.round(summary.totalTime / 60)} min`);
-        console.log(`   📋 Instrucciones: ${routes[0].instructions?.length || 0} pasos`);
+        const distanciaKm = (summary.totalDistance / 1000).toFixed(2);
+        const tiempoMin = Math.max(1, Math.round(summary.totalTime / 60));
+        
+        console.log('✅ Ruta encontrada por Leaflet Routing Machine:');
+        console.log(`   📏 ${distanciaKm} km (${summary.totalDistance.toFixed(0)}m)`);
+        console.log(`   ⏱️ ${tiempoMin} min`);
+        
+        // IMPORTANTE: Obtener la geometría completa de la ruta
+        // route.coordinates contiene TODOS los puntos de la ruta real
+        let coordsArray = [];
+        
+        if (route.coordinates && route.coordinates.length > 0) {
+          // Usar coordenadas detalladas de la ruta
+          coordsArray = route.coordinates.map(coord => [coord.lat, coord.lng]);
+          console.log(`   🗺️ Coordenadas de ruta detallada: ${coordsArray.length} puntos`);
+        } else if (route.waypointIndices && route.inputWaypoints) {
+          // Fallback: usar waypoints si no hay coordinates
+          coordsArray = route.inputWaypoints.map(wp => [wp.latLng.lat, wp.latLng.lng]);
+          console.log(`   ⚠️ Usando waypoints (${coordsArray.length} puntos) - geometría simplificada`);
+        } else {
+          console.warn('⚠️ No se encontró geometría de ruta');
+          coordsArray = [
+            [origenLat, origenLng],
+            [destinoLat, destinoLng]
+          ];
+        }
+        
+        // Pasar coordenadas al estado para que Polyline las dibuje
+        if (setCoordenadasRuta) {
+          setCoordenadasRuta(coordsArray);
+        }
         
         if (onRutaCalculada) {
           onRutaCalculada({
-            distancia: (summary.totalDistance / 1000).toFixed(2), // en km
-            tiempo: Math.round(summary.totalTime / 60), // en minutos
-            instrucciones: routes[0].instructions
+            distancia: distanciaKm,
+            tiempo: tiempoMin,
+            instrucciones: route.instructions,
+            coordenadas: coordsArray
           });
         }
       });
 
-      // Manejo de errores
+      // Evento: error al calcular ruta
       routingControlRef.current.on('routingerror', function(e) {
-        console.error('❌ Error al calcular la ruta:', e);
+        console.error('❌ Error de OSRM (esperado para campus privado):', e.error);
+        console.log('🔄 Usando algoritmo de routing interno del campus...');
+        
+        // Usar algoritmo interno del campus que sigue caminos conocidos
+        const rutaCampus = generarRutaCampus(origenLat, origenLng, destinoLat, destinoLng);
+        
+        console.log(`✅ Ruta generada con algoritmo interno: ${rutaCampus.length} puntos`);
+        
+        if (setCoordenadasRuta) {
+          setCoordenadasRuta(rutaCampus);
+        }
+        
+        // Calcular distancia aproximada
+        let distanciaTotal = 0;
+        for (let i = 0; i < rutaCampus.length - 1; i++) {
+          const dist = map.distance(rutaCampus[i], rutaCampus[i + 1]);
+          distanciaTotal += dist;
+        }
+        
         if (onRutaCalculada) {
-          onRutaCalculada(null);
+          onRutaCalculada({
+            distancia: (distanciaTotal / 1000).toFixed(2),
+            tiempo: Math.max(1, Math.round(distanciaTotal / 80)), // ~80m/min caminando
+            coordenadas: rutaCampus,
+            usaAlgoritmoInterno: true
+          });
         }
       });
+
+      // Iniciar el cálculo de la ruta sin agregar al mapa
+      routingControlRef.current.route();
+
+    } catch (error) {
+      console.error('❌ Error al crear routing control:', error);
     }
 
-    // Cleanup al desmontar
+    // Cleanup
     return () => {
       if (routingControlRef.current) {
-        map.removeControl(routingControlRef.current);
-        routingControlRef.current = null;
+        try {
+          // Simplemente limpiar la referencia sin intentar remover del mapa
+          routingControlRef.current = null;
+        } catch (e) {
+          // Ignorar errores
+        }
       }
     };
-  }, [map, origen, destino, onRutaCalculada]);
+  }, [map, origen, destino, onRutaCalculada, setCoordenadasRuta]);
 
   return null;
 };
 
-const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, modoViaje = false }) => {
+// Componente para centrar el mapa en la ubicación del usuario y detectar desviaciones
+const MapAutoCenter = ({ ubicacionUsuario, modoViaje, coordenadasRuta, onRecalcularRuta }) => {
+  const map = useMap();
+  const prevUbicacionRef = useRef(null);
+  const ultimaRecalculacionRef = useRef(null);
+  const UMBRAL_DESVIACION = 25; // 25 metros de desviación antes de recalcular
+  const TIEMPO_MIN_RECALCULO = 10000; // 10 segundos mínimo entre recálculos
+
+  useEffect(() => {
+    if (!modoViaje || !ubicacionUsuario) return;
+
+    // Verificar si el usuario se desvió de la ruta
+    if (coordenadasRuta && coordenadasRuta.length > 1) {
+      const ubicacionActual = [ubicacionUsuario.lat, ubicacionUsuario.lng];
+      
+      // Calcular distancia mínima a cualquier punto de la ruta
+      let distanciaMinima = Infinity;
+      for (let i = 0; i < coordenadasRuta.length; i++) {
+        const distancia = map.distance(ubicacionActual, coordenadasRuta[i]);
+        if (distancia < distanciaMinima) {
+          distanciaMinima = distancia;
+        }
+      }
+      
+      // Si se desvió más del umbral, recalcular
+      const ahora = Date.now();
+      const tiempoDesdeUltimoRecalculo = ultimaRecalculacionRef.current 
+        ? ahora - ultimaRecalculacionRef.current 
+        : Infinity;
+      
+      if (distanciaMinima > UMBRAL_DESVIACION && tiempoDesdeUltimoRecalculo > TIEMPO_MIN_RECALCULO) {
+        console.log(`⚠️ Desviación detectada: ${distanciaMinima.toFixed(0)}m de la ruta`);
+        console.log('🔄 Recalculando ruta desde posición actual...');
+        ultimaRecalculacionRef.current = ahora;
+        
+        // Llamar función de recálculo
+        if (onRecalcularRuta) {
+          onRecalcularRuta(ubicacionUsuario);
+        }
+      }
+    }
+
+    // Solo actualizar si la ubicación cambió significativamente (más de 5 metros)
+    if (prevUbicacionRef.current) {
+      const distancia = map.distance(
+        [prevUbicacionRef.current.lat, prevUbicacionRef.current.lng],
+        [ubicacionUsuario.lat, ubicacionUsuario.lng]
+      );
+      
+      if (distancia < 5) {
+        return; // No actualizar si el movimiento es muy pequeño
+      }
+    }
+
+    prevUbicacionRef.current = ubicacionUsuario;
+    
+    console.log('📍 Centrando mapa en ubicación del usuario');
+    map.setView([ubicacionUsuario.lat, ubicacionUsuario.lng], 18, {
+      animate: true,
+      duration: 0.5
+    });
+  }, [map, ubicacionUsuario, modoViaje]);
+
+  return null;
+};
+
+const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, modoViaje = false, onRecalcularRuta }) => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState('todos');
-  const mapRef = useRef(null);
+  const [coordenadasRuta, setCoordenadasRuta] = useState([]); // Estado para las coordenadas de la ruta
+  const destinoOriginalRef = useRef(null);
 
-  // Componente para centrar el mapa en la ubicación del usuario en modo viaje
-  const MapCenter = ({ center, zoom }) => {
-    const map = useMap();
-    
-    useEffect(() => {
-      if (center && modoViaje) {
-        map.setView(center, zoom, {
-          animate: true,
-          duration: 1
-        });
-      }
-    }, [center, zoom, map]);
-    
-    return null;
-  };
+  // Guardar destino original al iniciar viaje
+  useEffect(() => {
+    if (destino && modoViaje && !destinoOriginalRef.current) {
+      destinoOriginalRef.current = destino;
+      console.log('🎯 Destino original guardado:', destino.nombre);
+    }
+    if (!modoViaje) {
+      destinoOriginalRef.current = null;
+    }
+  }, [destino, modoViaje]);
 
   useEffect(() => {
     cargarUbicaciones();
@@ -297,15 +570,26 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
           minZoom={15}
           maxZoom={18}
           style={{ height: '100%', width: '100%' }}
-          ref={mapRef}
         >
           <MapBounds />
+          <MapAutoCenter 
+            ubicacionUsuario={ubicacionUsuario} 
+            modoViaje={modoViaje}
+            coordenadasRuta={coordenadasRuta}
+            onRecalcularRuta={onRecalcularRuta}
+          />
           
-          {/* Centrar en usuario si está en modo viaje */}
-          {modoViaje && ubicacionUsuario && (
-            <MapCenter 
-              center={[ubicacionUsuario.lat, ubicacionUsuario.lng]} 
-              zoom={18} 
+          {/* Polyline para dibujar la ruta visualmente */}
+          {coordenadasRuta.length > 0 && (
+            <Polyline
+              positions={coordenadasRuta}
+              pathOptions={{
+                color: '#2563eb',
+                weight: 8,
+                opacity: 0.9,
+                lineJoin: 'round',
+                lineCap: 'round'
+              }}
             />
           )}
           
@@ -316,6 +600,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             maxNativeZoom={19}
           />
 
+          {/* Marcadores de ubicaciones */}
           {ubicacionesFiltradas.map((ubicacion) => {
             // GeoJSON usa [lng, lat], Leaflet usa [lat, lng]
             // Siempre invertir: coordinates[0]=lng, coordinates[1]=lat
@@ -417,11 +702,12 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             </Marker>
           )}
 
-          {/* Motor de Rutas en el Cliente con Leaflet Routing Machine */}
+          {/* Sistema de Rutas con Leaflet Routing Machine */}
           <RoutingMachine 
             origen={origen}
             destino={destino}
             onRutaCalculada={onRutaCalculada}
+            setCoordenadasRuta={setCoordenadasRuta}
           />
         </MapContainer>
       </div>

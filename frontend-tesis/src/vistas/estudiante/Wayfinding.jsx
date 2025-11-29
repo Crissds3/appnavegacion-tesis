@@ -17,6 +17,8 @@ const Wayfinding = () => {
   const [modoSeleccion, setModoSeleccion] = useState(null); // 'origen' o 'destino'
   const [infoRuta, setInfoRuta] = useState(null);
   const [modoViaje, setModoViaje] = useState(false); // Nuevo: modo navegación activa
+  const [usarUbicacionSimulada, setUsarUbicacionSimulada] = useState(false);
+  const [notificacionRecalculo, setNotificacionRecalculo] = useState(false);
 
   // Custom Hook para geolocalización reactiva
   const { ubicacion: ubicacionUsuario, error: errorGeo, cargando: cargandoGeo, permisosConcedidos } = useGeolocation({
@@ -24,6 +26,16 @@ const Wayfinding = () => {
     timeout: 10000,
     maximumAge: 5000
   });
+
+  // Ubicación simulada dentro del campus (entrada principal)
+  const ubicacionSimulada = {
+    lat: -35.002607,
+    lng: -71.230519,
+    accuracy: 10
+  };
+
+  // Usar ubicación simulada si está activada, sino la real
+  const ubicacionActual = usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
 
   useEffect(() => {
     cargarUbicaciones();
@@ -72,12 +84,13 @@ const Wayfinding = () => {
   };
 
   const usarMiUbicacion = () => {
-    if (ubicacionUsuario) {
+    const ubicacion = ubicacionActual;
+    if (ubicacion) {
       setOrigen({
         _id: 'mi-ubicacion',
-        nombre: 'Mi Ubicación',
+        nombre: usarUbicacionSimulada ? 'Mi Ubicación (Simulada - Campus)' : 'Mi Ubicación',
         ubicacion: {
-          coordinates: [ubicacionUsuario.lng, ubicacionUsuario.lat]
+          coordinates: [ubicacion.lng, ubicacion.lat]
         }
       });
     } else if (errorGeo) {
@@ -87,12 +100,48 @@ const Wayfinding = () => {
     }
   };
 
+  const toggleUbicacionSimulada = () => {
+    setUsarUbicacionSimulada(!usarUbicacionSimulada);
+    // Si ya hay un origen seleccionado, actualizarlo
+    if (origen && origen._id === 'mi-ubicacion') {
+      const ubicacion = !usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
+      if (ubicacion) {
+        setOrigen({
+          _id: 'mi-ubicacion',
+          nombre: !usarUbicacionSimulada ? 'Mi Ubicación (Simulada - Campus)' : 'Mi Ubicación',
+          ubicacion: {
+            coordinates: [ubicacion.lng, ubicacion.lat]
+          }
+        });
+      }
+    }
+  };
+
   const handleRutaCalculada = (ruta) => {
     setInfoRuta(ruta);
   };
 
+  const recalcularRuta = (nuevaUbicacion) => {
+    if (!destino) return;
+    
+    console.log('🔄 Recalculando ruta desde posición actual...');
+    
+    // Mostrar notificación
+    setNotificacionRecalculo(true);
+    setTimeout(() => setNotificacionRecalculo(false), 3000);
+    
+    // Actualizar origen a la posición actual del usuario
+    setOrigen({
+      _id: 'ubicacion-actual-recalculada',
+      nombre: 'Tu ubicación actual',
+      ubicacion: {
+        coordinates: [nuevaUbicacion.lng, nuevaUbicacion.lat]
+      }
+    });
+  };
+
   const iniciarViaje = () => {
-    if (!ubicacionUsuario) {
+    if (!ubicacionActual) {
       alert('No se puede iniciar el viaje sin tu ubicación');
       return;
     }
@@ -100,14 +149,18 @@ const Wayfinding = () => {
       alert('Selecciona un destino primero');
       return;
     }
-    // Establecer origen como ubicación actual
-    setOrigen({
-      _id: 'mi-ubicacion',
-      nombre: 'Mi Ubicación',
-      ubicacion: {
-        coordinates: [ubicacionUsuario.lng, ubicacionUsuario.lat]
-      }
-    });
+    
+    // Verificar que origen ya está establecido
+    if (!origen) {
+      alert('Por favor, selecciona un punto de origen primero');
+      return;
+    }
+    
+    console.log('🚀 Iniciando viaje...');
+    console.log('Origen:', origen);
+    console.log('Destino:', destino);
+    console.log('Ubicación actual:', ubicacionActual);
+    
     setModoViaje(true);
   };
 
@@ -131,7 +184,7 @@ const Wayfinding = () => {
       <main className="wayfinding-main">
         <div className="wayfinding-header">
           <h1>Sistema de Navegación Wayfinding</h1>
-          <p className="subtitle">Encuentra tu camino en el Campus</p>
+          <p className="subtitle">Encuentra tu camino en el Campus Curicó - Universidad de Talca</p>
         </div>
 
         <div className="wayfinding-content">
@@ -139,16 +192,17 @@ const Wayfinding = () => {
             <MapaWayfinding 
               origen={origen}
               destino={destino}
-              ubicacionUsuario={ubicacionUsuario}
+              ubicacionUsuario={ubicacionActual}
               onRutaCalculada={handleRutaCalculada}
               modoViaje={modoViaje}
+              onRecalcularRuta={recalcularRuta}
             />
           </div>
 
           <div className="wayfinding-sidebar">
             {/* Selector de Ruta */}
             <div className="ruta-section">
-              <h3>🗺️ Calcular Ruta</h3>
+              <h3>Planificar Ruta</h3>
               
               <div className="ruta-selector">
                 <div className="punto-ruta">
@@ -166,11 +220,9 @@ const Wayfinding = () => {
                       >
                         Seleccionar origen
                       </button>
-                      {ubicacionUsuario && (
-                        <button onClick={usarMiUbicacion} className="btn-mi-ubicacion">
-                          📱 Mi ubicación
-                        </button>
-                      )}
+                      <button onClick={usarMiUbicacion} className="btn-mi-ubicacion">
+                        📱 {usarUbicacionSimulada ? 'Ubicación Simulada' : 'Mi ubicación'}
+                      </button>
                     </div>
                   )}
                 </div>
@@ -197,7 +249,7 @@ const Wayfinding = () => {
                     {!modoViaje ? (
                       <>
                         <button onClick={iniciarViaje} className="btn-iniciar-viaje">
-                          🧭 Iniciar Viaje
+                          🧭 Navegar
                         </button>
                         <button onClick={limpiarRuta} className="btn-limpiar-ruta">
                           Limpiar
@@ -214,21 +266,15 @@ const Wayfinding = () => {
                 {/* Información de la Ruta Calculada */}
                 {infoRuta && (
                   <div className="info-ruta-calculada">
-                    <h4>📊 Información de la Ruta</h4>
-                    <div className="ruta-detalles">
-                      <div className="detalle-item">
-                        <span className="icono">📏</span>
-                        <div>
-                          <strong>Distancia:</strong>
-                          <p>{infoRuta.distancia} km</p>
-                        </div>
+                    <h4>📊 Detalles del Recorrido</h4>
+                    <div className="info-ruta-detalle">
+                      <div className="info-item">
+                        <div className="info-item-label">📏 Distancia</div>
+                        <div className="info-item-value">{infoRuta.distancia} <span style={{fontSize: '18px'}}>km</span></div>
                       </div>
-                      <div className="detalle-item">
-                        <span className="icono">⏱️</span>
-                        <div>
-                          <strong>Tiempo estimado:</strong>
-                          <p>{infoRuta.tiempo} minutos caminando</p>
-                        </div>
+                      <div className="info-item">
+                        <div className="info-item-label">⏱️ Tiempo</div>
+                        <div className="info-item-value">{infoRuta.tiempo} <span style={{fontSize: '18px'}}>min</span></div>
                       </div>
                     </div>
                   </div>
@@ -240,14 +286,15 @@ const Wayfinding = () => {
             {modoSeleccion && (
               <div className="search-section">
                 <h3>Buscar Ubicación</h3>
-                <input 
-                  type="text" 
-                  placeholder="Edificio, sala, oficina..."
-                  className="search-input"
-                  value={busqueda}
-                  onChange={(e) => buscarUbicaciones(e.target.value)}
-                  autoFocus
-                />
+                <div className="busqueda-container">
+                  <input 
+                    type="text" 
+                    placeholder="🔎 Buscar edificio, sala, oficina..."
+                    value={busqueda}
+                    onChange={(e) => buscarUbicaciones(e.target.value)}
+                    autoFocus
+                  />
+                </div>
                 
                 {resultadosBusqueda.length > 0 && (
                   <div className="resultados-busqueda">
@@ -270,43 +317,43 @@ const Wayfinding = () => {
               </div>
             )}
 
-            {/* Acceso Rápido */}
-            {!modoSeleccion && (
-              <div className="quick-access">
-                <h3>Acceso Rápido</h3>
-                <div className="quick-buttons">
-                  {ubicaciones.filter(ub => ub.tipo === 'servicio').slice(0, 6).map(ub => (
-                    <button 
-                      key={ub._id}
-                      className="quick-btn"
-                      onClick={() => setDestino(ub)}
-                    >
-                      <span className="icon">📍</span>
-                      <span className="text">{ub.nombre}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Información */}
             <div className="info-section">
               <h3>Información</h3>
+              
+              {/* Toggle para ubicación simulada */}
+              <div className="info-card" style={{ background: '#FFF3E0', borderLeft: '4px solid #FF9800' }}>
+                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={usarUbicacionSimulada}
+                    onChange={toggleUbicacionSimulada}
+                    style={{ marginRight: '10px', width: '20px', height: '20px', cursor: 'pointer' }}
+                  />
+                  <div>
+                    <strong>🎯 Simular ubicación en campus</strong><br />
+                    <small>Útil para pruebas cuando no estás en el campus</small>
+                  </div>
+                </label>
+              </div>
+
               <div className="info-card">
                 <p>
                   <strong>📍 Navegación en tiempo real</strong><br />
                   Encuentra la ruta más rápida a tu destino
                 </p>
               </div>
-              {ubicacionUsuario && (
+              {ubicacionActual && (
                 <div className="info-card success">
                   <p>
-                    <strong>✓ Geolocalización activa</strong><br />
-                    Tu ubicación está siendo rastreada en tiempo real
+                    <strong>✓ {usarUbicacionSimulada ? 'Ubicación simulada activa' : 'Geolocalización activa'}</strong><br />
+                    {usarUbicacionSimulada 
+                      ? 'Ubicación de prueba dentro del campus'
+                      : 'Tu ubicación está siendo rastreada en tiempo real'}
                   </p>
                 </div>
               )}
-              {errorGeo && (
+              {errorGeo && !usarUbicacionSimulada && (
                 <div className="info-card error">
                   <p>
                     <strong>⚠ Error de geolocalización</strong><br />
@@ -314,11 +361,21 @@ const Wayfinding = () => {
                   </p>
                 </div>
               )}
-              {cargandoGeo && !ubicacionUsuario && (
+              {cargandoGeo && !ubicacionUsuario && !usarUbicacionSimulada && (
                 <div className="info-card">
                   <p>
                     <strong>⏳ Obteniendo ubicación...</strong><br />
                     Esperando permisos del dispositivo
+                  </p>
+                </div>
+              )}
+              
+              {/* Notificación de recalculación de ruta */}
+              {notificacionRecalculo && (
+                <div className="info-card recalculo">
+                  <p>
+                    <strong>🔄 Recalculando ruta...</strong><br />
+                    Te desviaste del camino
                   </p>
                 </div>
               )}
