@@ -18,8 +18,13 @@
   }
 }
 
-.custom-marker {
+.custom-marker-usuario {
   animation: pulseMarker 2s infinite;
+}
+
+.custom-marker {
+  background: transparent;
+  border: none;
 }
 
 .mapa-controles {
@@ -151,11 +156,6 @@
   margin: 0.25rem 0;
   font-size: 0.85rem;
   color: #666;
-}
-
-.custom-marker {
-  background: transparent;
-  border: none;
 }
 
 @media (max-width: 768px) {

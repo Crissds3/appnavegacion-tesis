@@ -244,8 +244,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
       className: 'custom-marker',
       html: `<div style="background-color: ${color}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
       iconSize: [25, 25],
-      iconAnchor: [12, 12],
-      popupAnchor: [0, -12]
+      iconAnchor: [12.5, 12.5],
+      popupAnchor: [0, -12.5]
     });
   };
 
@@ -295,7 +295,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
           center={CAMPUS_CENTER}
           zoom={16}
           minZoom={15}
-          maxZoom={19}
+          maxZoom={18}
           style={{ height: '100%', width: '100%' }}
           ref={mapRef}
         >
@@ -312,6 +312,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={18}
+            maxNativeZoom={19}
           />
 
           {ubicacionesFiltradas.map((ubicacion) => {
@@ -399,10 +401,11 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             <Marker
               position={[ubicacionUsuario.lat, ubicacionUsuario.lng]}
               icon={L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="background-color: #2196F3; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(33, 150, 243, 0.8), 0 0 20px rgba(33, 150, 243, 0.4); animation: pulseMarker 2s infinite;"></div>`,
+                className: 'custom-marker-usuario',
+                html: `<div style="background-color: #2196F3; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(33, 150, 243, 0.8), 0 0 20px rgba(33, 150, 243, 0.4);"></div>`,
                 iconSize: [20, 20],
-                iconAnchor: [10, 10]
+                iconAnchor: [10, 10],
+                popupAnchor: [0, -10]
               })}
             >
               <Popup>
