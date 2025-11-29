@@ -36,8 +36,9 @@
 }
 
 .btn-info-universidad:hover {
-  background: #e06660;
+  background: #C62828;
   color: white;
+  border-color: white;
   transform: translateY(-2px);
 }
 
@@ -48,8 +49,9 @@
 }
 
 .btn-wayfinding:hover {
-  background: #e06660;
-  color: rgb(255, 255, 255);
+  background: #C62828;
+  color: white;
+  border-color: white;
   transform: translateY(-2px);
 }
 
@@ -62,6 +64,7 @@
 .btn-inicio:hover {
   background: white;
   color: #E53935;
+  border-color: white;
   transform: translateY(-2px);
 }
 
@@ -464,6 +467,7 @@
 .btn-cerrar-modal:hover {
   background: #E53935;
   color: white;
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
   transform: rotate(90deg);
 }
 

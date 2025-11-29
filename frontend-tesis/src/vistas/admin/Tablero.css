@@ -83,6 +83,7 @@
 
 .btn-user-profile:hover {
   background: #f5f5f5;
+  color: #1a1a1a;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
@@ -194,6 +195,7 @@
 .btn-logout-dropdown:hover {
   background: #E53935;
   color: white;
+  transform: translateY(-1px);
 }
 
 .success-message {
@@ -250,6 +252,7 @@
 .tab-button:hover {
   background: #f5f5f5;
   color: #333;
+  transform: translateY(-1px);
 }
 
 .tab-button.active {

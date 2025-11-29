@@ -6,6 +6,7 @@ import CrearAdmin from '../../componentes/admin/CrearAdmin';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
 import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversidad';
 import GestionUsuarios from '../../componentes/admin/GestionUsuarios';
+import GestionUbicaciones from '../../componentes/admin/GestionUbicaciones';
 import './Tablero.css';
 
 const Tablero = () => {
@@ -180,17 +181,7 @@ const Tablero = () => {
 
           {activeTab === 'ubicaciones' && (
             <div className="tab-content">
-              <div className="section-card">
-                <div className="section-header">
-                  <h2>Gestión de Ubicaciones</h2>
-                  <p className="section-subtitle">
-                    Administra los puntos de interés del campus
-                  </p>
-                </div>
-                <div className="empty-state">
-                  <p>🗺️ Módulo de ubicaciones en desarrollo...</p>
-                </div>
-              </div>
+              <GestionUbicaciones />
             </div>
           )}
 

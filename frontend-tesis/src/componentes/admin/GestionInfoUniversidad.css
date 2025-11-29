@@ -275,6 +275,7 @@
 
 .btn-editar:hover {
   background: #D32F2F;
+  color: white;
   transform: translateY(-2px);
 }
 
@@ -285,6 +286,7 @@
 
 .btn-eliminar:hover {
   background: #D32F2F;
+  color: white;
   transform: translateY(-2px);
 }
 
@@ -466,6 +468,7 @@
 
 .btn-cancelar:hover {
   background: #e0e0e0;
+  color: #333;
 }
 
 .btn-guardar {
@@ -475,6 +478,7 @@
 
 .btn-guardar:hover {
   background: #C62828;
+  color: white;
   transform: translateY(-2px);
 }
 

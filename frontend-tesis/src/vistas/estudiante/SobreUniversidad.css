@@ -38,6 +38,7 @@
 
 .btn-wayfinding:hover {
   background: #C62828;
+  color: white;
   transform: translateY(-2px);
 }
 
@@ -50,6 +51,7 @@
 .btn-volver:hover {
   background: white;
   color: #E53935;
+  border-color: white;
   transform: translateY(-2px);
 }
 
@@ -62,6 +64,7 @@
 .btn-inicio:hover {
   background: white;
   color: #E53935;
+  border-color: white;
   transform: translateY(-2px);
 }
 
@@ -128,6 +131,7 @@
 .tab-nav-button:hover {
   background: #f8f8f8;
   color: #E53935;
+  border-color: transparent;
 }
 
 .tab-nav-button.active {
@@ -385,6 +389,8 @@
 }
 
 .btn-ver-mas:hover {
+  background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
 }
@@ -448,6 +454,7 @@
 .btn-cerrar-modal:hover {
   background: #E53935;
   color: white;
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
   transform: rotate(90deg);
 }
 
@@ -557,9 +564,10 @@
 }
 
 .btn-enlace-oficial:hover {
+  background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(229, 57, 53, 0.4);
-  background: linear-gradient(135deg, #C62828 0%, #B71C1C 100%);
 }
 
 .modal-facultad {

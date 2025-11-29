@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import noticiaRoutes from './routes/noticiaRoutes.js';
 import infoRoutes from './routes/infoRoutes.js';
 import carreraRoutes from './routes/carreraRoutes.js';
+import ubicacionRoutes from './routes/ubicacionRoutes.js';
 
 dotenv.config();
 
@@ -41,6 +42,9 @@ app.use('/api/info', infoRoutes);
 
 // Rutas de carreras
 app.use('/api/carreras', carreraRoutes);
+
+// Rutas de ubicaciones/wayfinding
+app.use('/api/ubicaciones', ubicacionRoutes);
 
 // Manejador de rutas no encontradas
 app.use((req, res) => {

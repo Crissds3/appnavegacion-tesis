@@ -1,0 +1,264 @@
+.mapa-wayfinding-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  gap: 1rem;
+}
+
+/* Animación para el marcador de usuario */
+@keyframes pulseMarker {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+.custom-marker {
+  animation: pulseMarker 2s infinite;
+}
+
+.mapa-controles {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mapa-controles h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.filtro-tipos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filtro-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.filtro-btn:hover {
+  background: #f5f5f5;
+  border-color: #E53935;
+}
+
+.filtro-btn.activo {
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: white;
+  border-color: #E53935;
+}
+
+.mapa-info {
+  padding-top: 0.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.mapa-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.mapa-contenedor {
+  flex: 1;
+  min-height: 500px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mapa-loading,
+.mapa-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 500px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mapa-loading p,
+.mapa-error p {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.mapa-error button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.3);
+}
+
+.mapa-error button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 57, 53, 0.4);
+}
+
+.marker-popup {
+  min-width: 200px;
+}
+
+.marker-popup h4 {
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.popup-tipo {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.popup-descripcion {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.4;
+}
+
+.popup-metadatos {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.popup-metadatos p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+@media (max-width: 768px) {
+  .mapa-wayfinding-container {
+    gap: 0.75rem;
+  }
+
+  .mapa-controles {
+    padding: 0.75rem;
+  }
+
+  .filtro-tipos {
+    gap: 0.35rem;
+  }
+
+  .filtro-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .mapa-contenedor {
+    min-height: 400px;
+  }
+
+  .marker-popup {
+    min-width: 150px;
+  }
+
+  .marker-popup h4 {
+    font-size: 1rem;
+  }
+}
+
+/* Estilos para popups personalizados */
+.marker-popup.origen {
+  border-left: 4px solid #4CAF50;
+}
+
+.marker-popup.destino {
+  border-left: 4px solid #E53935;
+}
+
+.marker-popup.usuario {
+  border-left: 4px solid #2196F3;
+}
+
+.info-card.success {
+  background: #E8F5E9;
+  border-left: 4px solid #4CAF50;
+}
+
+.info-card.success strong {
+  color: #2E7D32;
+}
+
+.leaflet-container {
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
+}
+
+.leaflet-popup-content {
+  margin: 1rem;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Estilos para Leaflet Routing Machine */
+.routing-container {
+  display: none !important; /* Ocultar el panel de instrucciones predeterminado */
+}
+
+.leaflet-routing-container {
+  display: none !important; /* Ocultar completamente el panel de instrucciones */
+}
+
+/* Asegurar que la línea de ruta sea visible */
+.leaflet-routing-line {
+  z-index: 1000 !important;
+}
+
+.leaflet-interactive {
+  pointer-events: auto;
+}
+
+/* Estilos alternativos si se quiere mostrar el panel */
+.leaflet-routing-container.show {
+  display: block !important;
+  background: white;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-family: 'Inter', sans-serif;
+}
+
+.leaflet-routing-container.show h2,
+.leaflet-routing-container.show h3 {
+  color: #E53935;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+}
