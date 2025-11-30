@@ -248,16 +248,16 @@
 .tabs-container {
   display: flex;
   gap: 8px;
-  margin-bottom: 30px;
+  margin: 0 auto 30px auto;
   background: white;
   padding: 8px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: fit-content;
 }
 
 .tab-button {
-  flex: 1;
-  padding: 14px 24px;
+  padding: 12px 32px;
   background: transparent;
   border: none;
   font-size: 15px;

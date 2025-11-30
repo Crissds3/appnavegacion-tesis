@@ -1,5 +1,26 @@
 import { useState, useEffect } from 'react';
 import { infoService, carrerasService } from '../../servicios/api';
+import { 
+  BookOpen, 
+  GraduationCap, 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  X, 
+  Save, 
+  CheckCircle, 
+  AlertCircle, 
+  Link, 
+  MapPin, 
+  Clock, 
+  Target, 
+  Eye, 
+  Star, 
+  Phone, 
+  Building2,
+  MoreVertical,
+  Search
+} from 'lucide-react';
 import './GestionInfoUniversidad.css';
 
 const GestionInfoUniversidad = () => {
@@ -15,7 +36,7 @@ const GestionInfoUniversidad = () => {
     seccion: 'Historia',
     titulo: '',
     contenido: '',
-    icono: '📚',
+    icono: 'BookOpen',
     orden: 0,
     activo: true
   });
@@ -36,7 +57,21 @@ const GestionInfoUniversidad = () => {
   });
 
   const seccionesDisponibles = ['Historia', 'Misión', 'Visión', 'Valores', 'Contacto'];
-  const iconosDisponibles = ['📚', '🎯', '👁️', '⭐', '📞', '🏛️', '🎓'];
+  
+  // Mapeo de iconos para uso interno y visualización
+  const iconMap = {
+    'BookOpen': <BookOpen size={20} />,
+    'Target': <Target size={20} />,
+    'Eye': <Eye size={20} />,
+    'Star': <Star size={20} />,
+    'Phone': <Phone size={20} />,
+    'Building2': <Building2 size={20} />,
+    'GraduationCap': <GraduationCap size={20} />,
+    'MapPin': <MapPin size={20} />,
+    'Clock': <Clock size={20} />
+  };
+
+  const iconosDisponibles = Object.keys(iconMap);
   const modalidadesDisponibles = ['Presencial', 'Semi-presencial', 'Online'];
 
   useEffect(() => {
@@ -51,6 +86,15 @@ const GestionInfoUniversidad = () => {
   const mostrarMensaje = (texto, tipo) => {
     setMensaje({ texto, tipo });
     setTimeout(() => setMensaje({ texto: '', tipo: '' }), 3000);
+  };
+
+  // Helper para renderizar iconos (soporta emojis antiguos y nuevos iconos Lucide)
+  const renderIcon = (iconName) => {
+    if (iconMap[iconName]) {
+      return iconMap[iconName];
+    }
+    // Fallback para emojis antiguos o texto
+    return <span className="emoji-icon">{iconName}</span>;
   };
 
   // ============ FUNCIONES INFORMACIÓN GENERAL ============
@@ -101,7 +145,7 @@ const GestionInfoUniversidad = () => {
         seccion: seccion.seccion,
         titulo: seccion.titulo,
         contenido: seccion.contenido,
-        icono: seccion.icono,
+        icono: seccion.icono || 'BookOpen',
         orden: seccion.orden,
         activo: seccion.activo
       });
@@ -111,7 +155,7 @@ const GestionInfoUniversidad = () => {
         seccion: 'Historia',
         titulo: '',
         contenido: '',
-        icono: '📚',
+        icono: 'BookOpen',
         orden: 0,
         activo: true
       });
@@ -223,223 +267,291 @@ const GestionInfoUniversidad = () => {
     <div className="gestion-info-container">
       {mensaje.texto && (
         <div className={`mensaje-flotante ${mensaje.tipo}`}>
+          {mensaje.tipo === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
           {mensaje.texto}
         </div>
       )}
 
-      <div className="gestion-info-header">
-        <h2>Gestión de Información Universitaria</h2>
-        <p>Administra la información general y las carreras de la universidad</p>
-      </div>
-
-      <div className="tabs-container">
-        <button
-          className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
-          onClick={() => setActiveTab('info')}
-        >
-          📋 Información General
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'carreras' ? 'active' : ''}`}
-          onClick={() => setActiveTab('carreras')}
-        >
-          🎓 Carreras
-        </button>
-      </div>
-
-      {/* TAB INFORMACIÓN GENERAL */}
-      {activeTab === 'info' && (
-        <div className="tab-content">
-          <div className="acciones-header">
-            <button className="btn-primary" onClick={() => abrirInfoModal()}>
-              + Nueva Sección
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="loading-spinner">Cargando...</div>
-          ) : (
-            <div className="secciones-grid">
-              {secciones.map((seccion) => (
-                <div key={seccion._id} className="seccion-card">
-                  <div className="seccion-header">
-                    <span className="seccion-icono">{seccion.icono}</span>
-                    <h3>{seccion.titulo}</h3>
-                    <span className={`badge ${seccion.activo ? 'activo' : 'inactivo'}`}>
-                      {seccion.activo ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </div>
-                  <p className="seccion-tipo">{seccion.seccion}</p>
-                  <p className="seccion-contenido">
-                    {seccion.contenido.substring(0, 150)}...
-                  </p>
-                  <div className="seccion-acciones">
-                    <button
-                      className="btn-editar"
-                      onClick={() => abrirInfoModal(seccion)}
-                    >
-                      ✏️ Editar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      <div className="gestion-main-card">
+        <div className="gestion-info-header">
+          <h2>Gestión de Información Universitaria</h2>
+          <p>Administra la información general y las carreras de la universidad</p>
         </div>
-      )}
 
-      {/* TAB CARRERAS */}
-      {activeTab === 'carreras' && (
-        <div className="tab-content">
-          <div className="acciones-header">
-            <button className="btn-primary" onClick={() => abrirCarreraModal()}>
-              + Nueva Carrera
-            </button>
-            <span className="contador">Total: {carreras.length} carreras</span>
+        <div className="tabs-container">
+          <button
+            className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            <BookOpen size={18} />
+            Información General
+          </button>
+          <button
+            className={`tab-button ${activeTab === 'carreras' ? 'active' : ''}`}
+            onClick={() => setActiveTab('carreras')}
+          >
+            <GraduationCap size={18} />
+            Carreras
+          </button>
+        </div>
+
+        {/* TAB INFORMACIÓN GENERAL */}
+        {activeTab === 'info' && (
+          <div className="tab-content fade-in">
+            <div className="acciones-header">
+              <button className="btn-primary" onClick={() => abrirInfoModal()}>
+                <Plus size={18} />
+                Nueva Sección
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>Cargando información...</p>
+              </div>
+            ) : (
+              <div className="secciones-grid">
+                {secciones.map((seccion) => (
+                  <div key={seccion._id} className="seccion-card">
+                    <div className="seccion-header">
+                      <div className="seccion-icono-wrapper">
+                        {renderIcon(seccion.icono)}
+                      </div>
+                      <div className="seccion-header-text">
+                        <h3>{seccion.titulo}</h3>
+                        <span className="seccion-tipo">{seccion.seccion}</span>
+                      </div>
+                      <div className="seccion-actions-top">
+                        <button
+                          className="btn-icon-action edit"
+                          onClick={() => abrirInfoModal(seccion)}
+                          title="Editar"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="seccion-body">
+                      <p className="seccion-contenido">
+                        {seccion.contenido.length > 120 
+                          ? seccion.contenido.substring(0, 120) + '...' 
+                          : seccion.contenido}
+                      </p>
+                    </div>
+
+                    <div className="seccion-footer">
+                      <span className={`status-badge ${seccion.activo ? 'active' : 'inactive'}`}>
+                        {seccion.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                      <span className="orden-badge">Orden: {seccion.orden}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+        )}
 
-          {loading ? (
-            <div className="loading-spinner">Cargando...</div>
-          ) : (
-            <div className="carreras-lista">
-              {carreras.map((carrera) => (
-                <div key={carrera._id} className="carrera-card">
-                  <div className="carrera-main">
-                    <div className="carrera-info">
+        {/* TAB CARRERAS */}
+        {activeTab === 'carreras' && (
+          <div className="tab-content fade-in">
+            <div className="acciones-header">
+              <button className="btn-primary" onClick={() => abrirCarreraModal()}>
+                <Plus size={18} />
+                Nueva Carrera
+              </button>
+              <div className="search-wrapper">
+                <Search size={18} className="search-icon" />
+                <input type="text" placeholder="Buscar carrera..." className="search-input" />
+              </div>
+              <span className="contador-badge">{carreras.length} carreras</span>
+            </div>
+
+            {loading ? (
+              <div className="loading-spinner">
+                <div className="spinner"></div>
+                <p>Cargando carreras...</p>
+              </div>
+            ) : (
+              <div className="carreras-lista">
+                {carreras.map((carrera) => (
+                  <div key={carrera._id} className="carrera-card-row">
+                    <div className="carrera-icon-col">
+                      <div className="carrera-icon-circle">
+                        <GraduationCap size={24} />
+                      </div>
+                    </div>
+                    
+                    <div className="carrera-info-col">
                       <div className="carrera-header-row">
                         <h3>{carrera.nombre}</h3>
-                        <span className={`badge ${carrera.activo ? 'activo' : 'inactivo'}`}>
-                          {carrera.activo ? 'Activo' : 'Inactivo'}
-                        </span>
+                        <span className={`status-dot ${carrera.activo ? 'active' : 'inactive'}`} title={carrera.activo ? 'Activo' : 'Inactivo'}></span>
                       </div>
-                      <p className="carrera-detalles">
-                        <strong>Duración:</strong> {carrera.duracion} | 
-                        <strong> Modalidad:</strong> {carrera.modalidad}
-                      </p>
-                      <p className="carrera-descripcion">
-                        {carrera.descripcion.length > 150 ? `${carrera.descripcion.substring(0, 150)}...` : carrera.descripcion}
-                      </p>
+                      
+                      <div className="carrera-meta-row">
+                        <span className="meta-tag">
+                          <Clock size={14} /> {carrera.duracion}
+                        </span>
+                        <span className="meta-tag">
+                          <MapPin size={14} /> {carrera.modalidad}
+                        </span>
+                        {carrera.ubicacion && (
+                          <span className="meta-tag">
+                            <Building2 size={14} /> {carrera.ubicacion}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="carrera-actions-col">
                       <a 
                         href={carrera.enlaceOficial} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="carrera-enlace"
-                        onClick={(e) => e.stopPropagation()}
+                        className="btn-icon-action link"
+                        title="Ver enlace oficial"
                       >
-                        🔗 Ver información completa
+                        <Link size={18} />
                       </a>
-                    </div>
-                    <div className="carrera-acciones">
                       <button
-                        className="btn-editar"
+                        className="btn-icon-action edit"
                         onClick={() => abrirCarreraModal(carrera)}
+                        title="Editar"
                       >
-                        ✏️ Editar
+                        <Edit2 size={18} />
                       </button>
                       <button
-                        className="btn-eliminar"
+                        className="btn-icon-action delete"
                         onClick={() => handleEliminarCarrera(carrera._id)}
+                        title="Eliminar"
                       >
-                        🗑️ Eliminar
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* MODAL INFORMACIÓN GENERAL */}
       {showInfoModal && (
         <div className="modal-overlay" onClick={cerrarInfoModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editingSeccion ? 'Editar Sección' : 'Nueva Sección'}</h3>
-              <button className="btn-cerrar" onClick={cerrarInfoModal}>×</button>
+              <div className="modal-title-wrapper">
+                <div className="modal-icon-bg">
+                  {editingSeccion ? <Edit2 size={20} /> : <Plus size={20} />}
+                </div>
+                <h3>{editingSeccion ? 'Editar Sección' : 'Nueva Sección'}</h3>
+              </div>
+              <button className="btn-cerrar" onClick={cerrarInfoModal}>
+                <X size={24} />
+              </button>
             </div>
+            
             <form onSubmit={handleInfoSubmit} className="modal-form">
-              <div className="form-row">
+              <div className="form-grid">
                 <div className="form-group">
-                  <label>Sección *</label>
+                  <label>Tipo de Sección</label>
                   <select
                     name="seccion"
                     value={infoForm.seccion}
                     onChange={handleInfoInputChange}
                     required
                     disabled={editingSeccion !== null}
+                    className="form-select"
                   >
                     {seccionesDisponibles.map(sec => (
                       <option key={sec} value={sec}>{sec}</option>
                     ))}
                   </select>
                 </div>
+                
                 <div className="form-group">
-                  <label>Icono</label>
-                  <select
-                    name="icono"
-                    value={infoForm.icono}
-                    onChange={handleInfoInputChange}
-                  >
-                    {iconosDisponibles.map(icono => (
-                      <option key={icono} value={icono}>{icono}</option>
-                    ))}
-                  </select>
+                  <label>Icono Representativo</label>
+                  <div className="icon-selector">
+                    <select
+                      name="icono"
+                      value={infoForm.icono}
+                      onChange={handleInfoInputChange}
+                      className="form-select"
+                    >
+                      {iconosDisponibles.map(icono => (
+                        <option key={icono} value={icono}>{icono}</option>
+                      ))}
+                    </select>
+                    <div className="icon-preview">
+                      {renderIcon(infoForm.icono)}
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="form-group">
-                <label>Título *</label>
+                <label>Título</label>
                 <input
                   type="text"
                   name="titulo"
                   value={infoForm.titulo}
                   onChange={handleInfoInputChange}
                   required
+                  className="form-input"
+                  placeholder="Ingrese el título de la sección"
                 />
               </div>
 
               <div className="form-group">
-                <label>Contenido *</label>
+                <label>Contenido</label>
                 <textarea
                   name="contenido"
                   value={infoForm.contenido}
                   onChange={handleInfoInputChange}
-                  rows="8"
+                  rows="6"
                   required
+                  className="form-textarea"
+                  placeholder="Escriba el contenido detallado..."
                 />
               </div>
 
-              <div className="form-row">
+              <div className="form-grid">
                 <div className="form-group">
-                  <label>Orden</label>
+                  <label>Orden de visualización</label>
                   <input
                     type="number"
                     name="orden"
                     value={infoForm.orden}
                     onChange={handleInfoInputChange}
+                    className="form-input"
                   />
                 </div>
-                <div className="form-group checkbox-group">
-                  <label>
-                    <input
-                      type="checkbox"
-                      name="activo"
-                      checked={infoForm.activo}
-                      onChange={handleInfoInputChange}
-                    />
-                    Activo
-                  </label>
+                <div className="form-group">
+                  <label>&nbsp;</label>
+                  <div className="checkbox-wrapper">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        name="activo"
+                        checked={infoForm.activo}
+                        onChange={handleInfoInputChange}
+                      />
+                      <span className="checkbox-text">Visible al público</span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
-              <div className="modal-acciones">
-                <button type="button" className="btn-cancelar" onClick={cerrarInfoModal}>
+              <div className="modal-footer">
+                <button type="button" className="btn-modal-unique-cancel" onClick={cerrarInfoModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-guardar">
-                  {editingSeccion ? 'Actualizar' : 'Crear'}
+                <button type="submit" className="btn-modal-unique-save">
+                  <Save size={18} />
+                  {editingSeccion ? 'Guardar Cambios' : 'Crear Sección'}
                 </button>
               </div>
             </form>
@@ -452,56 +564,73 @@ const GestionInfoUniversidad = () => {
         <div className="modal-overlay" onClick={cerrarCarreraModal}>
           <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editingCarrera ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
-              <button className="btn-cerrar" onClick={cerrarCarreraModal}>×</button>
+              <div className="modal-title-wrapper">
+                <div className="modal-icon-bg">
+                  <GraduationCap size={20} />
+                </div>
+                <h3>{editingCarrera ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
+              </div>
+              <button className="btn-cerrar" onClick={cerrarCarreraModal}>
+                <X size={24} />
+              </button>
             </div>
+            
             <form onSubmit={handleCarreraSubmit} className="modal-form">
-              <div className="form-section">
-                <h4>Información de la Carrera</h4>
-                
-                <div className="form-group">
-                  <label>Nombre de la Carrera *</label>
-                  <input
-                    type="text"
-                    name="nombre"
-                    value={carreraForm.nombre}
-                    onChange={handleCarreraInputChange}
-                    placeholder="ej: Ingeniería Civil en Computación"
-                    required
-                  />
-                </div>
+              <div className="form-section-title">
+                <h4>Información Académica</h4>
+              </div>
+              
+              <div className="form-group">
+                <label>Nombre de la Carrera</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={carreraForm.nombre}
+                  onChange={handleCarreraInputChange}
+                  placeholder="Ej: Ingeniería Civil en Computación"
+                  required
+                  className="form-input"
+                />
+              </div>
 
-                <div className="form-group">
-                  <label>Descripción *</label>
-                  <textarea
-                    name="descripcion"
-                    value={carreraForm.descripcion}
-                    onChange={handleCarreraInputChange}
-                    rows="4"
-                    placeholder="Describe brevemente la carrera..."
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label>Descripción</label>
+                <textarea
+                  name="descripcion"
+                  value={carreraForm.descripcion}
+                  onChange={handleCarreraInputChange}
+                  rows="4"
+                  placeholder="Descripción breve de la carrera, perfil de egreso, etc."
+                  required
+                  className="form-textarea"
+                />
+              </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Duración *</label>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Duración</label>
+                  <div className="input-with-icon">
+                    <Clock size={18} className="input-icon" />
                     <input
                       type="text"
                       name="duracion"
                       value={carreraForm.duracion}
                       onChange={handleCarreraInputChange}
-                      placeholder="ej: 5 años, 10 semestres"
+                      placeholder="Ej: 10 semestres"
                       required
+                      className="form-input pl-10"
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Modalidad *</label>
+                </div>
+                <div className="form-group">
+                  <label>Modalidad</label>
+                  <div className="input-with-icon">
                     <select
                       name="modalidad"
                       value={carreraForm.modalidad}
                       onChange={handleCarreraInputChange}
                       required
+                      className="form-select"
                     >
                       {modalidadesDisponibles.map(mod => (
                         <option key={mod} value={mod}>{mod}</option>
@@ -509,9 +638,12 @@ const GestionInfoUniversidad = () => {
                     </select>
                   </div>
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label>Enlace a Página Oficial *</label>
+              <div className="form-group">
+                <label>Enlace Oficial</label>
+                <div className="input-with-icon">
+                  <Link size={18} className="input-icon" />
                   <input
                     type="url"
                     name="enlaceOficial"
@@ -519,56 +651,60 @@ const GestionInfoUniversidad = () => {
                     onChange={handleCarreraInputChange}
                     placeholder="https://www.utalca.cl/carreras/..."
                     required
+                    className="form-input pl-10"
                   />
-                  <small style={{ color: '#666', fontSize: '12px' }}>
-                    🔗 URL de la página oficial con información académica completa (malla curricular, perfil de egreso, etc.)
-                  </small>
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label>Ubicación (opcional)</label>
+              <div className="form-group">
+                <label>Ubicación (Opcional)</label>
+                <div className="input-with-icon">
+                  <Building2 size={18} className="input-icon" />
                   <input
                     type="text"
                     name="ubicacion"
                     value={carreraForm.ubicacion}
                     onChange={handleCarreraInputChange}
-                    placeholder="Ej: Campus Talca, Edificio D, 2do piso"
+                    placeholder="Ej: Campus Talca, Edificio de Ingeniería"
+                    className="form-input pl-10"
                   />
-                  <small style={{ color: '#666', fontSize: '12px' }}>
-                    📍 Ubicación física donde se imparte la carrera o ubicación de la oficina de información
-                  </small>
                 </div>
+              </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Orden</label>
-                    <input
-                      type="number"
-                      name="orden"
-                      value={carreraForm.orden}
-                      onChange={handleCarreraInputChange}
-                    />
-                  </div>
-                  <div className="form-group checkbox-group">
-                    <label>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Orden</label>
+                  <input
+                    type="number"
+                    name="orden"
+                    value={carreraForm.orden}
+                    onChange={handleCarreraInputChange}
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>&nbsp;</label>
+                  <div className="checkbox-wrapper">
+                    <label className="checkbox-label">
                       <input
                         type="checkbox"
                         name="activo"
                         checked={carreraForm.activo}
                         onChange={handleCarreraInputChange}
                       />
-                      Activo
+                      <span className="checkbox-text">Carrera activa</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              <div className="modal-acciones">
-                <button type="button" className="btn-cancelar" onClick={cerrarCarreraModal}>
+              <div className="modal-footer">
+                <button type="button" className="btn-modal-unique-cancel" onClick={cerrarCarreraModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-guardar">
-                  {editingCarrera ? 'Actualizar' : 'Crear'}
+                <button type="submit" className="btn-modal-unique-save">
+                  <Save size={18} />
+                  {editingCarrera ? 'Guardar Cambios' : 'Crear Carrera'}
                 </button>
               </div>
             </form>

@@ -1,5 +1,23 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { authService } from '../../servicios/api';
+import CrearAdmin from './CrearAdmin';
+import { 
+  User, 
+  Mail, 
+  Shield, 
+  Edit2, 
+  Lock, 
+  Trash2, 
+  CheckCircle, 
+  XCircle, 
+  Power,
+  Search,
+  X,
+  Save,
+  AlertCircle,
+  Plus
+} from 'lucide-react';
 import './GestionUsuarios.css';
 
 const GestionUsuarios = () => {
@@ -7,8 +25,10 @@ const GestionUsuarios = () => {
   const [loading, setLoading] = useState(true);
   const [showModalEditar, setShowModalEditar] = useState(false);
   const [showModalPassword, setShowModalPassword] = useState(false);
+  const [showCrearAdmin, setShowCrearAdmin] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
+  const [filtro, setFiltro] = useState('');
   
   const [formEditar, setFormEditar] = useState({
     nombre: '',
@@ -42,6 +62,12 @@ const GestionUsuarios = () => {
   const mostrarMensaje = (texto, tipo) => {
     setMensaje({ texto, tipo });
     setTimeout(() => setMensaje({ texto: '', tipo: '' }), 4000);
+  };
+
+  const handleSuccessCrearAdmin = (message) => {
+    setShowCrearAdmin(false);
+    mostrarMensaje(message, 'success');
+    cargarUsuarios();
   };
 
   const handleEditarUsuario = (usuario) => {
@@ -146,19 +172,15 @@ const GestionUsuarios = () => {
     }
   };
 
-  const getRolBadge = (rol) => {
-    const badges = {
-      superadmin: { texto: 'Super Admin', clase: 'badge-superadmin' },
-      admin: { texto: 'Admin', clase: 'badge-admin' },
-      usuario: { texto: 'Usuario', clase: 'badge-usuario' }
-    };
-    return badges[rol] || badges.usuario;
-  };
+  const usuariosFiltrados = usuarios.filter(u => 
+    u.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
+    u.email.toLowerCase().includes(filtro.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="gestion-usuarios">
-        <div className="loading-container">
+      <div className="gestion-usuarios-container">
+        <div className="loading-state">
           <div className="spinner"></div>
           <p>Cargando usuarios...</p>
         </div>
@@ -167,192 +189,231 @@ const GestionUsuarios = () => {
   }
 
   return (
-    <div className="gestion-usuarios">
-      <div className="header-section">
-        <h2>👥 Gestión de Usuarios</h2>
-        <p className="subtitle">Administra los usuarios del sistema</p>
-      </div>
-
+    <div className="gestion-usuarios-container">
       {mensaje.texto && (
-        <div className={`mensaje mensaje-${mensaje.tipo}`}>
-          <span>{mensaje.tipo === 'success' ? '✓' : '⚠️'} {mensaje.texto}</span>
+        <div className={`mensaje-flotante mensaje-${mensaje.tipo}`}>
+          {mensaje.tipo === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+          <span>{mensaje.texto}</span>
         </div>
       )}
 
-      <div className="usuarios-grid">
-        {usuarios.map((usuario) => {
-          const badge = getRolBadge(usuario.rol);
-          return (
-            <div key={usuario._id} className="usuario-card">
-              <div className="usuario-header">
-                <div className="usuario-info">
-                  <h3>{usuario.nombre}</h3>
-                  <p className="usuario-email">{usuario.email}</p>
-                </div>
-                <span className={`estado-badge ${usuario.activo ? 'activo' : 'inactivo'}`}>
-                  {usuario.activo ? '🟢 Activo' : '🔴 Inactivo'}
-                </span>
-              </div>
-
-              <div className="usuario-detalles">
-                <div className="detalle-item">
-                  <span className="detalle-label">Rol:</span>
-                  <span className={`rol-badge ${badge.clase}`}>{badge.texto}</span>
-                </div>
-                <div className="detalle-item">
-                  <span className="detalle-label">Creado:</span>
-                  <span>{new Date(usuario.createdAt).toLocaleDateString('es-ES')}</span>
-                </div>
-              </div>
-
-              {usuario.rol !== 'superadmin' && (
-                <div className="usuario-acciones">
-                  <button
-                    className="btn-accion btn-editar"
-                    onClick={() => handleEditarUsuario(usuario)}
-                    title="Editar usuario"
-                  >
-                    ✏️ Editar
-                  </button>
-                  <button
-                    className="btn-accion btn-password"
-                    onClick={() => handleCambiarPassword(usuario)}
-                    title="Cambiar contraseña"
-                  >
-                    🔒 Contraseña
-                  </button>
-                  <button
-                    className={`btn-accion ${usuario.activo ? 'btn-desactivar' : 'btn-activar'}`}
-                    onClick={() => toggleEstadoUsuario(usuario)}
-                    title={usuario.activo ? 'Desactivar' : 'Activar'}
-                  >
-                    {usuario.activo ? '⏸️ Desactivar' : '▶️ Activar'}
-                  </button>
-                  <button
-                    className="btn-accion btn-eliminar"
-                    onClick={() => handleEliminar(usuario)}
-                    title="Eliminar usuario"
-                  >
-                    🗑️ Eliminar
-                  </button>
-                </div>
-              )}
-
-              {usuario.rol === 'superadmin' && (
-                <div className="usuario-protegido">
-                  <p>🛡️ Usuario protegido - No se puede modificar</p>
-                </div>
-              )}
+      <div className="gestion-main-card">
+        <div className="gestion-header">
+          <div className="header-title">
+            <h2>Gestión de Usuarios</h2>
+            <p className="header-subtitle">Administra los accesos y roles del sistema</p>
+          </div>
+          <div className="header-actions">
+            <button 
+              className="btn-create-modern" 
+              onClick={() => setShowCrearAdmin(true)}
+            >
+              <Plus size={18} />
+              <span>Crear Admin</span>
+            </button>
+            <div className="search-wrapper-modern">
+              <Search size={18} className="search-icon" />
+              <input 
+                type="text" 
+                placeholder="Buscar por nombre o email..." 
+                className="search-input-modern"
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+              />
             </div>
-          );
-        })}
+          </div>
+        </div>
+
+        <div className="usuarios-grid-modern">
+          {usuariosFiltrados.map((usuario) => (
+            <div key={usuario._id} className="usuario-card-modern">
+              <div className="card-top-accent"></div>
+              <div className="usuario-card-header">
+                <div className="avatar-placeholder">
+                  <User size={24} />
+                </div>
+                <div className="usuario-info-main">
+                  <h3>{usuario.nombre}</h3>
+                  <div className="usuario-email-row">
+                    <Mail size={14} />
+                    <span>{usuario.email}</span>
+                  </div>
+                </div>
+                <div className={`status-indicator ${usuario.activo ? 'active' : 'inactive'}`} title={usuario.activo ? 'Activo' : 'Inactivo'}></div>
+              </div>
+
+              <div className="usuario-card-body">
+                <div className="info-row">
+                  <span className="label">Rol</span>
+                  <span className={`badge-rol ${usuario.rol}`}>
+                    {usuario.rol === 'superadmin' ? 'Super Admin' : 'Administrador'}
+                  </span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Estado</span>
+                  <span className={`badge-status ${usuario.activo ? 'active' : 'inactive'}`}>
+                    {usuario.activo ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="usuario-card-actions">
+                {usuario.rol !== 'superadmin' ? (
+                  <>
+                    <button
+                      className="btn-icon-modern edit"
+                      onClick={() => handleEditarUsuario(usuario)}
+                      title="Editar"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button
+                      className="btn-icon-modern password"
+                      onClick={() => handleCambiarPassword(usuario)}
+                      title="Cambiar contraseña"
+                    >
+                      <Lock size={18} />
+                    </button>
+                    <button
+                      className={`btn-icon-modern ${usuario.activo ? 'deactivate' : 'activate'}`}
+                      onClick={() => toggleEstadoUsuario(usuario)}
+                      title={usuario.activo ? 'Desactivar' : 'Activar'}
+                    >
+                      <Power size={18} />
+                    </button>
+                    <button
+                      className="btn-icon-modern delete"
+                      onClick={() => handleEliminar(usuario)}
+                      title="Eliminar"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </>
+                ) : (
+                  <div className="protected-user-msg">
+                    <Shield size={14} />
+                    <span>Usuario Protegido</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
+      {/* Modal Crear Admin */}
+      {showCrearAdmin && createPortal(
+        <CrearAdmin 
+          onClose={() => setShowCrearAdmin(false)}
+          onSuccess={handleSuccessCrearAdmin}
+        />,
+        document.body
+      )}
+
       {/* Modal Editar */}
-      {showModalEditar && (
-        <div className="modal-overlay" onClick={() => setShowModalEditar(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>✏️ Editar Usuario</h3>
-              <button className="btn-cerrar" onClick={() => setShowModalEditar(false)}>✕</button>
+      {showModalEditar && createPortal(
+        <div className="modal-overlay-modern" onClick={() => setShowModalEditar(false)}>
+          <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-modern">
+              <h3>Editar Usuario</h3>
+              <button className="btn-close-modal" onClick={() => setShowModalEditar(false)}>
+                <X size={20} />
+              </button>
             </div>
 
-            <form onSubmit={submitEditar} className="modal-form">
-              <div className="form-group">
+            <form onSubmit={submitEditar} className="modal-form-modern">
+              <div className="form-group-modern">
                 <label>Nombre completo</label>
                 <input
                   type="text"
                   value={formEditar.nombre}
                   onChange={(e) => setFormEditar({ ...formEditar, nombre: e.target.value })}
-                  placeholder="Nombre del usuario"
+                  className="input-modern"
                   required
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group-modern">
                 <label>Correo electrónico</label>
                 <input
                   type="email"
                   value={formEditar.email}
                   onChange={(e) => setFormEditar({ ...formEditar, email: e.target.value })}
-                  placeholder="email@ejemplo.com"
+                  className="input-modern"
                   required
                 />
               </div>
 
-              <div className="form-group">
-                <label>Rol</label>
-                <select
-                  value={formEditar.rol}
-                  onChange={(e) => setFormEditar({ ...formEditar, rol: e.target.value })}
-                  required
-                >
-                  <option value="usuario">Usuario</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn-cancelar" onClick={() => setShowModalEditar(false)}>
+              <div className="modal-footer-modern">
+                <button type="button" className="btn-cancel-modern" onClick={() => setShowModalEditar(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-guardar">
-                  💾 Guardar Cambios
+                <button type="submit" className="btn-submit-modern">
+                  <Save size={18} /> Guardar Cambios
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modal Cambiar Contraseña */}
-      {showModalPassword && (
-        <div className="modal-overlay" onClick={() => setShowModalPassword(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>🔒 Cambiar Contraseña</h3>
-              <button className="btn-cerrar" onClick={() => setShowModalPassword(false)}>✕</button>
+      {showModalPassword && createPortal(
+        <div className="modal-overlay-modern" onClick={() => setShowModalPassword(false)}>
+          <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-modern">
+              <h3>Cambiar Contraseña</h3>
+              <button className="btn-close-modal" onClick={() => setShowModalPassword(false)}>
+                <X size={20} />
+              </button>
             </div>
 
-            <form onSubmit={submitCambiarPassword} className="modal-form">
-              <div className="info-usuario-modal">
-                <p><strong>Usuario:</strong> {usuarioSeleccionado?.nombre}</p>
-                <p><strong>Email:</strong> {usuarioSeleccionado?.email}</p>
+            <form onSubmit={submitCambiarPassword} className="modal-form-modern">
+              <div className="user-summary">
+                <div className="summary-icon"><User size={20} /></div>
+                <div className="summary-info">
+                  <span className="summary-name">{usuarioSeleccionado?.nombre}</span>
+                  <span className="summary-email">{usuarioSeleccionado?.email}</span>
+                </div>
               </div>
 
-              <div className="form-group">
+              <div className="form-group-modern">
                 <label>Nueva contraseña</label>
                 <input
                   type="password"
                   value={formPassword.password}
                   onChange={(e) => setFormPassword({ ...formPassword, password: e.target.value })}
+                  className="input-modern"
                   placeholder="Mínimo 6 caracteres"
                   required
                 />
               </div>
 
-              <div className="form-group">
+              <div className="form-group-modern">
                 <label>Confirmar contraseña</label>
                 <input
                   type="password"
                   value={formPassword.confirmPassword}
                   onChange={(e) => setFormPassword({ ...formPassword, confirmPassword: e.target.value })}
+                  className="input-modern"
                   placeholder="Repite la contraseña"
                   required
                 />
               </div>
 
-              <div className="modal-footer">
-                <button type="button" className="btn-cancelar" onClick={() => setShowModalPassword(false)}>
+              <div className="modal-footer-modern">
+                <button type="button" className="btn-cancel-modern" onClick={() => setShowModalPassword(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-guardar">
-                  🔒 Cambiar Contraseña
+                <button type="submit" className="btn-submit-modern">
+                  <Save size={18} /> Actualizar Contraseña
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

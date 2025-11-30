@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../componentes/compartidos/Navbar';
 import { infoService, carrerasService } from '../../servicios/api';
+import { 
+  Map, 
+  ArrowLeft, 
+  Home, 
+  Building2, 
+  GraduationCap, 
+  Clock, 
+  MapPin, 
+  ExternalLink, 
+  X, 
+  Info,
+  ChevronRight,
+  BookOpen
+} from 'lucide-react';
 import './SobreUniversidad.css';
 
 const SobreUniversidad = () => {
@@ -10,6 +24,7 @@ const SobreUniversidad = () => {
   const [infoGeneral, setInfoGeneral] = useState([]);
   const [carreras, setCarreras] = useState([]);
   const [carreraSeleccionada, setCarreraSeleccionada] = useState(null);
+  const [infoSeleccionada, setInfoSeleccionada] = useState(null);
   const [seccionActiva, setSeccionActiva] = useState('general');
 
   useEffect(() => {
@@ -45,18 +60,25 @@ const SobreUniversidad = () => {
     setCarreraSeleccionada(null);
   };
 
+  const abrirDetalleInfo = (info) => {
+    setInfoSeleccionada(info);
+  };
+
+  const cerrarDetalleInfo = () => {
+    setInfoSeleccionada(null);
+  };
+
   return (
     <div className="sobre-universidad-container">
       <Navbar brandName="Módulo informativo">
         <div className="navbar-buttons">
-          <button onClick={() => navigate('/wayfinding')} className="btn-wayfinding">
-            🗺️ Wayfinding
+          <button onClick={() => navigate('/wayfinding')} className="btn-nav btn-wayfinding">
+            <Map size={18} />
+            <span>Wayfinding</span>
           </button>
-          <button onClick={() => navigate('/estudiante')} className="btn-volver">
-            ← Volver
-          </button>
-          <button onClick={() => navigate('/')} className="btn-inicio">
-            Inicio
+          <button onClick={() => navigate('/estudiante')} className="btn-nav btn-volver">
+            <ArrowLeft size={18} />
+            <span>Volver</span>
           </button>
         </div>
       </Navbar>
@@ -74,14 +96,14 @@ const SobreUniversidad = () => {
               className={`tab-nav-button ${seccionActiva === 'general' ? 'active' : ''}`}
               onClick={() => setSeccionActiva('general')}
             >
-              <span className="tab-icon">🏛️</span>
+              <Building2 size={20} />
               <span>Información General</span>
             </button>
             <button
               className={`tab-nav-button ${seccionActiva === 'carreras' ? 'active' : ''}`}
               onClick={() => setSeccionActiva('carreras')}
             >
-              <span className="tab-icon">🎓</span>
+              <GraduationCap size={20} />
               <span>Carreras</span>
             </button>
           </div>
@@ -95,22 +117,29 @@ const SobreUniversidad = () => {
             <>
               {/* TAB INFORMACIÓN GENERAL */}
               {seccionActiva === 'general' && (
-                <div className="tab-panel">
+                <div className="tab-panel fade-in">
                   {infoGeneral.length === 0 ? (
                     <div className="empty-state">
-                      <span className="empty-icon">📚</span>
+                      <Info size={48} className="empty-icon" />
                       <p>No hay información disponible en este momento</p>
                     </div>
                   ) : (
                     <div className="info-grid">
                       {infoGeneral.map((info) => (
-                        <div key={info._id} className="info-card">
-                          <div className="info-card-header">
-                            <span className="info-icon">{info.icono}</span>
-                            <h3>{info.titulo}</h3>
+                        <div key={info._id} className="info-card" onClick={() => abrirDetalleInfo(info)}>
+                          <div className="info-card-icon">
+                            <BookOpen size={24} />
                           </div>
                           <div className="info-card-content">
-                            <p>{info.contenido}</p>
+                            <h3>{info.titulo}</h3>
+                            <p>
+                              {info.contenido.length > 100 
+                                ? info.contenido.substring(0, 100) + '...' 
+                                : info.contenido}
+                            </p>
+                            <span className="btn-leer-mas">
+                              Leer más <ChevronRight size={16} />
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -121,10 +150,10 @@ const SobreUniversidad = () => {
 
               {/* TAB CARRERAS */}
               {seccionActiva === 'carreras' && (
-                <div className="tab-panel">
+                <div className="tab-panel fade-in">
                   {carreras.length === 0 ? (
                     <div className="empty-state">
-                      <span className="empty-icon">🎓</span>
+                      <GraduationCap size={48} className="empty-icon" />
                       <p>No hay carreras disponibles en este momento</p>
                     </div>
                   ) : (
@@ -137,22 +166,28 @@ const SobreUniversidad = () => {
                       <div className="carreras-grid">
                         {carreras.map((carrera) => (
                           <div key={carrera._id} className="carrera-card-estudiante">
-                            <div className="carrera-card-body">
-                              <h4>{carrera.nombre}</h4>
-                              <div className="carrera-detalles-mini">
-                                <span>⏱️ {carrera.duracion}</span>
-                                <span>📍 {carrera.modalidad}</span>
+                            <div className="carrera-card-header">
+                              <div className="carrera-icon-wrapper">
+                                <GraduationCap size={24} />
                               </div>
-                              <p className="carrera-descripcion-mini">
-                                {carrera.descripcion.length > 150 
-                                  ? carrera.descripcion.substring(0, 150) + '...' 
-                                  : carrera.descripcion}
-                              </p>
+                              <h4>{carrera.nombre}</h4>
+                            </div>
+                            <div className="carrera-card-body">
+                              <div className="carrera-meta">
+                                <div className="meta-item">
+                                  <Clock size={16} />
+                                  <span>{carrera.duracion}</span>
+                                </div>
+                                <div className="meta-item">
+                                  <MapPin size={16} />
+                                  <span>{carrera.modalidad}</span>
+                                </div>
+                              </div>
                               <button 
-                                className="btn-ver-mas"
+                                className="btn-ver-detalles"
                                 onClick={() => abrirDetalleCarrera(carrera)}
                               >
-                                📖 Ver detalles
+                                Ver detalles
                               </button>
                             </div>
                           </div>
@@ -167,44 +202,78 @@ const SobreUniversidad = () => {
         </div>
       </main>
 
+      {/* MODAL INFORMACIÓN GENERAL */}
+      {infoSeleccionada && (
+        <div className="modal-overlay" onClick={cerrarDetalleInfo}>
+          <div className="modal-content-info" onClick={(e) => e.stopPropagation()}>
+            <button className="btn-cerrar-modal" onClick={cerrarDetalleInfo}>
+              <X size={24} />
+            </button>
+            
+            <div className="modal-header-simple">
+              <div className="modal-icon-large">
+                <BookOpen size={32} />
+              </div>
+              <h2>{infoSeleccionada.titulo}</h2>
+            </div>
+            
+            <div className="modal-body-scroll">
+              <p className="info-full-text">{infoSeleccionada.contenido}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL DETALLE DE CARRERA */}
       {carreraSeleccionada && (
-        <div className="modal-overlay-carrera" onClick={cerrarDetalleCarrera}>
-          <div className="modal-carrera-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={cerrarDetalleCarrera}>
+          <div className="modal-content-carrera" onClick={(e) => e.stopPropagation()}>
             <button className="btn-cerrar-modal" onClick={cerrarDetalleCarrera}>
-              ✕
+              <X size={24} />
             </button>
 
-            <div className="modal-carrera-body">
-              <div className="modal-carrera-header">
+            <div className="modal-carrera-header-styled">
+              <div className="header-content">
                 <h2>{carreraSeleccionada.nombre}</h2>
-                <div className="modal-carrera-badges">
-                  <span className="badge-modal">📍 {carreraSeleccionada.modalidad}</span>
-                  <span className="badge-modal">⏱️ {carreraSeleccionada.duracion}</span>
+                <div className="badges-container">
+                  <span className="badge-modal">
+                    <MapPin size={14} /> {carreraSeleccionada.modalidad}
+                  </span>
+                  <span className="badge-modal">
+                    <Clock size={14} /> {carreraSeleccionada.duracion}
+                  </span>
                 </div>
               </div>
+            </div>
 
-              <div className="modal-carrera-seccion">
-                <h3>📄 Descripción</h3>
+            <div className="modal-body-scroll">
+              <div className="modal-section">
+                <h3>
+                  <BookOpen size={20} />
+                  Descripción
+                </h3>
                 <p>{carreraSeleccionada.descripcion}</p>
               </div>
 
-              {/* Espacio reservado para ubicación futura */}
               {carreraSeleccionada.ubicacion && (
-                <div className="modal-carrera-seccion">
-                  <h3>📍 Ubicación</h3>
+                <div className="modal-section">
+                  <h3>
+                    <MapPin size={20} />
+                    Ubicación
+                  </h3>
                   <p>{carreraSeleccionada.ubicacion}</p>
                 </div>
               )}
 
-              <div className="modal-carrera-footer">
+              <div className="modal-footer-action">
                 <a 
                   href={carreraSeleccionada.enlaceOficial} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="btn-enlace-oficial"
                 >
-                  🔗 Ver información completa en el sitio oficial
+                  <span>Ver sitio oficial</span>
+                  <ExternalLink size={18} />
                 </a>
               </div>
             </div>

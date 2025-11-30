@@ -1,8 +1,7 @@
 import { useAuth } from '../../contexto/ContextoAuth';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Navbar from '../../componentes/compartidos/Navbar';
-import CrearAdmin from '../../componentes/admin/CrearAdmin';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
 import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversidad';
 import GestionUsuarios from '../../componentes/admin/GestionUsuarios';
@@ -14,72 +13,12 @@ const Tablero = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('contenidos');
   const [showProfile, setShowProfile] = useState(false);
-  const [showCrearAdmin, setShowCrearAdmin] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [administradores, setAdministradores] = useState([]);
-  const [loadingAdmins, setLoadingAdmins] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
-
-  const handleSuccessCrearAdmin = (message) => {
-    setShowCrearAdmin(false);
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(''), 5000);
-    // Recargar lista de administradores
-    if (activeTab === 'admin') {
-      cargarAdministradores();
-    }
-  };
-
-  const cargarAdministradores = async () => {
-    setLoadingAdmins(true);
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/administradores', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setAdministradores(data.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar administradores:', error);
-    } finally {
-      setLoadingAdmins(false);
-    }
-  };
-
-  const handleEliminarAdmin = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar este administrador?')) return;
-    
-    try {
-      const response = await fetch(`http://localhost:5000/api/auth/administradores/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      
-      if (data.success) {
-        setSuccessMessage('Administrador eliminado exitosamente');
-        setTimeout(() => setSuccessMessage(''), 5000);
-        cargarAdministradores();
-      }
-    } catch (error) {
-      console.error('Error al eliminar administrador:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'admin') {
-      cargarAdministradores();
-    }
-  }, [activeTab]);
 
   return (
     <div className="dashboard-container">
@@ -160,14 +99,6 @@ const Tablero = () => {
             )}
           </div>
 
-          {/* Modal de crear administrador */}
-          {showCrearAdmin && (
-            <CrearAdmin 
-              onClose={() => setShowCrearAdmin(false)}
-              onSuccess={handleSuccessCrearAdmin}
-            />
-          )}
-
           {/* Contenido según tab activo */}
           {activeTab === 'contenidos' && (
             <div className="tab-content">
@@ -203,22 +134,7 @@ const Tablero = () => {
 
           {activeTab === 'admin' && user?.rol === 'superadmin' && (
             <div className="tab-content">
-              <div className="section-card">
-                <div className="section-header">
-                  <h2>Gestión de Usuarios</h2>
-                  <p className="section-subtitle">
-                    Administra usuarios y sus permisos
-                  </p>
-                </div>
-                <div className="admin-actions">
-                  <button onClick={() => setShowCrearAdmin(true)} className="btn-create-admin-main">
-                    <span className="btn-icon">+</span>
-                    <span>Crear Nuevo Administrador</span>
-                  </button>
-                </div>
-
-                <GestionUsuarios />
-              </div>
+              <GestionUsuarios />
             </div>
           )}
         </div>

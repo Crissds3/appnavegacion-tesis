@@ -15,7 +15,10 @@ import {
   Loader, 
   RefreshCw, 
   X, 
-  Target 
+  Target,
+  Building,
+  Coffee,
+  Car
 } from 'lucide-react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import MapaWayfinding from '../../componentes/wayfinding/MapaWayfinding';
@@ -185,6 +188,15 @@ const Wayfinding = () => {
     setModoViaje(false);
   };
 
+  const getIconoPorTipo = (tipo) => {
+    switch(tipo?.toLowerCase()) {
+      case 'edificio': return <Building size={18} />;
+      case 'servicio': return <Coffee size={18} />;
+      case 'estacionamiento': return <Car size={18} />;
+      default: return <MapPin size={18} />;
+    }
+  };
+
   return (
     <div className="wayfinding-container">
       <Navbar brandName="Módulo de navegación">
@@ -301,40 +313,81 @@ const Wayfinding = () => {
 
             {/* Buscador */}
             {modoSeleccion && (
-              <div className="search-section">
-                <h3>Buscar Ubicación</h3>
-                <div className="busqueda-container">
-                  <div className="input-wrapper" style={{ position: 'relative' }}>
-                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
+              <div className="search-section-modern">
+                <div className="search-header-modern">
+                  <h3>{modoSeleccion === 'origen' ? '¿Desde dónde partes?' : '¿A dónde quieres ir?'}</h3>
+                  <button onClick={() => setModoSeleccion(null)} className="btn-close-search">
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="busqueda-container-modern">
+                  <div className="input-wrapper-modern">
+                    <Search className="search-icon-modern" size={20} />
                     <input 
                       type="text" 
-                      placeholder="Buscar edificio, sala, oficina..."
+                      placeholder={modoSeleccion === 'origen' ? "Buscar punto de partida..." : "Buscar destino..."}
                       value={busqueda}
                       onChange={(e) => buscarUbicaciones(e.target.value)}
                       autoFocus
-                      style={{ paddingLeft: '40px' }}
+                      className="search-input-modern"
                     />
+                    {busqueda && (
+                      <button onClick={() => {setBusqueda(''); setResultadosBusqueda([]);}} className="btn-clear-search">
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
                 
-                {resultadosBusqueda.length > 0 && (
-                  <div className="resultados-busqueda">
-                    {resultadosBusqueda.map(ub => (
-                      <div 
-                        key={ub._id}
-                        className="resultado-item"
-                        onClick={() => seleccionarUbicacion(ub)}
-                      >
-                        <span className="resultado-nombre">{ub.nombre}</span>
-                        <span className="resultado-tipo">{ub.tipo}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {busqueda.length > 2 && resultadosBusqueda.length === 0 && (
-                  <p className="sin-resultados">No se encontraron ubicaciones</p>
-                )}
+                <div className="resultados-scroll-area">
+                  {resultadosBusqueda.length > 0 ? (
+                    <div className="resultados-busqueda-modern">
+                      {resultadosBusqueda.map(ub => (
+                        <div 
+                          key={ub._id}
+                          className="resultado-item-modern"
+                          onClick={() => seleccionarUbicacion(ub)}
+                        >
+                          <div className={`resultado-icon-wrapper type-${ub.tipo?.toLowerCase() || 'default'}`}>
+                            {getIconoPorTipo(ub.tipo)}
+                          </div>
+                          <div className="resultado-info">
+                            <span className="resultado-nombre">{ub.nombre}</span>
+                            <span className="resultado-tipo">{ub.tipo}</span>
+                          </div>
+                          <div className="resultado-arrow">
+                            <Navigation size={16} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : busqueda.length > 0 ? (
+                    <div className="sin-resultados-modern">
+                      <Search size={48} strokeWidth={1.5} />
+                      <p>No encontramos "{busqueda}"</p>
+                      <span>Intenta buscar por nombre de edificio o servicio</span>
+                    </div>
+                  ) : (
+                    <div className="sugerencias-busqueda">
+                      <p className="sugerencias-titulo">Lugares sugeridos</p>
+                      {ubicaciones.slice(0, 4).map(ub => (
+                        <div 
+                          key={ub._id}
+                          className="resultado-item-modern sugerencia"
+                          onClick={() => seleccionarUbicacion(ub)}
+                        >
+                          <div className={`resultado-icon-wrapper type-${ub.tipo?.toLowerCase() || 'default'}`}>
+                            {getIconoPorTipo(ub.tipo)}
+                          </div>
+                          <div className="resultado-info">
+                            <span className="resultado-nombre">{ub.nombre}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

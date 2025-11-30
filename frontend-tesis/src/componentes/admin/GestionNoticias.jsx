@@ -1,5 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { noticiasService } from '../../servicios/api';
+import { 
+  Plus, 
+  Search, 
+  Edit2, 
+  Trash2, 
+  X, 
+  Image as ImageIcon, 
+  Calendar, 
+  MapPin, 
+  Star, 
+  Eye, 
+  EyeOff,
+  Upload
+} from 'lucide-react';
 import './GestionNoticias.css';
 
 const GestionNoticias = () => {
@@ -10,6 +24,7 @@ const GestionNoticias = () => {
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
   const [imagenPreview, setImagenPreview] = useState(null);
+  const fileInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     titulo: '',
@@ -216,146 +231,160 @@ const GestionNoticias = () => {
         </div>
       )}
 
-      <div className="header-noticias">
-        <h2>Gestión de Noticias y Eventos</h2>
-        <button 
-          className="btn-crear"
-          onClick={() => setShowModal(true)}
-        >
-          + Nueva Noticia
-        </button>
-      </div>
+      <div className="gestion-main-card">
+        <div className="gestion-header">
+          <div className="header-title">
+            <h2>Gestión de Noticias y Eventos</h2>
+            <p className="header-subtitle">Administra las noticias, eventos y anuncios de la universidad</p>
+          </div>
+          <button 
+            className="btn-crear-nuevo"
+            onClick={() => setShowModal(true)}
+          >
+            <Plus size={20} />
+            Nueva Noticia
+          </button>
+        </div>
 
-      <div className="filtros-noticias">
-        <select 
-          value={filtros.tipo} 
-          onChange={(e) => setFiltros(prev => ({ ...prev, tipo: e.target.value }))}
-        >
-          <option value="">Todos los tipos</option>
-          {tiposNoticia.map(tipo => (
-            <option key={tipo} value={tipo}>{tipo}</option>
-          ))}
-        </select>
+        <div className="filtros-container">
+          <div className="filtros-group">
+            <select 
+              value={filtros.tipo} 
+              onChange={(e) => setFiltros(prev => ({ ...prev, tipo: e.target.value }))}
+              className="filtro-select"
+            >
+              <option value="">Todos los tipos</option>
+              {tiposNoticia.map(tipo => (
+                <option key={tipo} value={tipo}>{tipo}</option>
+              ))}
+            </select>
 
-        <select 
-          value={filtros.categoria} 
-          onChange={(e) => setFiltros(prev => ({ ...prev, categoria: e.target.value }))}
-        >
-          <option value="">Todas las categorías</option>
-          {categorias.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-      </div>
+            <select 
+              value={filtros.categoria} 
+              onChange={(e) => setFiltros(prev => ({ ...prev, categoria: e.target.value }))}
+              className="filtro-select"
+            >
+              <option value="">Todas las categorías</option>
+              {categorias.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-      {loading ? (
-        <div className="loading">Cargando noticias...</div>
-      ) : (
-        <div className="tabla-noticias">
-          <table>
-            <thead>
-              <tr>
-                <th>Imagen</th>
-                <th>Título</th>
-                <th>Tipo</th>
-                <th>Categoría</th>
-                <th>Fecha</th>
-                <th>Destacado</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {noticiasFiltradas.length === 0 ? (
+        {loading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Cargando noticias...</p>
+          </div>
+        ) : (
+          <div className="tabla-container">
+            <table className="tabla-moderna">
+              <thead>
                 <tr>
-                  <td colSpan="8" className="no-data">No hay noticias disponibles</td>
+                  <th>Imagen</th>
+                  <th>Título</th>
+                  <th>Tipo</th>
+                  <th>Categoría</th>
+                  <th>Fecha</th>
+                  <th>Destacado</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
-              ) : (
-                noticiasFiltradas.map(noticia => (
-                  <tr key={noticia._id}>
-                    <td>
-                      {(noticia.imagenBase64 || noticia.imagenUrl) ? (
-                        <img 
-                          src={noticia.imagenBase64 || noticia.imagenUrl} 
-                          alt={noticia.titulo}
-                          style={{ 
-                            width: '50px', 
-                            height: '50px', 
-                            objectFit: 'cover', 
-                            borderRadius: '8px',
-                            border: '2px solid #e0e0e0'
-                          }}
-                        />
-                      ) : (
-                        <div style={{ 
-                          width: '50px', 
-                          height: '50px', 
-                          background: '#f0f0f0', 
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#999'
-                        }}>
-                          📷
-                        </div>
-                      )}
-                    </td>
-                    <td>{noticia.titulo}</td>
-                    <td>
-                      <span className={`badge badge-${noticia.tipo.toLowerCase()}`}>
-                        {noticia.tipo}
-                      </span>
-                    </td>
-                    <td>{noticia.categoria}</td>
-                    <td>{new Date(noticia.createdAt).toLocaleDateString()}</td>
-                    <td>
-                      <button
-                        className={`btn-toggle ${noticia.destacado ? 'activo' : ''}`}
-                        onClick={() => toggleDestacado(noticia)}
-                        title={noticia.destacado ? 'Quitar destacado' : 'Marcar como destacado'}
-                      >
-                        ★
-                      </button>
-                    </td>
-                    <td>
-                      <span className={`estado ${noticia.activo ? 'activo' : 'inactivo'}`}>
-                        {noticia.activo ? 'Activo' : 'Inactivo'}
-                      </span>
-                    </td>
-                    <td className="acciones">
-                      <button 
-                        className="btn-editar"
-                        onClick={() => handleEditar(noticia)}
-                      >
-                        Editar
-                      </button>
-                      <button 
-                        className="btn-eliminar"
-                        onClick={() => handleEliminar(noticia._id)}
-                      >
-                        Eliminar
-                      </button>
+              </thead>
+              <tbody>
+                {noticiasFiltradas.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="no-data">
+                      <div className="empty-state">
+                        <Search size={48} />
+                        <p>No se encontraron noticias</p>
+                      </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+                ) : (
+                  noticiasFiltradas.map(noticia => (
+                    <tr key={noticia._id}>
+                      <td>
+                        <div className="img-thumbnail-wrapper">
+                          {(noticia.imagenBase64 || noticia.imagenUrl) ? (
+                            <img 
+                              src={noticia.imagenBase64 || noticia.imagenUrl} 
+                              alt={noticia.titulo}
+                              className="img-thumbnail"
+                            />
+                          ) : (
+                            <div className="img-placeholder">
+                              <ImageIcon size={20} />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="fw-medium">{noticia.titulo}</td>
+                      <td>
+                        <span className={`badge badge-${noticia.tipo.toLowerCase()}`}>
+                          {noticia.tipo}
+                        </span>
+                      </td>
+                      <td>{noticia.categoria}</td>
+                      <td>{new Date(noticia.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <button
+                          className={`btn-icon-toggle ${noticia.destacado ? 'active' : ''}`}
+                          onClick={() => toggleDestacado(noticia)}
+                          title={noticia.destacado ? 'Quitar destacado' : 'Marcar como destacado'}
+                        >
+                          <Star size={18} fill={noticia.destacado ? "currentColor" : "none"} />
+                        </button>
+                      </td>
+                      <td>
+                        <span className={`status-indicator ${noticia.activo ? 'active' : 'inactive'}`}>
+                          {noticia.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions-group">
+                          <button 
+                            className="btn-icon-action edit"
+                            onClick={() => handleEditar(noticia)}
+                            title="Editar"
+                          >
+                            <Edit2 size={18} />
+                          </button>
+                          <button 
+                            className="btn-icon-action delete"
+                            onClick={() => handleEliminar(noticia._id)}
+                            title="Eliminar"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {showModal && (
         <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{editingNoticia ? 'Editar Noticia' : 'Nueva Noticia'}</h3>
-              <button className="btn-cerrar" onClick={cerrarModal}>×</button>
+              <h3>
+                {editingNoticia ? <Edit2 size={24} /> : <Plus size={24} />}
+                {editingNoticia ? 'Editar Noticia' : 'Nueva Noticia'}
+              </h3>
+              <button className="btn-close-modal" onClick={cerrarModal}>
+                <X size={24} />
+              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="form-noticia">
-              <div className="form-row">
-                <div className="form-group">
+              <div className="form-grid">
+                <div className="form-group full-width">
                   <label>Título *</label>
                   <input
                     type="text"
@@ -363,11 +392,11 @@ const GestionNoticias = () => {
                     value={formData.titulo}
                     onChange={handleInputChange}
                     required
+                    className="input-modern"
+                    placeholder="Ingrese el título de la noticia"
                   />
                 </div>
-              </div>
 
-              <div className="form-row">
                 <div className="form-group">
                   <label>Tipo *</label>
                   <select
@@ -375,6 +404,7 @@ const GestionNoticias = () => {
                     value={formData.tipo}
                     onChange={handleInputChange}
                     required
+                    className="select-modern"
                   >
                     {tiposNoticia.map(tipo => (
                       <option key={tipo} value={tipo}>{tipo}</option>
@@ -389,114 +419,149 @@ const GestionNoticias = () => {
                     value={formData.categoria}
                     onChange={handleInputChange}
                     required
+                    className="select-modern"
                   >
                     {categorias.map(cat => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
                   </select>
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label>Descripción breve *</label>
-                <textarea
-                  name="descripcion"
-                  value={formData.descripcion}
-                  onChange={handleInputChange}
-                  rows="2"
-                  required
-                />
-              </div>
+                <div className="form-group full-width">
+                  <label>Descripción breve *</label>
+                  <textarea
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={handleInputChange}
+                    rows="2"
+                    required
+                    className="textarea-modern"
+                    placeholder="Resumen corto para la vista previa"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>Contenido completo *</label>
-                <textarea
-                  name="contenido"
-                  value={formData.contenido}
-                  onChange={handleInputChange}
-                  rows="6"
-                  required
-                />
-              </div>
+                <div className="form-group full-width">
+                  <label>Contenido completo *</label>
+                  <textarea
+                    name="contenido"
+                    value={formData.contenido}
+                    onChange={handleInputChange}
+                    rows="6"
+                    required
+                    className="textarea-modern"
+                    placeholder="Detalles completos de la noticia o evento"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>Imagen</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImagenChange}
-                  className="input-file"
-                />
-                <small style={{ color: '#666', fontSize: '12px' }}>Tamaño máximo: 5MB. Formatos: JPG, PNG, GIF, WebP</small>
-                {imagenPreview && (
-                  <div className="imagen-preview">
-                    <img src={imagenPreview} alt="Preview" style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '10px', borderRadius: '8px' }} />
+                <div className="form-group full-width">
+                  <label>Imagen</label>
+                  <div 
+                    className="file-upload-container"
+                    onClick={() => fileInputRef.current.click()}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImagenChange}
+                      className="hidden-input"
+                      ref={fileInputRef}
+                    />
+                    {imagenPreview ? (
+                      <div className="preview-container">
+                        <img src={imagenPreview} alt="Preview" className="preview-image" />
+                        <div className="preview-overlay">
+                          <span className="change-text">Cambiar imagen</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="upload-placeholder">
+                        <Upload size={32} />
+                        <span>Haga clic para subir una imagen</span>
+                        <small>Máximo 5MB (JPG, PNG, WebP)</small>
+                      </div>
+                    )}
+                  </div>
+                  {imagenPreview && (
                     <button 
                       type="button" 
-                      onClick={eliminarImagen}
-                      className="btn-eliminar-imagen"
-                      style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        eliminarImagen();
+                      }}
+                      className="btn-remove-image"
                     >
-                      🗑️ Eliminar imagen
+                      <Trash2 size={14} /> Eliminar imagen
                     </button>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {formData.tipo === 'Evento' && (
-                <>
-                  <div className="form-row">
+                {formData.tipo === 'Evento' && (
+                  <div className="evento-fields full-width">
                     <div className="form-group">
-                      <label>Fecha del evento</label>
+                      <label><Calendar size={16} /> Fecha del evento</label>
                       <input
                         type="date"
                         name="fechaEvento"
                         value={formData.fechaEvento}
                         onChange={handleInputChange}
+                        className="input-modern"
                       />
                     </div>
 
                     <div className="form-group">
-                      <label>Ubicación del evento</label>
+                      <label><MapPin size={16} /> Ubicación del evento</label>
                       <input
                         type="text"
                         name="ubicacionEvento"
                         value={formData.ubicacionEvento}
                         onChange={handleInputChange}
                         placeholder="Ej: Auditorio Campus Talca"
+                        className="input-modern"
                       />
                     </div>
                   </div>
-                </>
-              )}
+                )}
 
-              <div className="form-checkboxes">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="destacado"
-                    checked={formData.destacado}
-                    onChange={handleInputChange}
-                  />
-                  Marcar como destacado
-                </label>
+                <div className="form-checkboxes full-width">
+                  <label className={`checkbox-card ${formData.destacado ? 'checked' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="destacado"
+                      checked={formData.destacado}
+                      onChange={handleInputChange}
+                    />
+                    <div className="checkbox-content">
+                      <Star size={20} className={formData.destacado ? 'icon-active' : ''} />
+                      <div>
+                        <span className="checkbox-title">Destacado</span>
+                        <span className="checkbox-desc">Aparecerá en el carrusel principal</span>
+                      </div>
+                    </div>
+                  </label>
 
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    name="activo"
-                    checked={formData.activo}
-                    onChange={handleInputChange}
-                  />
-                  Publicar (activo)
-                </label>
+                  <label className={`checkbox-card ${formData.activo ? 'checked' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="activo"
+                      checked={formData.activo}
+                      onChange={handleInputChange}
+                    />
+                    <div className="checkbox-content">
+                      {formData.activo ? <Eye size={20} /> : <EyeOff size={20} />}
+                      <div>
+                        <span className="checkbox-title">Visible al público</span>
+                        <span className="checkbox-desc">La noticia será visible en la app</span>
+                      </div>
+                    </div>
+                  </label>
+                </div>
               </div>
 
-              <div className="form-actions">
-                <button type="button" onClick={cerrarModal} className="btn-cancelar">
+              <div className="modal-footer">
+                <button type="button" onClick={cerrarModal} className="btn-modal-cancel">
                   Cancelar
                 </button>
-                <button type="submit" className="btn-guardar">
+                <button type="submit" className="btn-modal-submit">
                   {editingNoticia ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
