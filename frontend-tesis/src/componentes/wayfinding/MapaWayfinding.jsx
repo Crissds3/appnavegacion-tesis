@@ -622,23 +622,25 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
               >
                 <Popup>
                   <div className="marker-popup">
-                    <h4>{ubicacion.nombre}</h4>
-                    <p className="popup-tipo">
-                      <strong>Tipo:</strong> {ubicacion.tipo}
-                    </p>
-                    {ubicacion.descripcion && (
-                      <p className="popup-descripcion">{ubicacion.descripcion}</p>
-                    )}
-                    {ubicacion.metadatos && (
-                      <div className="popup-metadatos">
-                        {ubicacion.metadatos.horario && (
-                          <p><strong>Horario:</strong> {ubicacion.metadatos.horario}</p>
-                        )}
-                        {ubicacion.metadatos.contacto && (
-                          <p><strong>Contacto:</strong> {ubicacion.metadatos.contacto}</p>
-                        )}
-                      </div>
-                    )}
+                    <div className="popup-header">
+                      {ubicacion.nombre}
+                    </div>
+                    <div className="popup-body">
+                      <p><strong>Tipo:</strong> {ubicacion.tipo.charAt(0).toUpperCase() + ubicacion.tipo.slice(1)}</p>
+                      {ubicacion.descripcion && (
+                        <p>{ubicacion.descripcion}</p>
+                      )}
+                      {ubicacion.metadatos && (
+                        <div className="popup-metadatos">
+                          {ubicacion.metadatos.horario && (
+                            <p><strong>Horario:</strong> {ubicacion.metadatos.horario}</p>
+                          )}
+                          {ubicacion.metadatos.contacto && (
+                            <p><strong>Contacto:</strong> {ubicacion.metadatos.contacto}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </Popup>
               </Marker>
@@ -656,8 +658,13 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             >
               <Popup>
                 <div className="marker-popup origen">
-                  <h4>📍 Origen</h4>
-                  <p>{origen.nombre}</p>
+                  <div className="popup-header" style={{ background: '#4CAF50' }}>
+                    📍 Origen
+                  </div>
+                  <div className="popup-body">
+                    <p><strong>{origen.nombre}</strong></p>
+                    <p>Punto de partida</p>
+                  </div>
                 </div>
               </Popup>
             </Marker>
@@ -674,8 +681,13 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             >
               <Popup>
                 <div className="marker-popup destino">
-                  <h4>🎯 Destino</h4>
-                  <p>{destino.nombre}</p>
+                  <div className="popup-header">
+                    🎯 Destino
+                  </div>
+                  <div className="popup-body">
+                    <p><strong>{destino.nombre}</strong></p>
+                    <p>Punto de llegada</p>
+                  </div>
                 </div>
               </Popup>
             </Marker>
@@ -695,8 +707,12 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             >
               <Popup>
                 <div className="marker-popup usuario">
-                  <h4>Tu ubicación</h4>
-                  <p>📱 Ubicación actual</p>
+                  <div className="popup-header" style={{ background: '#2196F3' }}>
+                    Tu ubicación
+                  </div>
+                  <div className="popup-body">
+                    <p>📱 Estás aquí</p>
+                  </div>
                 </div>
               </Popup>
             </Marker>

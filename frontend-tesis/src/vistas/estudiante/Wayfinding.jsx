@@ -1,5 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  MapPin, 
+  Navigation, 
+  Smartphone, 
+  Compass, 
+  Square, 
+  Route, 
+  Ruler, 
+  Clock, 
+  Search, 
+  CheckCircle, 
+  AlertTriangle, 
+  Loader, 
+  RefreshCw, 
+  X, 
+  Target 
+} from 'lucide-react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import MapaWayfinding from '../../componentes/wayfinding/MapaWayfinding';
 import useGeolocation from '../../hooks/useGeolocation';
@@ -206,11 +223,11 @@ const Wayfinding = () => {
               
               <div className="ruta-selector">
                 <div className="punto-ruta">
-                  <label>📍 Origen:</label>
+                  <label><MapPin size={18} /> Origen:</label>
                   {origen ? (
                     <div className="ubicacion-seleccionada">
                       <span>{origen.nombre}</span>
-                      <button onClick={() => setOrigen(null)} className="btn-limpiar">✕</button>
+                      <button onClick={() => setOrigen(null)} className="btn-limpiar"><X size={16} /></button>
                     </div>
                   ) : (
                     <div className="btn-group">
@@ -221,18 +238,18 @@ const Wayfinding = () => {
                         Seleccionar origen
                       </button>
                       <button onClick={usarMiUbicacion} className="btn-mi-ubicacion">
-                        📱 {usarUbicacionSimulada ? 'Ubicación Simulada' : 'Mi ubicación'}
+                        <Smartphone size={16} /> {usarUbicacionSimulada ? 'Ubicación Simulada' : 'Mi ubicación'}
                       </button>
                     </div>
                   )}
                 </div>
 
                 <div className="punto-ruta">
-                  <label>🎯 Destino:</label>
+                  <label><Navigation size={18} /> Destino:</label>
                   {destino ? (
                     <div className="ubicacion-seleccionada">
                       <span>{destino.nombre}</span>
-                      <button onClick={() => setDestino(null)} className="btn-limpiar">✕</button>
+                      <button onClick={() => setDestino(null)} className="btn-limpiar"><X size={16} /></button>
                     </div>
                   ) : (
                     <button 
@@ -249,7 +266,7 @@ const Wayfinding = () => {
                     {!modoViaje ? (
                       <>
                         <button onClick={iniciarViaje} className="btn-iniciar-viaje">
-                          🧭 Navegar
+                          <Compass size={20} /> Navegar
                         </button>
                         <button onClick={limpiarRuta} className="btn-limpiar-ruta">
                           Limpiar
@@ -257,7 +274,7 @@ const Wayfinding = () => {
                       </>
                     ) : (
                       <button onClick={detenerViaje} className="btn-detener-viaje">
-                        ⏹️ Detener Navegación
+                        <Square size={20} fill="currentColor" /> Detener Navegación
                       </button>
                     )}
                   </div>
@@ -266,14 +283,14 @@ const Wayfinding = () => {
                 {/* Información de la Ruta Calculada */}
                 {infoRuta && (
                   <div className="info-ruta-calculada">
-                    <h4>📊 Detalles del Recorrido</h4>
+                    <h4><Route size={18} /> Detalles del Recorrido</h4>
                     <div className="info-ruta-detalle">
                       <div className="info-item">
-                        <div className="info-item-label">📏 Distancia</div>
+                        <div className="info-item-label"><Ruler size={14} /> Distancia</div>
                         <div className="info-item-value">{infoRuta.distancia} <span style={{fontSize: '18px'}}>km</span></div>
                       </div>
                       <div className="info-item">
-                        <div className="info-item-label">⏱️ Tiempo</div>
+                        <div className="info-item-label"><Clock size={14} /> Tiempo</div>
                         <div className="info-item-value">{infoRuta.tiempo} <span style={{fontSize: '18px'}}>min</span></div>
                       </div>
                     </div>
@@ -287,13 +304,17 @@ const Wayfinding = () => {
               <div className="search-section">
                 <h3>Buscar Ubicación</h3>
                 <div className="busqueda-container">
-                  <input 
-                    type="text" 
-                    placeholder="🔎 Buscar edificio, sala, oficina..."
-                    value={busqueda}
-                    onChange={(e) => buscarUbicaciones(e.target.value)}
-                    autoFocus
-                  />
+                  <div className="input-wrapper" style={{ position: 'relative' }}>
+                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#999' }} />
+                    <input 
+                      type="text" 
+                      placeholder="Buscar edificio, sala, oficina..."
+                      value={busqueda}
+                      onChange={(e) => buscarUbicaciones(e.target.value)}
+                      autoFocus
+                      style={{ paddingLeft: '40px' }}
+                    />
+                  </div>
                 </div>
                 
                 {resultadosBusqueda.length > 0 && (
@@ -322,7 +343,7 @@ const Wayfinding = () => {
               <h3>Información</h3>
               
               {/* Toggle para ubicación simulada */}
-              <div className="info-card" style={{ background: '#FFF3E0', borderLeft: '4px solid #FF9800' }}>
+              <div className="info-card simulation">
                 <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                   <input 
                     type="checkbox" 
@@ -331,22 +352,16 @@ const Wayfinding = () => {
                     style={{ marginRight: '10px', width: '20px', height: '20px', cursor: 'pointer' }}
                   />
                   <div>
-                    <strong>🎯 Simular ubicación en campus</strong><br />
+                    <strong><Target size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Simular ubicación en campus</strong><br />
                     <small>Útil para pruebas cuando no estás en el campus</small>
                   </div>
                 </label>
               </div>
 
-              <div className="info-card">
-                <p>
-                  <strong>📍 Navegación en tiempo real</strong><br />
-                  Encuentra la ruta más rápida a tu destino
-                </p>
-              </div>
               {ubicacionActual && (
                 <div className="info-card success">
                   <p>
-                    <strong>✓ {usarUbicacionSimulada ? 'Ubicación simulada activa' : 'Geolocalización activa'}</strong><br />
+                    <strong><CheckCircle size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {usarUbicacionSimulada ? 'Ubicación simulada activa' : 'Geolocalización activa'}</strong><br />
                     {usarUbicacionSimulada 
                       ? 'Ubicación de prueba dentro del campus'
                       : 'Tu ubicación está siendo rastreada en tiempo real'}
@@ -356,7 +371,7 @@ const Wayfinding = () => {
               {errorGeo && !usarUbicacionSimulada && (
                 <div className="info-card error">
                   <p>
-                    <strong>⚠ Error de geolocalización</strong><br />
+                    <strong><AlertTriangle size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Error de geolocalización</strong><br />
                     {errorGeo}
                   </p>
                 </div>
@@ -364,7 +379,7 @@ const Wayfinding = () => {
               {cargandoGeo && !ubicacionUsuario && !usarUbicacionSimulada && (
                 <div className="info-card">
                   <p>
-                    <strong>⏳ Obteniendo ubicación...</strong><br />
+                    <strong><Loader size={16} className="spin" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Obteniendo ubicación...</strong><br />
                     Esperando permisos del dispositivo
                   </p>
                 </div>
@@ -374,7 +389,7 @@ const Wayfinding = () => {
               {notificacionRecalculo && (
                 <div className="info-card recalculo">
                   <p>
-                    <strong>🔄 Recalculando ruta...</strong><br />
+                    <strong><RefreshCw size={16} className="spin" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Recalculando ruta...</strong><br />
                     Te desviaste del camino
                   </p>
                 </div>
