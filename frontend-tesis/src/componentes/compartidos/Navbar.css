@@ -45,7 +45,9 @@
 .brand-name {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #333;
+  background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   letter-spacing: -0.5px;
   font-family: 'Inter', sans-serif;
 }
