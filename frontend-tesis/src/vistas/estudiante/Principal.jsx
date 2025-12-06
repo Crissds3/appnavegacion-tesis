@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../componentes/compartidos/Navbar';
 import { noticiasService } from '../../servicios/api';
+import { 
+  Calendar, 
+  MapPin, 
+  User, 
+  Star, 
+  Building2, 
+  Map, 
+  Home,
+  X,
+  ArrowRight
+} from 'lucide-react';
 import './Principal.css';
 
 const Principal = () => {
@@ -71,12 +82,15 @@ const Principal = () => {
       <Navbar brandName="Módulo informativo">
         <div className="navbar-buttons">
           <button onClick={() => navigate('/sobre-universidad')} className="btn-info-universidad">
-            🏛️ Sobre la Universidad
+            <Building2 size={18} />
+            Sobre la Universidad
           </button>
           <button onClick={() => navigate('/wayfinding')} className="btn-wayfinding">
-            🗺️ Wayfinding
+            <Map size={18} />
+            Wayfinding
           </button>
           <button onClick={() => navigate('/')} className="btn-inicio">
+            <Home size={18} />
             Inicio
           </button>
         </div>
@@ -126,7 +140,8 @@ const Principal = () => {
                 {noticiasDestacadas.length > 0 && (
                   <div className="destacadas-section">
                     <h3 className="section-title">
-                      <span className="icon-destacado">★</span> Destacadas
+                      <Star className="icon-destacado" size={24} fill="#FFC107" color="#FFC107" /> 
+                      Destacadas
                     </h3>
                     <div className="destacadas-grid">
                       {noticiasDestacadas.map(noticia => (
@@ -156,9 +171,15 @@ const Principal = () => {
                             <p className="descripcion">{noticia.descripcion}</p>
                             {noticia.tipo === 'Evento' && noticia.fechaEvento && (
                               <div className="info-evento">
-                                <span>📅 {formatearFecha(noticia.fechaEvento)}</span>
+                                <span>
+                                  <Calendar size={14} />
+                                  {formatearFecha(noticia.fechaEvento)}
+                                </span>
                                 {noticia.ubicacionEvento && (
-                                  <span>📍 {noticia.ubicacionEvento}</span>
+                                  <span>
+                                    <MapPin size={14} />
+                                    {noticia.ubicacionEvento}
+                                  </span>
                                 )}
                               </div>
                             )}
@@ -197,12 +218,13 @@ const Principal = () => {
                             <h4>{noticia.titulo}</h4>
                             <p className="descripcion">{noticia.descripcion}</p>
                             <div className="card-footer">
-                              <span className="fecha">{formatearFecha(noticia.createdAt)}</span>
-                              {noticia.tipo === 'Evento' && noticia.fechaEvento && (
-                                <span className="fecha-evento">
-                                  📅 {formatearFecha(noticia.fechaEvento)}
-                                </span>
-                              )}
+                              <span className="fecha">
+                                <Calendar size={14} />
+                                {formatearFecha(noticia.createdAt)}
+                              </span>
+                              <span className="ver-mas">
+                                Leer más <ArrowRight size={14} />
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -223,7 +245,9 @@ const Principal = () => {
           {noticiaSeleccionada && (
             <div className="modal-overlay" onClick={cerrarNoticia}>
               <div className="modal-noticia" onClick={(e) => e.stopPropagation()}>
-                <button className="btn-cerrar-modal" onClick={cerrarNoticia}>×</button>
+                <button className="btn-cerrar-modal" onClick={cerrarNoticia}>
+                  <X size={24} />
+                </button>
                 
                 {(noticiaSeleccionada.imagenBase64 || noticiaSeleccionada.imagenUrl) && (
                   <div 
@@ -245,9 +269,15 @@ const Principal = () => {
                   <h2>{noticiaSeleccionada.titulo}</h2>
                   
                   <div className="modal-meta">
-                    <span>📅 {formatearFecha(noticiaSeleccionada.createdAt)}</span>
+                    <span className="meta-item">
+                      <Calendar size={16} />
+                      {formatearFecha(noticiaSeleccionada.createdAt)}
+                    </span>
                     {noticiaSeleccionada.autor && (
-                      <span>👤 {noticiaSeleccionada.autor.nombre}</span>
+                      <span className="meta-item">
+                        <User size={16} />
+                        {noticiaSeleccionada.autor.nombre}
+                      </span>
                     )}
                   </div>
 
@@ -256,13 +286,19 @@ const Principal = () => {
                       {noticiaSeleccionada.fechaEvento && (
                         <div className="info-item">
                           <strong>Fecha del evento:</strong>
-                          <span>{formatearFecha(noticiaSeleccionada.fechaEvento)}</span>
+                          <span>
+                            <Calendar size={16} />
+                            {formatearFecha(noticiaSeleccionada.fechaEvento)}
+                          </span>
                         </div>
                       )}
                       {noticiaSeleccionada.ubicacionEvento && (
                         <div className="info-item">
                           <strong>Ubicación:</strong>
-                          <span>{noticiaSeleccionada.ubicacionEvento}</span>
+                          <span>
+                            <MapPin size={16} />
+                            {noticiaSeleccionada.ubicacionEvento}
+                          </span>
                         </div>
                       )}
                     </div>
