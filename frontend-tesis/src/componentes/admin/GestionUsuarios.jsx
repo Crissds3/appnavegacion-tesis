@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { authService } from '../../servicios/api';
+import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
 import CrearAdmin from './CrearAdmin';
 import { 
   User, 
@@ -27,7 +28,6 @@ const GestionUsuarios = () => {
   const [showModalPassword, setShowModalPassword] = useState(false);
   const [showCrearAdmin, setShowCrearAdmin] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
   const [filtro, setFiltro] = useState('');
   
   const [formEditar, setFormEditar] = useState({
@@ -53,20 +53,15 @@ const GestionUsuarios = () => {
         setUsuarios(response.data);
       }
     } catch (error) {
-      mostrarMensaje('Error al cargar usuarios', 'error');
+      showError('Error al cargar usuarios');
     } finally {
       setLoading(false);
     }
   };
 
-  const mostrarMensaje = (texto, tipo) => {
-    setMensaje({ texto, tipo });
-    setTimeout(() => setMensaje({ texto: '', tipo: '' }), 4000);
-  };
-
   const handleSuccessCrearAdmin = (message) => {
     setShowCrearAdmin(false);
-    mostrarMensaje(message, 'success');
+    showSuccess(message);
     cargarUsuarios();
   };
 
@@ -90,19 +85,19 @@ const GestionUsuarios = () => {
     e.preventDefault();
     
     if (!formEditar.nombre || !formEditar.email) {
-      mostrarMensaje('Por favor complete todos los campos', 'error');
+      showError('Por favor complete todos los campos');
       return;
     }
 
     try {
       const response = await authService.editarUsuario(usuarioSeleccionado._id, formEditar);
       if (response.success) {
-        mostrarMensaje('Usuario actualizado exitosamente', 'success');
+        showSuccess('Usuario actualizado exitosamente');
         setShowModalEditar(false);
         cargarUsuarios();
       }
     } catch (error) {
-      mostrarMensaje(error.response?.data?.message || 'Error al actualizar usuario', 'error');
+      showError(error.response?.data?.message || 'Error al actualizar usuario');
     }
   };
 
@@ -110,17 +105,17 @@ const GestionUsuarios = () => {
     e.preventDefault();
     
     if (!formPassword.password || !formPassword.confirmPassword) {
-      mostrarMensaje('Por favor complete todos los campos', 'error');
+      showError('Por favor complete todos los campos');
       return;
     }
 
     if (formPassword.password.length < 6) {
-      mostrarMensaje('La contraseña debe tener al menos 6 caracteres', 'error');
+      showError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     if (formPassword.password !== formPassword.confirmPassword) {
-      mostrarMensaje('Las contraseñas no coinciden', 'error');
+      showError('Las contraseñas no coinciden');
       return;
     }
 
@@ -130,45 +125,55 @@ const GestionUsuarios = () => {
         { password: formPassword.password }
       );
       if (response.success) {
-        mostrarMensaje('Contraseña actualizada exitosamente', 'success');
+        showSuccess('Contraseña actualizada exitosamente');
         setShowModalPassword(false);
         setFormPassword({ password: '', confirmPassword: '' });
       }
     } catch (error) {
-      mostrarMensaje(error.response?.data?.message || 'Error al cambiar contraseña', 'error');
+      showError(error.response?.data?.message || 'Error al cambiar contraseña');
     }
   };
 
   const toggleEstadoUsuario = async (usuario) => {
     const accion = usuario.activo ? 'desactivar' : 'activar';
-    if (!window.confirm(`¿Estás seguro de ${accion} a ${usuario.nombre}?`)) {
-      return;
-    }
+    const confirmado = await showConfirm({
+      title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} usuario?`,
+      text: `¿Estás seguro de ${accion} a ${usuario.nombre}?`,
+      confirmText: `Sí, ${accion}`,
+      cancelText: 'Cancelar'
+    });
+
+    if (!confirmado) return;
 
     try {
       const response = await authService.toggleEstadoUsuario(usuario._id);
       if (response.success) {
-        mostrarMensaje(response.message, 'success');
+        showSuccess(response.message);
         cargarUsuarios();
       }
     } catch (error) {
-      mostrarMensaje(error.response?.data?.message || 'Error al cambiar estado', 'error');
+      showError(error.response?.data?.message || 'Error al cambiar estado');
     }
   };
 
   const handleEliminar = async (usuario) => {
-    if (!window.confirm(`¿Estás seguro de eliminar a ${usuario.nombre}? Esta acción no se puede deshacer.`)) {
-      return;
-    }
+    const confirmado = await showConfirm({
+      title: '¿Eliminar usuario?',
+      text: `¿Estás seguro de eliminar a ${usuario.nombre}? Esta acción no se puede deshacer.`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (!confirmado) return;
 
     try {
       const response = await authService.eliminarAdministrador(usuario._id);
       if (response.success) {
-        mostrarMensaje('Usuario eliminado exitosamente', 'success');
+        showSuccess('Usuario eliminado exitosamente');
         cargarUsuarios();
       }
     } catch (error) {
-      mostrarMensaje(error.response?.data?.message || 'Error al eliminar usuario', 'error');
+      showError(error.response?.data?.message || 'Error al eliminar usuario');
     }
   };
 
@@ -190,13 +195,6 @@ const GestionUsuarios = () => {
 
   return (
     <div className="gestion-usuarios-container">
-      {mensaje.texto && (
-        <div className={`mensaje-flotante mensaje-${mensaje.tipo}`}>
-          {mensaje.tipo === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-          <span>{mensaje.texto}</span>
-        </div>
-      )}
-
       <div className="gestion-main-card">
         <div className="gestion-header">
           <div className="header-title">

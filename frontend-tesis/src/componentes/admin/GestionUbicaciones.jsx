@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import api from '../../servicios/api';
+import { showSuccess, showError, showConfirm, showToast } from '../../utils/sweetAlert';
 import { 
   MapPin, 
   Plus, 
@@ -41,7 +42,6 @@ const MapClickHandler = ({ onLocationSelect }) => {
 const GestionUbicaciones = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(false);
-  const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
   const [modoEdicion, setModoEdicion] = useState(false);
   const [ubicacionActual, setUbicacionActual] = useState(null);
   const [filtro, setFiltro] = useState('');
@@ -77,16 +77,11 @@ const GestionUbicaciones = () => {
         setUbicaciones(response.data.data);
       }
     } catch (error) {
-      mostrarMensaje('error', 'Error al cargar ubicaciones');
+      showError('Error al cargar ubicaciones');
       console.error(error);
     } finally {
       setCargando(false);
     }
-  };
-
-  const mostrarMensaje = (tipo, texto) => {
-    setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje({ tipo: '', texto: '' }), 5000);
   };
 
   const handleInputChange = (e) => {
@@ -116,14 +111,14 @@ const GestionUbicaciones = () => {
       latitud: latlng.lat.toFixed(6),
       longitud: latlng.lng.toFixed(6)
     }));
-    // mostrarMensaje('info', `Coordenadas seleccionadas: ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`);
+    showToast({ title: 'Coordenadas seleccionadas', icon: 'info' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formulario.nombre || !formulario.latitud || !formulario.longitud) {
-      mostrarMensaje('error', 'Nombre y coordenadas son obligatorios');
+      showError('Nombre y coordenadas son obligatorios');
       return;
     }
 
@@ -143,16 +138,16 @@ const GestionUbicaciones = () => {
 
       if (modoEdicion && ubicacionActual) {
         await api.put(`/ubicaciones/${ubicacionActual._id}`, datos);
-        mostrarMensaje('success', 'Ubicación actualizada exitosamente');
+        showSuccess('Ubicación actualizada exitosamente');
       } else {
         await api.post('/ubicaciones', datos);
-        mostrarMensaje('success', 'Ubicación creada exitosamente');
+        showSuccess('Ubicación creada exitosamente');
       }
 
       resetFormulario();
       cargarUbicaciones();
     } catch (error) {
-      mostrarMensaje('error', error.response?.data?.message || 'Error al guardar ubicación');
+      showError(error.response?.data?.message || 'Error al guardar ubicación');
       console.error(error);
     } finally {
       setCargando(false);
@@ -187,17 +182,22 @@ const GestionUbicaciones = () => {
   };
 
   const eliminarUbicacion = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta ubicación?')) {
-      return;
-    }
+    const confirmado = await showConfirm({
+      title: '¿Eliminar ubicación?',
+      text: '¿Estás seguro de eliminar esta ubicación?',
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (!confirmado) return;
 
     try {
       setCargando(true);
       await api.delete(`/ubicaciones/${id}`);
-      mostrarMensaje('success', 'Ubicación eliminada exitosamente');
+      showSuccess('Ubicación eliminada exitosamente');
       cargarUbicaciones();
     } catch (error) {
-      mostrarMensaje('error', 'Error al eliminar ubicación');
+      showError('Error al eliminar ubicación');
       console.error(error);
     } finally {
       setCargando(false);
@@ -233,12 +233,6 @@ const GestionUbicaciones = () => {
 
   return (
     <div className="gestion-ubicaciones">
-      {mensaje.texto && (
-        <div className={`mensaje mensaje-${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
-
       <div className="gestion-main-card">
         <div className="gestion-header">
           <div className="header-title">

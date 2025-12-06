@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api, { noticiasService, ubicacionesService } from '../../servicios/api';
+import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
 import { 
   Plus, 
   Search, 
@@ -23,7 +24,6 @@ const GestionNoticias = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingNoticia, setEditingNoticia] = useState(null);
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
   const [imagenPreview, setImagenPreview] = useState(null);
   const fileInputRef = useRef(null);
   
@@ -79,15 +79,10 @@ const GestionNoticias = () => {
         setNoticias(response.data);
       }
     } catch (error) {
-      mostrarMensaje('Error al cargar noticias', 'error');
+      showError('Error al cargar noticias');
     } finally {
       setLoading(false);
     }
-  };
-
-  const mostrarMensaje = (texto, tipo) => {
-    setMensaje({ texto, tipo });
-    setTimeout(() => setMensaje({ texto: '', tipo: '' }), 3000);
   };
 
   const handleInputChange = (e) => {
@@ -103,13 +98,13 @@ const GestionNoticias = () => {
     if (file) {
       // Validar tamaño (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        mostrarMensaje('La imagen no debe superar 5MB', 'error');
+        showError('La imagen no debe superar 5MB');
         return;
       }
 
       // Validar tipo
       if (!file.type.startsWith('image/')) {
-        mostrarMensaje('Solo se permiten archivos de imagen', 'error');
+        showError('Solo se permiten archivos de imagen');
         return;
       }
 
@@ -143,20 +138,20 @@ const GestionNoticias = () => {
       if (editingNoticia) {
         const response = await noticiasService.updateNoticia(editingNoticia._id, formData);
         if (response.success) {
-          mostrarMensaje('Noticia actualizada exitosamente', 'success');
+          showSuccess('Noticia actualizada exitosamente');
           cargarNoticias();
           cerrarModal();
         }
       } else {
         const response = await noticiasService.createNoticia(formData);
         if (response.success) {
-          mostrarMensaje('Noticia creada exitosamente', 'success');
+          showSuccess('Noticia creada exitosamente');
           cargarNoticias();
           cerrarModal();
         }
       }
     } catch (error) {
-      mostrarMensaje(error.message || 'Error al guardar noticia', 'error');
+      showError(error.message || 'Error al guardar noticia');
     }
   };
 
@@ -188,16 +183,23 @@ const GestionNoticias = () => {
   };
 
   const handleEliminar = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta noticia?')) return;
+    const confirmado = await showConfirm({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer',
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (!confirmado) return;
     
     try {
       const response = await noticiasService.deleteNoticia(id);
       if (response.success) {
-        mostrarMensaje('Noticia eliminada exitosamente', 'success');
+        showSuccess('Noticia eliminada exitosamente');
         cargarNoticias();
       }
     } catch (error) {
-      mostrarMensaje('Error al eliminar noticia', 'error');
+      showError('Error al eliminar noticia');
     }
   };
 
@@ -211,7 +213,7 @@ const GestionNoticias = () => {
         cargarNoticias();
       }
     } catch (error) {
-      mostrarMensaje('Error al actualizar noticia', 'error');
+      showError('Error al actualizar noticia');
     }
   };
 
@@ -242,12 +244,6 @@ const GestionNoticias = () => {
 
   return (
     <div className="gestion-noticias">
-      {mensaje.texto && (
-        <div className={`mensaje ${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
-
       <div className="gestion-main-card">
         <div className="gestion-header">
           <div className="header-title">

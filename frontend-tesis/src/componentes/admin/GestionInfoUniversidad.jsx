@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { infoService, carrerasService, ubicacionesService } from '../../servicios/api';
+import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
 import { 
   BookOpen, 
   GraduationCap, 
@@ -26,7 +27,6 @@ import './GestionInfoUniversidad.css';
 const GestionInfoUniversidad = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [loading, setLoading] = useState(false);
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
 
   // Estados para información general
   const [secciones, setSecciones] = useState([]);
@@ -120,7 +120,7 @@ const GestionInfoUniversidad = () => {
         setSecciones(response.data);
       }
     } catch (err) {
-      mostrarMensaje('Error al cargar secciones', 'error');
+      showError('Error al cargar secciones');
       console.error(err);
     } finally {
       setLoading(false);
@@ -140,15 +140,14 @@ const GestionInfoUniversidad = () => {
     try {
       const response = await infoService.updateInfo(infoForm);
       if (response.success) {
-        mostrarMensaje(
-          editingSeccion ? 'Sección actualizada exitosamente' : 'Sección creada exitosamente',
-          'success'
+        showSuccess(
+          editingSeccion ? 'Sección actualizada exitosamente' : 'Sección creada exitosamente'
         );
         cargarSecciones();
         cerrarInfoModal();
       }
     } catch (error) {
-      mostrarMensaje(error.message || 'Error al guardar sección', 'error');
+      showError(error.message || 'Error al guardar sección');
     }
   };
 
@@ -191,7 +190,7 @@ const GestionInfoUniversidad = () => {
         setCarreras(response.data);
       }
     } catch (err) {
-      mostrarMensaje('Error al cargar carreras', 'error');
+      showError('Error al cargar carreras');
       console.error(err);
     } finally {
       setLoading(false);
@@ -212,20 +211,20 @@ const GestionInfoUniversidad = () => {
       if (editingCarrera) {
         const response = await carrerasService.updateCarrera(editingCarrera._id, carreraForm);
         if (response.success) {
-          mostrarMensaje('Carrera actualizada exitosamente', 'success');
+          showSuccess('Carrera actualizada exitosamente');
           cargarCarreras();
           cerrarCarreraModal();
         }
       } else {
         const response = await carrerasService.createCarrera(carreraForm);
         if (response.success) {
-          mostrarMensaje('Carrera creada exitosamente', 'success');
+          showSuccess('Carrera creada exitosamente');
           cargarCarreras();
           cerrarCarreraModal();
         }
       }
     } catch (error) {
-      mostrarMensaje(error.message || 'Error al guardar carrera', 'error');
+      showError(error.message || 'Error al guardar carrera');
     }
   };
 
@@ -264,28 +263,28 @@ const GestionInfoUniversidad = () => {
   };
 
   const handleEliminarCarrera = async (id) => {
-    if (!window.confirm('¿Estás seguro de eliminar esta carrera?')) return;
+    const confirmado = await showConfirm({
+      title: '¿Eliminar carrera?',
+      text: '¿Estás seguro de eliminar esta carrera?',
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar'
+    });
+
+    if (!confirmado) return;
 
     try {
       const response = await carrerasService.deleteCarrera(id);
       if (response.success) {
-        mostrarMensaje('Carrera eliminada exitosamente', 'success');
+        showSuccess('Carrera eliminada exitosamente');
         cargarCarreras();
       }
     } catch (error) {
-      mostrarMensaje(error.message || 'Error al eliminar carrera', 'error');
+      showError(error.message || 'Error al eliminar carrera');
     }
   };
 
   return (
     <div className="gestion-info-container">
-      {mensaje.texto && (
-        <div className={`mensaje-flotante ${mensaje.tipo}`}>
-          {mensaje.tipo === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
-          {mensaje.texto}
-        </div>
-      )}
-
       <div className="gestion-main-card">
         <div className="gestion-info-header">
           <h2>Gestión de información universitaria</h2>
