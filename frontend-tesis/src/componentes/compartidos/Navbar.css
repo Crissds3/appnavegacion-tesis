@@ -90,7 +90,7 @@
 .nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: -20px; /* Align with navbar bottom border */
+  bottom: 0;
   left: 0;
   width: 100%;
   height: 3px;

@@ -242,7 +242,7 @@ const GestionUbicaciones = () => {
       <div className="gestion-main-card">
         <div className="gestion-header">
           <div className="header-title">
-            <h2>Gestión de Ubicaciones</h2>
+            <h2>Gestión de ubicaciones</h2>
             <p className="header-subtitle">Administra los puntos de interés en el mapa del campus</p>
           </div>
           <div className="header-actions">
@@ -305,7 +305,7 @@ const GestionUbicaciones = () => {
 
             <div className="formulario-seccion">
               <div className="card-header">
-                <h3>{modoEdicion ? <Edit2 size={20} /> : <Plus size={20} />} {modoEdicion ? 'Editar Ubicación' : 'Nueva Ubicación'}</h3>
+                <h3>{modoEdicion ? <Edit2 size={20} /> : <Plus size={20} />} {modoEdicion ? 'Editar ubicación' : 'Nueva ubicación'}</h3>
               </div>
               
               <form onSubmit={handleSubmit} className="form-ubicacion">
@@ -398,7 +398,7 @@ const GestionUbicaciones = () => {
                 </div>
 
                 <div className="metadatos-container">
-                  <h4 className="meta-title"><Info size={16} /> Información Adicional</h4>
+                  <h4 className="meta-title"><Info size={16} /> Información adicional</h4>
                   <div className="form-grid">
                     <div className="form-group">
                       <label>Horario</label>

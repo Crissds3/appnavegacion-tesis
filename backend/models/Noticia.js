@@ -41,6 +41,10 @@ const noticiaSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  ubicacionWayfinding: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Ubicacion'
+  },
   activo: {
     type: Boolean,
     default: true

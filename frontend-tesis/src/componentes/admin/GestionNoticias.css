@@ -304,13 +304,28 @@
   z-index: 10;
 }
 
+.modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-icon-bg {
+  width: 48px;
+  height: 48px;
+  background: #ffebee;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E53935;
+}
+
 .modal-header h3 {
   margin: 0;
   font-size: 20px;
   color: #1a1a1a;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  font-weight: 700;
 }
 
 .btn-close-modal {
@@ -463,21 +478,26 @@
 
 .btn-remove-image {
   margin-top: 12px;
-  background: transparent;
+  background: white;
   border: 1px solid #ffcdd2;
   color: #c62828;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(198, 40, 40, 0.05);
 }
 
 .btn-remove-image:hover {
   background: #ffebee;
+  border-color: #ef9a9a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(198, 40, 40, 0.1);
 }
 
 /* Checkbox Cards */

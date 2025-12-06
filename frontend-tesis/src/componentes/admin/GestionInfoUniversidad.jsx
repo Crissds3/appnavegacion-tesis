@@ -288,7 +288,7 @@ const GestionInfoUniversidad = () => {
 
       <div className="gestion-main-card">
         <div className="gestion-info-header">
-          <h2>Gestión de Información Universitaria</h2>
+          <h2>Gestión de información universitaria</h2>
           <p>Administra la información general y las carreras de la universidad</p>
         </div>
 
@@ -461,7 +461,7 @@ const GestionInfoUniversidad = () => {
                 <div className="modal-icon-bg">
                   {editingSeccion ? <Edit2 size={20} /> : <Plus size={20} />}
                 </div>
-                <h3>{editingSeccion ? 'Editar Sección' : 'Nueva Sección'}</h3>
+                <h3>{editingSeccion ? 'Editar sección' : 'Nueva sección'}</h3>
               </div>
               <button className="btn-cerrar" onClick={cerrarInfoModal}>
                 <X size={24} />
@@ -471,7 +471,7 @@ const GestionInfoUniversidad = () => {
             <form onSubmit={handleInfoSubmit} className="modal-form">
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Tipo de Sección</label>
+                  <label>Tipo de sección</label>
                   <select
                     name="seccion"
                     value={infoForm.seccion}
@@ -487,7 +487,7 @@ const GestionInfoUniversidad = () => {
                 </div>
                 
                 <div className="form-group">
-                  <label>Icono Representativo</label>
+                  <label>Icono representativo</label>
                   <div className="icon-selector">
                     <select
                       name="icono"
@@ -565,7 +565,7 @@ const GestionInfoUniversidad = () => {
                 </button>
                 <button type="submit" className="btn-modal-unique-save">
                   <Save size={18} />
-                  {editingSeccion ? 'Guardar Cambios' : 'Crear Sección'}
+                  {editingSeccion ? 'Guardar cambios' : 'Crear sección'}
                 </button>
               </div>
             </form>
@@ -582,7 +582,7 @@ const GestionInfoUniversidad = () => {
                 <div className="modal-icon-bg">
                   <GraduationCap size={20} />
                 </div>
-                <h3>{editingCarrera ? 'Editar Carrera' : 'Nueva Carrera'}</h3>
+                <h3>{editingCarrera ? 'Editar carrera' : 'Nueva carrera'}</h3>
               </div>
               <button className="btn-cerrar" onClick={cerrarCarreraModal}>
                 <X size={24} />
@@ -591,11 +591,11 @@ const GestionInfoUniversidad = () => {
             
             <form onSubmit={handleCarreraSubmit} className="modal-form">
               <div className="form-section-title">
-                <h4>Información Académica</h4>
+                <h4>Información académica</h4>
               </div>
               
               <div className="form-group">
-                <label>Nombre de la Carrera</label>
+                <label>Nombre de la carrera</label>
                 <input
                   type="text"
                   name="nombre"

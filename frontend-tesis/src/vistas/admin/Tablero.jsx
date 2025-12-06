@@ -13,6 +13,7 @@ const Tablero = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('contenidos');
   const [showProfile, setShowProfile] = useState(false);
+  const [isProfileFixed, setIsProfileFixed] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleLogout = () => {
@@ -20,15 +21,49 @@ const Tablero = () => {
     navigate('/login');
   };
 
+  const navLinks = [
+    { name: 'Contenidos', onClick: () => setActiveTab('contenidos'), active: activeTab === 'contenidos' },
+    { name: 'Ubicaciones', onClick: () => setActiveTab('ubicaciones'), active: activeTab === 'ubicaciones' },
+    { name: 'AR', onClick: () => setActiveTab('ar'), active: activeTab === 'ar' },
+  ];
+
+  if (user?.rol === 'superadmin') {
+    navLinks.push({ name: 'Usuarios', onClick: () => setActiveTab('admin'), active: activeTab === 'admin' });
+  }
+
+  const formatName = (fullName) => {
+    if (!fullName) return '';
+    const parts = fullName.split(' ');
+    // Retorna el primer nombre y la inicial del segundo nombre/apellido
+    return parts.length > 1 ? `${parts[0]} ${parts[1].charAt(0)}.` : parts[0];
+  };
+
+  const handleProfileClick = () => {
+    setIsProfileFixed(!isProfileFixed);
+    if (isProfileFixed) {
+      setShowProfile(false);
+    } else {
+      setShowProfile(true);
+    }
+  };
+
   return (
     <div className="dashboard-container">
-      <Navbar brandName="Sistema de gestión de información">
+      <Navbar brandName="Sistema de gestión" customLinks={navLinks}>
         <div className="navbar-user-section">
-          <div className="user-info-wrapper">
-            <button onClick={() => setShowProfile(!showProfile)} className="btn-user-profile">
-              <span className="user-icon">👤</span>
-              <span className="user-name">{user?.nombre}</span>
-              <span className="user-arrow">{showProfile ? '▲' : '▼'}</span>
+          <div 
+            className="user-info-wrapper"
+            onMouseEnter={() => setShowProfile(true)}
+            onMouseLeave={() => !isProfileFixed && setShowProfile(false)}
+          >
+            <button 
+              className={`btn-user-profile ${isProfileFixed ? 'active' : ''}`}
+              onClick={handleProfileClick}
+            >
+              <div className="user-avatar-circle-small">
+                {user?.nombre?.charAt(0)}
+              </div>
+              <span className="user-name">{formatName(user?.nombre)}</span>
             </button>
             {showProfile && (
               <div className="profile-dropdown">
@@ -58,7 +93,7 @@ const Tablero = () => {
       <main className="main-content">
         {/* Header estilo estudiante */}
         <div className="dashboard-header">
-          <h1>Panel de Administración</h1>
+          <h1>Panel de administración</h1>
           <p className="dashboard-subtitle">Gestiona el contenido y configuración de la plataforma</p>
         </div>
 
@@ -69,35 +104,7 @@ const Tablero = () => {
               <span>✓ {successMessage}</span>
             </div>
           )}
-          {/* Tabs de navegación */}
-          <div className="tabs-container">
-            <button 
-              className={`tab-button ${activeTab === 'contenidos' ? 'active' : ''}`}
-              onClick={() => setActiveTab('contenidos')}
-            >
-              Contenidos
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'ubicaciones' ? 'active' : ''}`}
-              onClick={() => setActiveTab('ubicaciones')}
-            >
-              Ubicaciones
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'ar' ? 'active' : ''}`}
-              onClick={() => setActiveTab('ar')}
-            >
-              AR
-            </button>
-            {user?.rol === 'superadmin' && (
-              <button 
-                className={`tab-button ${activeTab === 'admin' ? 'active' : ''}`}
-                onClick={() => setActiveTab('admin')}
-              >
-                Usuarios
-              </button>
-            )}
-          </div>
+          {/* Tabs de navegación movidos al Navbar */}
 
           {/* Contenido según tab activo */}
           {activeTab === 'contenidos' && (

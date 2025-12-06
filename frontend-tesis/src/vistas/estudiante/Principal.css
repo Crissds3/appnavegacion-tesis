@@ -1055,3 +1055,33 @@
     border-radius: 6px;
   }
 }
+
+.btn-como-llegar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #E53935;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  width: fit-content;
+}
+
+.btn-como-llegar:hover {
+  background: #D32F2F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.2);
+}
+
+.wayfinding-action {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  width: 100%;
+}
+

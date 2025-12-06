@@ -83,33 +83,47 @@
 }
 
 .error-message {
-  background: #FFEBEE;
-  border-left: 4px solid var(--primary-red);
-  border-radius: 8px;
-  padding: 14px 18px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 12px;
+  padding: 16px;
   margin-bottom: 24px;
-  color: var(--dark-red);
+  color: #991B1B;
   font-size: 14px;
   font-weight: 500;
   animation: shake 0.4s;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.error-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #EF4444;
 }
 
 .success-message {
-  background: #E8F5E9;
-  border-left: 4px solid #4CAF50;
-  border-radius: 8px;
-  padding: 14px 18px;
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 12px;
+  padding: 16px;
   margin-bottom: 24px;
-  color: #2E7D32;
+  color: #166534;
   font-size: 14px;
   font-weight: 500;
   animation: slideDown 0.4s;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.success-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #22C55E;
 }
 
 @keyframes slideDown {
@@ -165,7 +179,7 @@
   color: #9E9E9E;
   pointer-events: none;
   transition: color 0.3s ease;
-  z-index: 1;
+  z-index: 3;
 }
 
 .form-group input {

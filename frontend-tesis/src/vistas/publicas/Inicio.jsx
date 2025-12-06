@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../componentes/compartidos/Navbar';
+import { LogIn } from 'lucide-react';
 import './Inicio.css';
 
 const Inicio = () => {
@@ -34,8 +35,9 @@ const Inicio = () => {
   return (
     <div className="inicio-container">
       <Navbar brandName="Portal de Navegación">
-        <button onClick={handleAdminLogin} className="btn-admin">
-          Acceso Administrador
+        <button onClick={handleAdminLogin} className="btn-login">
+          <LogIn size={18} />
+          <span>Acceso Administrador</span>
         </button>
       </Navbar>
 

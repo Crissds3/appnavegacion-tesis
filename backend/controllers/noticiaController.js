@@ -13,6 +13,7 @@ export const obtenerNoticiasPublicas = async (req, res) => {
 
     const noticias = await Noticia.find(filtros)
       .populate('autor', 'nombre')
+      .populate('ubicacionWayfinding', 'nombre')
       .sort({ destacado: -1, createdAt: -1 })
       .limit(50);
 
@@ -55,7 +56,8 @@ export const obtenerTodasNoticias = async (req, res) => {
 export const obtenerNoticiaPorId = async (req, res) => {
   try {
     const noticia = await Noticia.findById(req.params.id)
-      .populate('autor', 'nombre email');
+      .populate('autor', 'nombre email')
+      .populate('ubicacionWayfinding', 'nombre');
 
     if (!noticia) {
       return res.status(404).json({
@@ -81,7 +83,7 @@ export const obtenerNoticiaPorId = async (req, res) => {
 // Crear noticia (admin)
 export const crearNoticia = async (req, res) => {
   try {
-    const { titulo, descripcion, contenido, tipo, categoria, imagenUrl, imagenBase64, fechaEvento, ubicacionEvento, destacado } = req.body;
+    const { titulo, descripcion, contenido, tipo, categoria, imagenUrl, imagenBase64, fechaEvento, ubicacionEvento, ubicacionWayfinding, destacado } = req.body;
 
     // Validar que el usuario sea admin
     if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
@@ -101,6 +103,7 @@ export const crearNoticia = async (req, res) => {
       imagenBase64,
       fechaEvento,
       ubicacionEvento,
+      ubicacionWayfinding: ubicacionWayfinding || null,
       destacado: destacado || false,
       autor: req.usuario.id
     });
@@ -128,6 +131,10 @@ export const actualizarNoticia = async (req, res) => {
         success: false,
         message: 'Solo los administradores pueden actualizar noticias'
       });
+    }
+
+    if (req.body.ubicacionWayfinding === '') {
+      req.body.ubicacionWayfinding = null;
     }
 
     const noticia = await Noticia.findByIdAndUpdate(

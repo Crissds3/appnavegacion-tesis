@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { UserPlus, X } from 'lucide-react';
 import './CrearAdmin.css';
 
 const CrearAdmin = ({ onClose, onSuccess }) => {
@@ -64,8 +65,15 @@ const CrearAdmin = ({ onClose, onSuccess }) => {
     <div className="modal-overlay">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Crear Nuevo Administrador</h2>
-          <button onClick={onClose} className="btn-close-modal">✕</button>
+          <div className="modal-title-wrapper">
+            <div className="modal-icon-bg">
+              <UserPlus size={24} />
+            </div>
+            <h2>Crear nuevo administrador</h2>
+          </div>
+          <button onClick={onClose} className="btn-close-modal">
+            <X size={24} />
+          </button>
         </div>
 
         {error && (

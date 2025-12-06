@@ -70,18 +70,7 @@ const SobreUniversidad = () => {
 
   return (
     <div className="sobre-universidad-container">
-      <Navbar brandName="Módulo informativo">
-        <div className="navbar-buttons">
-          <button onClick={() => navigate('/wayfinding')} className="btn-nav btn-wayfinding">
-            <Map size={18} />
-            <span>Wayfinding</span>
-          </button>
-          <button onClick={() => navigate('/estudiante')} className="btn-nav btn-volver">
-            <ArrowLeft size={18} />
-            <span>Volver</span>
-          </button>
-        </div>
-      </Navbar>
+      <Navbar brandName="Módulo informativo" />
 
       <main className="main-content">
         <div className="sobre-header">

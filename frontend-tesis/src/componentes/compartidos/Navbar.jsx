@@ -7,14 +7,16 @@ import logo from '../../assets/logo.png';
 
 const Navbar = ({ 
   brandName = "CampusNav", 
-  showLogo = true 
+  showLogo = true,
+  customLinks = null,
+  children
 }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navLinks = [
+  const defaultNavLinks = [
     { name: 'Noticias', path: '/estudiante', icon: <Newspaper size={18} /> },
     { name: 'Mapa', path: '/wayfinding', icon: <Map size={18} /> },
     { name: 'Sobre Nosotros', path: '/sobre-universidad', icon: <Info size={18} /> },
@@ -23,7 +25,9 @@ const Navbar = ({
   const isActive = (path) => location.pathname === path;
   const isHomePage = location.pathname === '/';
   const isDashboard = location.pathname.startsWith('/dashboard');
-  const showNavigation = !isHomePage && !isDashboard;
+  
+  const showDefaultNavigation = !isHomePage && !isDashboard;
+  const linksRender = customLinks || (showDefaultNavigation ? defaultNavLinks : []);
 
   return (
     <nav className="navbar">
@@ -35,39 +39,57 @@ const Navbar = ({
         </div>
 
         {/* Desktop Navigation */}
-        {showNavigation && (
+        {linksRender.length > 0 && (
           <div className="nav-links desktop-only">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`nav-link ${isActive(link.path) ? 'active' : ''}`}
-              >
-                {link.icon}
-                <span>{link.name}</span>
-              </Link>
+            {linksRender.map((link, index) => (
+              link.path ? (
+                <Link
+                  key={link.path || index}
+                  to={link.path}
+                  className={`nav-link ${isActive(link.path) ? 'active' : ''}`}
+                >
+                  {link.icon}
+                  <span>{link.name}</span>
+                </Link>
+              ) : (
+                <button
+                  key={index}
+                  onClick={link.onClick}
+                  className={`nav-link ${link.active ? 'active' : ''}`}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.95rem', fontFamily: 'inherit' }}
+                >
+                  {link.icon}
+                  <span>{link.name}</span>
+                </button>
+              )
             ))}
           </div>
         )}
 
         {/* Auth Actions */}
         <div className="nav-actions desktop-only">
-          {isAuthenticated ? (
-            <div className="auth-buttons">
-              <span className="user-greeting">Hola, {user?.nombre?.split(' ')[0]}</span>
-              <button onClick={() => navigate('/dashboard')} className="btn-dashboard" title="Panel de Administración">
-                <LayoutDashboard size={18} />
-                <span>Panel</span>
-              </button>
-              <button onClick={logout} className="btn-logout" title="Cerrar Sesión">
-                <LogOut size={18} />
-              </button>
-            </div>
+          {children ? (
+            children
           ) : (
-            <button onClick={() => navigate('/login')} className="btn-login">
-              <LogIn size={18} />
-              <span>Acceso Admin</span>
-            </button>
+            isAuthenticated ? (
+              <div className="auth-buttons">
+                <span className="user-greeting">Hola, {user?.nombre?.split(' ')[0]}</span>
+                {!isDashboard && (
+                  <button onClick={() => navigate('/dashboard')} className="btn-dashboard" title="Panel de Administración">
+                    <LayoutDashboard size={18} />
+                    <span>Panel</span>
+                  </button>
+                )}
+                <button onClick={logout} className="btn-logout" title="Cerrar Sesión">
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => navigate('/login')} className="btn-login">
+                <LogIn size={18} />
+                <span>Acceso Admin</span>
+              </button>
+            )
           )}
         </div>
 
@@ -80,31 +102,52 @@ const Navbar = ({
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="mobile-menu">
-          {showNavigation && navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`mobile-nav-link ${isActive(link.path) ? 'active' : ''}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              {link.icon}
-              <span>{link.name}</span>
-            </Link>
+          {linksRender.map((link, index) => (
+             link.path ? (
+              <Link
+                key={link.path || index}
+                to={link.path}
+                className={`mobile-nav-link ${isActive(link.path) ? 'active' : ''}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.icon}
+                <span>{link.name}</span>
+              </Link>
+             ) : (
+              <button
+                key={index}
+                onClick={() => { link.onClick(); setIsMenuOpen(false); }}
+                className={`mobile-nav-link ${link.active ? 'active' : ''}`}
+              >
+                {link.icon}
+                <span>{link.name}</span>
+              </button>
+             )
           ))}
           <div className="mobile-auth-actions">
-            {isAuthenticated ? (
-              <>
-                <button onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }} className="mobile-btn-dashboard">
-                  <LayoutDashboard size={18} /> Panel Admin
-                </button>
-                <button onClick={() => { logout(); setIsMenuOpen(false); }} className="mobile-btn-logout">
-                  <LogOut size={18} /> Cerrar Sesión
-                </button>
-              </>
+            {children ? (
+               isAuthenticated && (
+                  <button onClick={() => { logout(); setIsMenuOpen(false); }} className="mobile-btn-logout">
+                    <LogOut size={18} /> Cerrar Sesión
+                  </button>
+               )
             ) : (
-              <button onClick={() => { navigate('/login'); setIsMenuOpen(false); }} className="mobile-btn-login">
-                <LogIn size={18} /> Acceso Admin
-              </button>
+              isAuthenticated ? (
+                <>
+                  {!isDashboard && (
+                    <button onClick={() => { navigate('/dashboard'); setIsMenuOpen(false); }} className="mobile-btn-dashboard">
+                      <LayoutDashboard size={18} /> Panel Admin
+                    </button>
+                  )}
+                  <button onClick={() => { logout(); setIsMenuOpen(false); }} className="mobile-btn-logout">
+                    <LogOut size={18} /> Cerrar Sesión
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => { navigate('/login'); setIsMenuOpen(false); }} className="mobile-btn-login">
+                  <LogIn size={18} /> Acceso Admin
+                </button>
+              )
             )}
           </div>
         </div>

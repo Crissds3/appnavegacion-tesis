@@ -212,16 +212,7 @@ const Wayfinding = () => {
 
   return (
     <div className="wayfinding-container">
-      <Navbar brandName="Módulo de navegación">
-        <div className="navbar-buttons">
-          <button onClick={() => navigate('/estudiante')} className="btn-noticias">
-            Noticias
-          </button>
-          <button onClick={() => navigate('/')} className="btn-inicio">
-            Inicio
-          </button>
-        </div>
-      </Navbar>
+      <Navbar brandName="Módulo de navegación" />
 
       <main className="wayfinding-main">
         <div className="wayfinding-header">

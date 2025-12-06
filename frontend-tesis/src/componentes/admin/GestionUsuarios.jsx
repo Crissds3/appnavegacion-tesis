@@ -200,7 +200,7 @@ const GestionUsuarios = () => {
       <div className="gestion-main-card">
         <div className="gestion-header">
           <div className="header-title">
-            <h2>Gestión de Usuarios</h2>
+            <h2>Gestión de usuarios</h2>
             <p className="header-subtitle">Administra los accesos y roles del sistema</p>
           </div>
           <div className="header-actions">
@@ -224,80 +224,92 @@ const GestionUsuarios = () => {
           </div>
         </div>
 
-        <div className="usuarios-grid-modern">
-          {usuariosFiltrados.map((usuario) => (
-            <div key={usuario._id} className="usuario-card-modern">
-              <div className="card-top-accent"></div>
-              <div className="usuario-card-header">
-                <div className="avatar-placeholder">
-                  <User size={24} />
-                </div>
-                <div className="usuario-info-main">
-                  <h3>{usuario.nombre}</h3>
-                  <div className="usuario-email-row">
-                    <Mail size={14} />
-                    <span>{usuario.email}</span>
-                  </div>
-                </div>
-                <div className={`status-indicator ${usuario.activo ? 'active' : 'inactive'}`} title={usuario.activo ? 'Activo' : 'Inactivo'}></div>
-              </div>
-
-              <div className="usuario-card-body">
-                <div className="info-row">
-                  <span className="label">Rol</span>
-                  <span className={`badge-rol ${usuario.rol}`}>
-                    {usuario.rol === 'superadmin' ? 'Super Admin' : 'Administrador'}
-                  </span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Estado</span>
-                  <span className={`badge-status ${usuario.activo ? 'active' : 'inactive'}`}>
-                    {usuario.activo ? 'Activo' : 'Inactivo'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="usuario-card-actions">
-                {usuario.rol !== 'superadmin' ? (
-                  <>
-                    <button
-                      className="btn-icon-modern edit"
-                      onClick={() => handleEditarUsuario(usuario)}
-                      title="Editar"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button
-                      className="btn-icon-modern password"
-                      onClick={() => handleCambiarPassword(usuario)}
-                      title="Cambiar contraseña"
-                    >
-                      <Lock size={18} />
-                    </button>
-                    <button
-                      className={`btn-icon-modern ${usuario.activo ? 'deactivate' : 'activate'}`}
-                      onClick={() => toggleEstadoUsuario(usuario)}
-                      title={usuario.activo ? 'Desactivar' : 'Activar'}
-                    >
-                      <Power size={18} />
-                    </button>
-                    <button
-                      className="btn-icon-modern delete"
-                      onClick={() => handleEliminar(usuario)}
-                      title="Eliminar"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </>
-                ) : (
-                  <div className="protected-user-msg">
-                    <Shield size={14} />
-                    <span>Usuario Protegido</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="table-container">
+          <table className="usuarios-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usuariosFiltrados.length > 0 ? (
+                usuariosFiltrados.map((usuario) => (
+                  <tr key={usuario._id}>
+                    <td>
+                      <div className="usuario-cell">
+                        <div className="avatar-circle">
+                          {usuario.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="usuario-info">
+                          <span className="usuario-nombre">{usuario.nombre}</span>
+                          <span className="usuario-email">{usuario.email}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`badge-rol ${usuario.rol}`}>
+                        {usuario.rol === 'superadmin' ? 'Super Admin' : 'Administrador'}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge-status ${usuario.activo ? 'active' : 'inactive'}`}>
+                        {usuario.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="actions-cell">
+                        {usuario.rol !== 'superadmin' ? (
+                          <>
+                            <button
+                              className="btn-action edit"
+                              onClick={() => handleEditarUsuario(usuario)}
+                              title="Editar"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              className="btn-action password"
+                              onClick={() => handleCambiarPassword(usuario)}
+                              title="Cambiar contraseña"
+                            >
+                              <Lock size={18} />
+                            </button>
+                            <button
+                              className={`btn-action ${usuario.activo ? 'deactivate' : 'activate'}`}
+                              onClick={() => toggleEstadoUsuario(usuario)}
+                              title={usuario.activo ? 'Desactivar' : 'Activar'}
+                            >
+                              <Power size={18} />
+                            </button>
+                            <button
+                              className="btn-action delete"
+                              onClick={() => handleEliminar(usuario)}
+                              title="Eliminar"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="protected-badge">
+                            <Shield size={14} /> Protegido
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="empty-state">
+                    No se encontraron usuarios
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -315,7 +327,7 @@ const GestionUsuarios = () => {
         <div className="modal-overlay-modern">
           <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-modern">
-              <h3>Editar Usuario</h3>
+              <h3>Editar usuario</h3>
               <button className="btn-close-modal" onClick={() => setShowModalEditar(false)}>
                 <X size={20} />
               </button>
@@ -349,7 +361,7 @@ const GestionUsuarios = () => {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-submit-modern">
-                  <Save size={18} /> Guardar Cambios
+                  <Save size={18} /> Guardar cambios
                 </button>
               </div>
             </form>
@@ -363,7 +375,7 @@ const GestionUsuarios = () => {
         <div className="modal-overlay-modern">
           <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-modern">
-              <h3>Cambiar Contraseña</h3>
+              <h3>Cambiar contraseña</h3>
               <button className="btn-close-modal" onClick={() => setShowModalPassword(false)}>
                 <X size={20} />
               </button>
@@ -407,7 +419,7 @@ const GestionUsuarios = () => {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-submit-modern">
-                  <Save size={18} /> Actualizar Contraseña
+                  <Save size={18} /> Actualizar contraseña
                 </button>
               </div>
             </form>

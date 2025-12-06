@@ -79,22 +79,7 @@ const Principal = () => {
 
   return (
     <div className="principal-container">
-      <Navbar brandName="Módulo informativo">
-        <div className="navbar-buttons">
-          <button onClick={() => navigate('/sobre-universidad')} className="btn-info-universidad">
-            <Building2 size={18} />
-            Sobre la Universidad
-          </button>
-          <button onClick={() => navigate('/wayfinding')} className="btn-wayfinding">
-            <Map size={18} />
-            Wayfinding
-          </button>
-          <button onClick={() => navigate('/')} className="btn-inicio">
-            <Home size={18} />
-            Inicio
-          </button>
-        </div>
-      </Navbar>
+      <Navbar brandName="Módulo informativo" />
 
       <main className="main-content">
         <div className="feed-noticias">
@@ -299,6 +284,21 @@ const Principal = () => {
                             <MapPin size={16} />
                             {noticiaSeleccionada.ubicacionEvento}
                           </span>
+                        </div>
+                      )}
+                      {noticiaSeleccionada.ubicacionWayfinding && (
+                        <div className="info-item wayfinding-action">
+                          <button 
+                            className="btn-como-llegar"
+                            onClick={() => {
+                              navigate('/wayfinding', { 
+                                state: { destinoId: noticiaSeleccionada.ubicacionWayfinding._id || noticiaSeleccionada.ubicacionWayfinding } 
+                              });
+                            }}
+                          >
+                            <Map size={16} />
+                            Cómo llegar (Ver en mapa)
+                          </button>
                         </div>
                       )}
                     </div>

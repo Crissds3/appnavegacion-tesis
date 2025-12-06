@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { noticiasService } from '../../servicios/api';
+import api, { noticiasService, ubicacionesService } from '../../servicios/api';
 import { 
   Plus, 
   Search, 
@@ -18,6 +18,7 @@ import './GestionNoticias.css';
 
 const GestionNoticias = () => {
   const [noticias, setNoticias] = useState([]);
+  const [ubicaciones, setUbicaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNoticia, setEditingNoticia] = useState(null);
@@ -36,6 +37,7 @@ const GestionNoticias = () => {
     imagenBase64: '',
     fechaEvento: '',
     ubicacionEvento: '',
+    ubicacionWayfinding: '',
     destacado: false,
     activo: true,
   });
@@ -53,7 +55,21 @@ const GestionNoticias = () => {
 
   useEffect(() => {
     cargarNoticias();
+    cargarUbicaciones();
   }, []);
+
+  const cargarUbicaciones = async () => {
+    try {
+      const response = await ubicacionesService.getUbicacionesPublicas();
+      if (response.success) {
+        setUbicaciones(response.data);
+      } else {
+        console.error('Error en respuesta de ubicaciones:', response);
+      }
+    } catch (error) {
+      console.error('Error al cargar ubicaciones:', error);
+    }
+  };
 
   const cargarNoticias = async () => {
     try {
@@ -156,6 +172,7 @@ const GestionNoticias = () => {
       imagenBase64: noticia.imagenBase64 || '',
       fechaEvento: noticia.fechaEvento ? noticia.fechaEvento.split('T')[0] : '',
       ubicacionEvento: noticia.ubicacionEvento || '',
+      ubicacionWayfinding: noticia.ubicacionWayfinding ? (noticia.ubicacionWayfinding._id || noticia.ubicacionWayfinding) : '',
       destacado: noticia.destacado,
       activo: noticia.activo,
     });
@@ -234,7 +251,7 @@ const GestionNoticias = () => {
       <div className="gestion-main-card">
         <div className="gestion-header">
           <div className="header-title">
-            <h2>Gestión de Noticias y Eventos</h2>
+            <h2>Gestión de noticias y eventos</h2>
             <p className="header-subtitle">Administra las noticias, eventos y anuncios de la universidad</p>
           </div>
           <button 
@@ -373,10 +390,12 @@ const GestionNoticias = () => {
         <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>
-                {editingNoticia ? <Edit2 size={24} /> : <Plus size={24} />}
-                {editingNoticia ? 'Editar Noticia' : 'Nueva Noticia'}
-              </h3>
+              <div className="modal-title-wrapper">
+                <div className="modal-icon-bg">
+                  {editingNoticia ? <Edit2 size={24} /> : <Plus size={24} />}
+                </div>
+                <h3>{editingNoticia ? 'Editar noticia' : 'Nueva noticia'}</h3>
+              </div>
               <button className="btn-close-modal" onClick={cerrarModal}>
                 <X size={24} />
               </button>
@@ -509,7 +528,7 @@ const GestionNoticias = () => {
                     </div>
 
                     <div className="form-group">
-                      <label><MapPin size={16} /> Ubicación del evento</label>
+                      <label><MapPin size={16} /> Ubicación del evento (Texto)</label>
                       <input
                         type="text"
                         name="ubicacionEvento"
@@ -518,6 +537,21 @@ const GestionNoticias = () => {
                         placeholder="Ej: Auditorio Campus Talca"
                         className="input-modern"
                       />
+                    </div>
+
+                    <div className="form-group">
+                      <label><MapPin size={16} /> Ubicación Wayfinding (Mapa)</label>
+                      <select
+                        name="ubicacionWayfinding"
+                        value={formData.ubicacionWayfinding || ''}
+                        onChange={handleInputChange}
+                        className="select-modern"
+                      >
+                        <option value="">Seleccionar ubicación del mapa...</option>
+                        {ubicaciones.map(ub => (
+                          <option key={ub._id} value={ub._id}>{ub.nombre}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 )}

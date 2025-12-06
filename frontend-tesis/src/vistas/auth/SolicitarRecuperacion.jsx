@@ -62,7 +62,18 @@ const SolicitarRecuperacion = () => {
 
         {message.text && (
           <div className={message.type === 'error' ? 'error-message' : 'success-message'}>
-            <span>{message.type === 'error' ? '⚠️' : '✓'} {message.text}</span>
+            {message.type === 'error' ? (
+              <svg className="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 16H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+            ) : (
+              <svg className="success-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            )}
+            <span>{message.text}</span>
           </div>
         )}
 
@@ -88,7 +99,7 @@ const SolicitarRecuperacion = () => {
           </div>
 
           <button type="submit" className="btn-submit" disabled={loading}>
-            {loading ? 'Enviando...' : 'ENVIAR INSTRUCCIONES'}
+            <span>{loading ? 'Enviando...' : 'ENVIAR INSTRUCCIONES'}</span>
           </button>
         </form>
 
