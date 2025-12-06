@@ -204,7 +204,7 @@ const SobreUniversidad = () => {
 
       {/* MODAL INFORMACIÓN GENERAL */}
       {infoSeleccionada && (
-        <div className="modal-overlay" onClick={cerrarDetalleInfo}>
+        <div className="modal-overlay">
           <div className="modal-content-info" onClick={(e) => e.stopPropagation()}>
             <button className="btn-cerrar-modal" onClick={cerrarDetalleInfo}>
               <X size={24} />
@@ -226,7 +226,7 @@ const SobreUniversidad = () => {
 
       {/* MODAL DETALLE DE CARRERA */}
       {carreraSeleccionada && (
-        <div className="modal-overlay" onClick={cerrarDetalleCarrera}>
+        <div className="modal-overlay">
           <div className="modal-content-carrera" onClick={(e) => e.stopPropagation()}>
             <button className="btn-cerrar-modal" onClick={cerrarDetalleCarrera}>
               <X size={24} />

@@ -243,7 +243,7 @@ const Principal = () => {
           </div>
           
           {noticiaSeleccionada && (
-            <div className="modal-overlay" onClick={cerrarNoticia}>
+            <div className="modal-overlay">
               <div className="modal-noticia" onClick={(e) => e.stopPropagation()}>
                 <button className="btn-cerrar-modal" onClick={cerrarNoticia}>
                   <X size={24} />

@@ -312,7 +312,7 @@ const GestionUsuarios = () => {
 
       {/* Modal Editar */}
       {showModalEditar && createPortal(
-        <div className="modal-overlay-modern" onClick={() => setShowModalEditar(false)}>
+        <div className="modal-overlay-modern">
           <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-modern">
               <h3>Editar Usuario</h3>
@@ -360,7 +360,7 @@ const GestionUsuarios = () => {
 
       {/* Modal Cambiar Contraseña */}
       {showModalPassword && createPortal(
-        <div className="modal-overlay-modern" onClick={() => setShowModalPassword(false)}>
+        <div className="modal-overlay-modern">
           <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-modern">
               <h3>Cambiar Contraseña</h3>

@@ -441,6 +441,7 @@
   margin-bottom: 16px;
   -webkit-line-clamp: 3;
   color: #4b5563;
+  text-align: justify;
 }
 
 .card-footer {
@@ -606,11 +607,15 @@
 }
 
 .evento-info {
-  background: #f9fafb;
+  background: #fff;
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #E53935;
+}
+
+.evento-info .info-item svg {
+  color: #E53935;
 }
 
 .info-item {

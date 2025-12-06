@@ -370,7 +370,7 @@ const GestionNoticias = () => {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={cerrarModal}>
+        <div className="modal-overlay">
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3>
