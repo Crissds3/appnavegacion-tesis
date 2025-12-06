@@ -261,7 +261,20 @@ const SobreUniversidad = () => {
                     <MapPin size={20} />
                     Ubicación
                   </h3>
-                  <p>{carreraSeleccionada.ubicacion}</p>
+                  {typeof carreraSeleccionada.ubicacion === 'object' ? (
+                    <div className="ubicacion-action-wrapper">
+                      <p className="ubicacion-nombre">{carreraSeleccionada.ubicacion.nombre}</p>
+                      <button 
+                        className="btn-ir-ubicacion"
+                        onClick={() => navigate('/wayfinding', { state: { destinoId: carreraSeleccionada.ubicacion._id } })}
+                      >
+                        <Map size={18} />
+                        Ir al edificio
+                      </button>
+                    </div>
+                  ) : (
+                    <p>{carreraSeleccionada.ubicacion}</p>
+                  )}
                 </div>
               )}
 

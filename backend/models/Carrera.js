@@ -27,8 +27,8 @@ const carreraSchema = new mongoose.Schema({
     trim: true
   },
   ubicacion: {
-    type: String,
-    trim: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Ubicacion'
   },
   orden: {
     type: Number,

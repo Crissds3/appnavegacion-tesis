@@ -330,4 +330,17 @@ export const carrerasService = {
   },
 };
 
+// Servicios de ubicaciones
+export const ubicacionesService = {
+  // Obtener todas las ubicaciones públicas
+  getUbicacionesPublicas: async () => {
+    try {
+      const response = await api.get('/ubicaciones/publicas');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener ubicaciones' };
+    }
+  },
+};
+
 export default api;

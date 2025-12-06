@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   MapPin, 
   Navigation, 
@@ -28,6 +28,7 @@ import './Wayfinding.css';
 
 const Wayfinding = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [ubicaciones, setUbicaciones] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState([]);
@@ -60,6 +61,18 @@ const Wayfinding = () => {
   useEffect(() => {
     cargarUbicaciones();
   }, []);
+
+  // Efecto para manejar navegación desde otras vistas (ej: Carreras)
+  useEffect(() => {
+    if (ubicaciones.length > 0 && location.state?.destinoId) {
+      const destinoEncontrado = ubicaciones.find(u => u._id === location.state.destinoId);
+      if (destinoEncontrado) {
+        setDestino(destinoEncontrado);
+        // Limpiar el estado para evitar re-selección si se navega internamente
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [ubicaciones, location.state]);
 
   const cargarUbicaciones = async () => {
     try {

@@ -4,6 +4,7 @@ import Carrera from '../models/Carrera.js';
 export const obtenerCarrerasPublicas = async (req, res) => {
   try {
     const carreras = await Carrera.find({ activo: true })
+      .populate('ubicacion')
       .sort({ orden: 1, nombre: 1 });
 
     res.json({
@@ -23,7 +24,7 @@ export const obtenerCarrerasPublicas = async (req, res) => {
 // Obtener una carrera por ID (público)
 export const obtenerCarreraPorId = async (req, res) => {
   try {
-    const carrera = await Carrera.findById(req.params.id);
+    const carrera = await Carrera.findById(req.params.id).populate('ubicacion');
 
     if (!carrera) {
       return res.status(404).json({
@@ -59,6 +60,7 @@ export const obtenerTodasCarreras = async (req, res) => {
     const carreras = await Carrera.find()
       .populate('createdBy', 'nombre email')
       .populate('updatedBy', 'nombre email')
+      .populate('ubicacion')
       .sort({ orden: 1, nombre: 1 });
 
     res.json({

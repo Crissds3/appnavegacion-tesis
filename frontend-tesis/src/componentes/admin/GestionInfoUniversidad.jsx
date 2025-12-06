@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { infoService, carrerasService } from '../../servicios/api';
+import { infoService, carrerasService, ubicacionesService } from '../../servicios/api';
 import { 
   BookOpen, 
   GraduationCap, 
@@ -56,6 +56,8 @@ const GestionInfoUniversidad = () => {
     activo: true
   });
 
+  const [ubicaciones, setUbicaciones] = useState([]);
+
   const seccionesDisponibles = ['Historia', 'Misión', 'Visión', 'Valores', 'Contacto'];
   
   // Mapeo de iconos para uso interno y visualización
@@ -79,9 +81,21 @@ const GestionInfoUniversidad = () => {
       cargarSecciones();
     } else {
       cargarCarreras();
+      cargarUbicaciones();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
+
+  const cargarUbicaciones = async () => {
+    try {
+      const response = await ubicacionesService.getUbicacionesPublicas();
+      if (response.success) {
+        setUbicaciones(response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar ubicaciones:', error);
+    }
+  };
 
   const mostrarMensaje = (texto, tipo) => {
     setMensaje({ texto, tipo });
@@ -224,7 +238,7 @@ const GestionInfoUniversidad = () => {
         duracion: carrera.duracion,
         modalidad: carrera.modalidad,
         enlaceOficial: carrera.enlaceOficial || '',
-        ubicacion: carrera.ubicacion || '',
+        ubicacion: carrera.ubicacion?._id || carrera.ubicacion || '',
         orden: carrera.orden,
         activo: carrera.activo
       });
@@ -399,7 +413,7 @@ const GestionInfoUniversidad = () => {
                         </span>
                         {carrera.ubicacion && (
                           <span className="meta-tag">
-                            <Building2 size={14} /> {carrera.ubicacion}
+                            <Building2 size={14} /> {carrera.ubicacion.nombre || 'Ubicación asignada'}
                           </span>
                         )}
                       </div>
@@ -657,17 +671,20 @@ const GestionInfoUniversidad = () => {
               </div>
 
               <div className="form-group">
-                <label>Ubicación (Opcional)</label>
+                <label>Ubicación (Edificio/Departamento)</label>
                 <div className="input-with-icon">
                   <Building2 size={18} className="input-icon" />
-                  <input
-                    type="text"
+                  <select
                     name="ubicacion"
                     value={carreraForm.ubicacion}
                     onChange={handleCarreraInputChange}
-                    placeholder="Ej: Campus Talca, Edificio de Ingeniería"
-                    className="form-input pl-10"
-                  />
+                    className="form-select pl-10"
+                  >
+                    <option value="">Seleccione una ubicación...</option>
+                    {ubicaciones.map(ub => (
+                      <option key={ub._id} value={ub._id}>{ub.nombre}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
