@@ -364,10 +364,27 @@
   align-items: center;
 }
 
+.modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-icon-bg {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #E53935;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .modal-header-modern h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: #111827;
 }
 
@@ -441,21 +458,26 @@
 }
 
 .btn-submit-modern {
-  padding: 10px 16px;
+  padding: 10px 20px;
   background: #E53935;
   border: none;
   border-radius: 6px;
   color: white;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(229, 57, 53, 0.2);
 }
 
 .btn-submit-modern:hover {
   background: #d32f2f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(229, 57, 53, 0.3);
+  color: white;
 }
 
 .user-summary {

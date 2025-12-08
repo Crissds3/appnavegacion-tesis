@@ -180,4 +180,163 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
   `;
 };
 
-export default { enviarEmailRecuperacion, crearEmailRecuperacion };
+export const enviarEmail = async (opciones) => {
+  return enviarEmailRecuperacion(opciones);
+};
+
+// Template HTML para bienvenida de nuevo usuario
+export const crearEmailBienvenida = (nombre, email, password, loginUrl) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); padding: 30px 20px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
+        .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
+        .credentials { background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #E53935; margin: 20px 0; }
+        .credentials p { margin: 5px 0; font-family: monospace; font-size: 16px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #E53935; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+        .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Bienvenido/a al Sistema</h1>
+        </div>
+        <div class="content">
+          <h2>Hola, ${nombre}</h2>
+          <p>Se ha creado una nueva cuenta de administrador para ti en la App de Navegación UTalca.</p>
+          <p>Tus credenciales de acceso son:</p>
+          <div class="credentials">
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Contraseña:</strong> ${password}</p>
+          </div>
+          <p>Te recomendamos cambiar tu contraseña después de iniciar sesión por primera vez.</p>
+          <div style="text-align: center;">
+            <a href="${loginUrl}" class="button">Iniciar Sesión</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} App Navegación UTalca. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+// Template HTML para actualización de perfil
+export const crearEmailActualizacionPerfil = (nombre, cambios) => {
+  const listaCambios = Object.entries(cambios)
+    .map(([campo, valor]) => `<li><strong>${campo}:</strong> ${valor}</li>`)
+    .join('');
+
+  return `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); padding: 30px 20px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
+        .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
+        .changes { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .changes ul { margin: 0; padding-left: 20px; }
+        .changes li { margin-bottom: 10px; color: #333; }
+        .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Actualización de Perfil</h1>
+        </div>
+        <div class="content">
+          <h2>Hola, ${nombre}</h2>
+          <p>Te informamos que los datos de tu cuenta han sido actualizados por un administrador.</p>
+          <p>Los siguientes campos fueron modificados:</p>
+          <div class="changes">
+            <ul>
+              ${listaCambios}
+            </ul>
+          </div>
+          <p>Si no reconoces estos cambios, por favor contacta al administrador principal inmediatamente.</p>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} App Navegación UTalca. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+// Template HTML para cambio de contraseña por admin
+export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
+  return `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .header { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); padding: 30px 20px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
+        .content { padding: 40px 30px; }
+        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
+        .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
+        .credentials { background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #E53935; margin: 20px 0; }
+        .credentials p { margin: 5px 0; font-family: monospace; font-size: 16px; }
+        .button { display: inline-block; padding: 12px 24px; background-color: #E53935; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+        .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Contraseña Actualizada</h1>
+        </div>
+        <div class="content">
+          <h2>Hola, ${nombre}</h2>
+          <p>Un administrador ha restablecido tu contraseña.</p>
+          <p>Tu nueva contraseña es:</p>
+          <div class="credentials">
+            <p><strong>${password}</strong></p>
+          </div>
+          <p>Te recomendamos cambiarla después de iniciar sesión.</p>
+          <div style="text-align: center;">
+            <a href="${loginUrl}" class="button">Iniciar Sesión</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} App Navegación UTalca. Todos los derechos reservados.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+export default { 
+  enviarEmailRecuperacion, 
+  crearEmailRecuperacion,
+  enviarEmail,
+  crearEmailBienvenida,
+  crearEmailActualizacionPerfil,
+  crearEmailCambioPasswordAdmin
+};

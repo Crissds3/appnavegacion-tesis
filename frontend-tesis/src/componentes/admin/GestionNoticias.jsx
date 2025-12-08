@@ -23,6 +23,7 @@ const GestionNoticias = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNoticia, setEditingNoticia] = useState(null);
+  const [noticiaOriginal, setNoticiaOriginal] = useState(null);
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
   const [imagenPreview, setImagenPreview] = useState(null);
   const fileInputRef = useRef(null);
@@ -131,6 +132,44 @@ const GestionNoticias = () => {
     setImagenPreview(null);
   };
 
+  const hasChanges = () => {
+    if (!editingNoticia) return true; // Siempre habilitado para crear
+    if (!noticiaOriginal) return false;
+
+    // Comparar campos relevantes
+    const current = {
+      titulo: formData.titulo,
+      descripcion: formData.descripcion,
+      contenido: formData.contenido,
+      tipo: formData.tipo,
+      categoria: formData.categoria,
+      imagenUrl: formData.imagenUrl,
+      imagenBase64: formData.imagenBase64,
+      fechaEvento: formData.fechaEvento,
+      ubicacionEvento: formData.ubicacionEvento,
+      ubicacionWayfinding: formData.ubicacionWayfinding,
+      destacado: formData.destacado,
+      activo: formData.activo
+    };
+
+    const original = {
+      titulo: noticiaOriginal.titulo,
+      descripcion: noticiaOriginal.descripcion,
+      contenido: noticiaOriginal.contenido,
+      tipo: noticiaOriginal.tipo,
+      categoria: noticiaOriginal.categoria,
+      imagenUrl: noticiaOriginal.imagenUrl || '',
+      imagenBase64: noticiaOriginal.imagenBase64 || '',
+      fechaEvento: noticiaOriginal.fechaEvento ? noticiaOriginal.fechaEvento.split('T')[0] : '',
+      ubicacionEvento: noticiaOriginal.ubicacionEvento || '',
+      ubicacionWayfinding: noticiaOriginal.ubicacionWayfinding ? (noticiaOriginal.ubicacionWayfinding._id || noticiaOriginal.ubicacionWayfinding) : '',
+      destacado: noticiaOriginal.destacado,
+      activo: noticiaOriginal.activo
+    };
+
+    return JSON.stringify(current) !== JSON.stringify(original);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -157,6 +196,7 @@ const GestionNoticias = () => {
 
   const handleEditar = (noticia) => {
     setEditingNoticia(noticia);
+    setNoticiaOriginal(noticia);
     setFormData({
       titulo: noticia.titulo,
       descripcion: noticia.descripcion,
@@ -220,6 +260,7 @@ const GestionNoticias = () => {
   const cerrarModal = () => {
     setShowModal(false);
     setEditingNoticia(null);
+    setNoticiaOriginal(null);
     setImagenPreview(null);
     setFormData({
       titulo: '',
@@ -591,7 +632,12 @@ const GestionNoticias = () => {
                 <button type="button" onClick={cerrarModal} className="btn-modal-cancel">
                   Cancelar
                 </button>
-                <button type="submit" className="btn-modal-submit">
+                <button 
+                  type="submit" 
+                  className="btn-modal-submit"
+                  disabled={!hasChanges()}
+                  style={{ opacity: !hasChanges() ? 0.5 : 1, cursor: !hasChanges() ? 'not-allowed' : 'pointer' }}
+                >
                   {editingNoticia ? 'Actualizar' : 'Crear'}
                 </button>
               </div>

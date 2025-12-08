@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../servicios/api';
+import { authService, api } from '../servicios/api';
 
 const AuthContext = createContext();
 
@@ -14,15 +14,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Verificar si hay usuario en localStorage al cargar
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
-    setLoading(false);
-  }, []);
 
   const login = async (credentials) => {
     try {
@@ -54,6 +45,30 @@ export const AuthProvider = ({ children }) => {
     authService.logout();
     setUser(null);
   };
+
+  useEffect(() => {
+    // Verificar si hay usuario en localStorage al cargar
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    setLoading(false);
+
+    // Interceptor para manejar errores 401 (Token expirado o inválido)
+    const interceptor = api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(interceptor);
+    };
+  }, []);
 
   const value = {
     user,

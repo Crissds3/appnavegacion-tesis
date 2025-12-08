@@ -40,6 +40,7 @@ const GestionInfoUniversidad = () => {
     orden: 0,
     activo: true
   });
+  const [infoFormOriginal, setInfoFormOriginal] = useState(null);
 
   // Estados para carreras
   const [carreras, setCarreras] = useState([]);
@@ -55,6 +56,7 @@ const GestionInfoUniversidad = () => {
     orden: 0,
     activo: true
   });
+  const [carreraFormOriginal, setCarreraFormOriginal] = useState(null);
 
   const [ubicaciones, setUbicaciones] = useState([]);
 
@@ -154,16 +156,19 @@ const GestionInfoUniversidad = () => {
   const abrirInfoModal = (seccion = null) => {
     if (seccion) {
       setEditingSeccion(seccion);
-      setInfoForm({
+      const initialData = {
         seccion: seccion.seccion,
         titulo: seccion.titulo,
         contenido: seccion.contenido,
         icono: seccion.icono || 'BookOpen',
         orden: seccion.orden,
         activo: seccion.activo
-      });
+      };
+      setInfoForm(initialData);
+      setInfoFormOriginal(initialData);
     } else {
       setEditingSeccion(null);
+      setInfoFormOriginal(null);
       setInfoForm({
         seccion: 'Historia',
         titulo: '',
@@ -231,7 +236,7 @@ const GestionInfoUniversidad = () => {
   const abrirCarreraModal = (carrera = null) => {
     if (carrera) {
       setEditingCarrera(carrera);
-      setCarreraForm({
+      const initialData = {
         nombre: carrera.nombre,
         descripcion: carrera.descripcion,
         duracion: carrera.duracion,
@@ -240,9 +245,12 @@ const GestionInfoUniversidad = () => {
         ubicacion: carrera.ubicacion?._id || carrera.ubicacion || '',
         orden: carrera.orden,
         activo: carrera.activo
-      });
+      };
+      setCarreraForm(initialData);
+      setCarreraFormOriginal(initialData);
     } else {
       setEditingCarrera(null);
+      setCarreraFormOriginal(null);
       setCarreraForm({
         nombre: '',
         descripcion: '',
@@ -281,6 +289,18 @@ const GestionInfoUniversidad = () => {
     } catch (error) {
       showError(error.message || 'Error al eliminar carrera');
     }
+  };
+
+  const hasInfoChanges = () => {
+    if (!editingSeccion) return true;
+    if (!infoFormOriginal) return true;
+    return JSON.stringify(infoForm) !== JSON.stringify(infoFormOriginal);
+  };
+
+  const hasCarreraChanges = () => {
+    if (!editingCarrera) return true;
+    if (!carreraFormOriginal) return true;
+    return JSON.stringify(carreraForm) !== JSON.stringify(carreraFormOriginal);
   };
 
   return (
@@ -562,7 +582,12 @@ const GestionInfoUniversidad = () => {
                 <button type="button" className="btn-modal-unique-cancel" onClick={cerrarInfoModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-modal-unique-save">
+                <button 
+                  type="submit" 
+                  className="btn-modal-unique-save"
+                  disabled={!hasInfoChanges()}
+                  style={{ opacity: !hasInfoChanges() ? 0.5 : 1, cursor: !hasInfoChanges() ? 'not-allowed' : 'pointer' }}
+                >
                   <Save size={18} />
                   {editingSeccion ? 'Guardar cambios' : 'Crear sección'}
                 </button>
@@ -718,7 +743,12 @@ const GestionInfoUniversidad = () => {
                 <button type="button" className="btn-modal-unique-cancel" onClick={cerrarCarreraModal}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-modal-unique-save">
+                <button 
+                  type="submit" 
+                  className="btn-modal-unique-save"
+                  disabled={!hasCarreraChanges()}
+                  style={{ opacity: !hasCarreraChanges() ? 0.5 : 1, cursor: !hasCarreraChanges() ? 'not-allowed' : 'pointer' }}
+                >
                   <Save size={18} />
                   {editingCarrera ? 'Guardar Cambios' : 'Crear Carrera'}
                 </button>

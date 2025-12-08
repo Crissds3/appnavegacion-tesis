@@ -28,6 +28,7 @@ const GestionUsuarios = () => {
   const [showModalPassword, setShowModalPassword] = useState(false);
   const [showCrearAdmin, setShowCrearAdmin] = useState(false);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const [usuarioOriginal, setUsuarioOriginal] = useState(null);
   const [filtro, setFiltro] = useState('');
   
   const [formEditar, setFormEditar] = useState({
@@ -67,11 +68,13 @@ const GestionUsuarios = () => {
 
   const handleEditarUsuario = (usuario) => {
     setUsuarioSeleccionado(usuario);
-    setFormEditar({
+    const initialData = {
       nombre: usuario.nombre,
       email: usuario.email,
       rol: usuario.rol
-    });
+    };
+    setFormEditar(initialData);
+    setUsuarioOriginal(initialData);
     setShowModalEditar(true);
   };
 
@@ -79,6 +82,11 @@ const GestionUsuarios = () => {
     setUsuarioSeleccionado(usuario);
     setFormPassword({ password: '', confirmPassword: '' });
     setShowModalPassword(true);
+  };
+
+  const hasChanges = () => {
+    if (!usuarioOriginal) return true;
+    return JSON.stringify(formEditar) !== JSON.stringify(usuarioOriginal);
   };
 
   const submitEditar = async (e) => {
@@ -325,9 +333,14 @@ const GestionUsuarios = () => {
         <div className="modal-overlay-modern">
           <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-modern">
-              <h3>Editar usuario</h3>
+              <div className="modal-title-wrapper">
+                <div className="modal-icon-bg">
+                  <Edit2 size={24} />
+                </div>
+                <h3>Editar usuario</h3>
+              </div>
               <button className="btn-close-modal" onClick={() => setShowModalEditar(false)}>
-                <X size={20} />
+                <X size={24} />
               </button>
             </div>
 
@@ -358,7 +371,12 @@ const GestionUsuarios = () => {
                 <button type="button" className="btn-cancel-modern" onClick={() => setShowModalEditar(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-submit-modern">
+                <button 
+                  type="submit" 
+                  className="btn-submit-modern"
+                  disabled={!hasChanges()}
+                  style={{ opacity: !hasChanges() ? 0.5 : 1, cursor: !hasChanges() ? 'not-allowed' : 'pointer' }}
+                >
                   <Save size={18} /> Guardar cambios
                 </button>
               </div>
@@ -373,9 +391,14 @@ const GestionUsuarios = () => {
         <div className="modal-overlay-modern">
           <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header-modern">
-              <h3>Cambiar contraseña</h3>
+              <div className="modal-title-wrapper">
+                <div className="modal-icon-bg">
+                  <Lock size={24} />
+                </div>
+                <h3>Cambiar contraseña</h3>
+              </div>
               <button className="btn-close-modal" onClick={() => setShowModalPassword(false)}>
-                <X size={20} />
+                <X size={24} />
               </button>
             </div>
 

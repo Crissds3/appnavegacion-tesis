@@ -1,7 +1,14 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User from '../models/User.js';
-import { enviarEmailRecuperacion, crearEmailRecuperacion } from '../config/email.js';
+import { 
+  enviarEmailRecuperacion, 
+  crearEmailRecuperacion,
+  enviarEmail,
+  crearEmailBienvenida,
+  crearEmailActualizacionPerfil,
+  crearEmailCambioPasswordAdmin
+} from '../config/email.js';
 
 const generarToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -232,9 +239,21 @@ export const crearAdministrador = async (req, res) => {
     });
 
     if (usuario) {
+      // Enviar correo de bienvenida
+      try {
+        const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+        await enviarEmail({
+          email: usuario.email,
+          subject: 'Bienvenido al Sistema de Navegación UTalca',
+          html: crearEmailBienvenida(usuario.nombre, usuario.email, password, loginUrl)
+        });
+      } catch (emailError) {
+        console.error('Error al enviar correo de bienvenida:', emailError);
+      }
+
       res.status(201).json({
         success: true,
-        message: 'Administrador creado exitosamente',
+        message: 'Administrador creado exitosamente. Se ha enviado un correo con las credenciales.',
         data: {
           _id: usuario._id,
           nombre: usuario.nombre,
@@ -506,12 +525,35 @@ export const editarUsuario = async (req, res) => {
       });
     }
 
-    // Actualizar campos
-    if (nombre) usuario.nombre = nombre;
-    if (email) usuario.email = email;
-    if (rol) usuario.rol = rol;
+    // Actualizar campos y detectar cambios
+    const cambios = {};
+    if (nombre && usuario.nombre !== nombre) {
+      cambios['Nombre'] = `${usuario.nombre} ➝ ${nombre}`;
+      usuario.nombre = nombre;
+    }
+    if (email && usuario.email !== email) {
+      cambios['Email'] = `${usuario.email} ➝ ${email}`;
+      usuario.email = email;
+    }
+    if (rol && usuario.rol !== rol) {
+      cambios['Rol'] = `${usuario.rol} ➝ ${rol}`;
+      usuario.rol = rol;
+    }
 
     await usuario.save();
+
+    // Enviar correo si hubo cambios
+    if (Object.keys(cambios).length > 0) {
+      try {
+        await enviarEmail({
+          email: usuario.email,
+          subject: 'Actualización de Perfil - App Navegación UTalca',
+          html: crearEmailActualizacionPerfil(usuario.nombre, cambios)
+        });
+      } catch (emailError) {
+        console.error('Error al enviar correo de actualización:', emailError);
+      }
+    }
 
     res.json({
       success: true,
@@ -632,9 +674,21 @@ export const resetearPasswordPorAdmin = async (req, res) => {
     usuario.password = password;
     await usuario.save();
 
+    // Enviar correo con nueva contraseña
+    try {
+      const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+      await enviarEmail({
+        email: usuario.email,
+        subject: 'Contraseña Restablecida por Administrador',
+        html: crearEmailCambioPasswordAdmin(usuario.nombre, password, loginUrl)
+      });
+    } catch (emailError) {
+      console.error('Error al enviar correo de cambio de contraseña:', emailError);
+    }
+
     res.json({
       success: true,
-      message: 'Contraseña actualizada exitosamente'
+      message: 'Contraseña actualizada exitosamente. Se ha notificado al usuario por correo.'
     });
   } catch (error) {
     console.error('Error en resetearPasswordPorAdmin:', error);

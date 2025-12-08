@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus, X, AlertCircle } from 'lucide-react';
 import './CrearAdmin.css';
 
 const CrearAdmin = ({ onClose, onSuccess }) => {
@@ -78,7 +78,8 @@ const CrearAdmin = ({ onClose, onSuccess }) => {
 
         {error && (
           <div className="error-message">
-            <span>⚠️ {error}</span>
+            <AlertCircle size={20} />
+            <span>{error}</span>
           </div>
         )}
 

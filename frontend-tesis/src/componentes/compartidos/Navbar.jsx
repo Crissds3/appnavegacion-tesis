@@ -11,7 +11,7 @@ const Navbar = ({
   customLinks = null,
   children
 }) => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, loading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -70,9 +70,10 @@ const Navbar = ({
         <div className="nav-actions desktop-only">
           {children ? (
             children
-          ) : (
-            isAuthenticated ? (
-              <div className="auth-buttons">
+          ) : loading ? (
+            <div className="auth-loading" style={{ width: '100px', height: '36px' }}></div>
+          ) : isAuthenticated ? (
+            <div className="auth-buttons">
                 <span className="user-greeting">Hola, {user?.nombre?.split(' ')[0]}</span>
                 {!isDashboard && (
                   <button onClick={() => navigate('/dashboard')} className="btn-dashboard" title="Panel de Administración">
@@ -90,7 +91,7 @@ const Navbar = ({
                 <span>Acceso Admin</span>
               </button>
             )
-          )}
+          }
         </div>
 
         {/* Mobile Menu Button */}

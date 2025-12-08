@@ -38,6 +38,26 @@
   margin: 0;
 }
 
+/* Button Create */
+.btn-create-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #E53935;
+  color: white;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-create-modern:hover {
+  background: #d32f2f;
+}
+
 /* Search Bar */
 .search-wrapper {
   position: relative;
@@ -72,21 +92,23 @@
 /* Grid Layout */
 .gestion-body-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr 350px;
+  gap: 24px;
+  height: calc(100vh - 200px);
   min-height: 600px;
+  padding: 24px;
 }
 
 .left-column {
-  padding: 24px;
-  border-right: 1px solid #f0f0f0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
 }
 
 .right-column {
-  background: #fafafa;
-  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Map Card */
@@ -95,6 +117,12 @@
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapa-card.full-height {
+  height: 100%;
 }
 
 .card-header {
@@ -107,7 +135,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #E53935;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -119,23 +147,159 @@
   color: #666;
 }
 
-.mapa-container {
-  height: 350px;
+.mapa-container.full-height-map {
+  flex: 1;
   width: 100%;
   position: relative;
   z-index: 1;
 }
 
-/* Form Section */
-.formulario-seccion {
+/* Map Selection Mode */
+.selection-banner {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: slideDown 0.3s ease;
+  border: 2px solid #E53935;
+}
+
+.selection-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #E53935;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.btn-cancel-selection {
+  background: #f5f5f5;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel-selection:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+/* Coords Selector in Modal */
+.coords-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.coords-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-pick-map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  background: white;
+  border: 1px solid #E53935;
+  color: #E53935;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-pick-map:hover {
+  background: #fff5f5;
+}
+
+/* List Card */
+.lista-card {
   background: white;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.form-ubicacion {
-  padding: 24px;
+.lista-card.full-height {
+  height: 100%;
+}
+
+.lista-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Popup Styles */
+.popup-content {
+  text-align: center;
+  min-width: 150px;
+}
+
+.popup-content strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.popup-actions {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.popup-actions button {
+  background: #E53935;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-popup-action {
+  background: #E53935;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+}
+
+/* Form Section - Removed from main view, now in modal */
+.formulario-seccion {
+  display: none;
 }
 
 .form-grid {
@@ -257,8 +421,8 @@
 }
 
 .btn-submit-modern:hover {
-  transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(229, 57, 53, 0.2);
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
 }
 
 .btn-cancel-modern {
@@ -296,6 +460,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 16px;
+  max-height: calc(100vh - 300px);
 }
 
 .ubicaciones-list {
@@ -318,7 +483,7 @@
 .ubicacion-item:hover {
   border-color: #E53935;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transform: translateX(2px);
+  background: #fafafa;
 }
 
 .ubicacion-item.selected {
@@ -435,34 +600,105 @@
   border: 1px solid #ffcdd2;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .gestion-body-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .left-column {
-    border-right: none;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .lista-card {
-    height: 500px;
-  }
+/* Modals */
+.modal-overlay-modern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
+.modal-content-modern {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-content-modern.modal-large {
+  max-width: 800px;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header-modern {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-icon-bg {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #E53935;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header-modern h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close-modal:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-form-modern {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+/* Responsive Modal */
 @media (max-width: 768px) {
-  .gestion-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+  .modal-content-modern {
+    width: 95%;
+    max-height: 95vh;
   }
   
-  .search-wrapper {
-    width: 100%;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
+  .modal-form-modern {
+    padding: 16px;
   }
 }
