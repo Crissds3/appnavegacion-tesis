@@ -485,20 +485,56 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
     if (esOrigen) {
       return L.divIcon({
         className: 'custom-marker',
-        html: `<div style="background-color: #4CAF50; width: 30px; height: 30px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">📍</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-        popupAnchor: [0, -15]
+        html: `
+          <div style="
+            background-color: #10b981; 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            border: 3px solid white; 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white;
+          ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16]
       });
     }
 
     if (esDestino) {
       return L.divIcon({
         className: 'custom-marker',
-        html: `<div style="background-color: #E53935; width: 30px; height: 30px; border-radius: 50%; border: 4px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 16px;">🎯</div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 15],
-        popupAnchor: [0, -15]
+        html: `
+          <div style="
+            background-color: #ef4444; 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            border: 3px solid white; 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white;
+          ">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16], // Centrado
+        popupAnchor: [0, -16]
       });
     }
 
