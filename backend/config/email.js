@@ -1,21 +1,10 @@
 import nodemailer from 'nodemailer';
 
-// Configuración del transportador de correo
+// Configuración del transportador de correo (Gmail SMTP)
 const crearTransporter = () => {
-  if (process.env.SENDGRID_API_KEY) {
-    return nodemailer.createTransport({
-      host: 'smtp.sendgrid.net',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'apikey',
-        pass: process.env.SENDGRID_API_KEY
-      }
-    });
-  }
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
+    host: 'smtp.gmail.com',
+    port: 587,
     secure: false,
     auth: {
       user: process.env.EMAIL_USER,
@@ -32,21 +21,27 @@ export const enviarEmailRecuperacion = async (opciones) => {
       from: process.env.EMAIL_FROM || 'noreply@tuapp.com',
       to: opciones.email,
       subject: opciones.subject,
-      html: opciones.html
+      // Declaración explícita de charset UTF-8 para evitar caracteres corruptos
+      alternatives: [
+        {
+          contentType: 'text/html; charset=utf-8',
+          content: opciones.html
+        }
+      ]
     };
 
     console.log('Intentando enviar correo a:', opciones.email);
     console.log('Desde:', process.env.EMAIL_FROM);
-    
+
     const info = await transporter.sendMail(mailOptions);
     console.log('Correo enviado exitosamente:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error detallado al enviar correo:');
     console.error('Mensaje:', error.message);
-    console.error('Código:', error.code);
+    console.error('Codigo:', error.code);
     console.error('Response:', error.response);
-    throw new Error('No se pudo enviar el correo electrónico: ' + error.message);
+    throw new Error('No se pudo enviar el correo electronico: ' + error.message);
   }
 };
 
@@ -57,6 +52,7 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
     <html lang="es">
     <head>
       <meta charset="UTF-8">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
         body {
@@ -107,11 +103,6 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
           font-weight: bold;
           font-size: 16px;
           margin: 20px 0;
-          transition: transform 0.3s ease;
-        }
-        .button:hover {
-          transform: translateY(-2px);
-          color: #ffffff !important;
         }
         .warning {
           background-color: #FFF3CD;
@@ -142,37 +133,37 @@ export const crearEmailRecuperacion = (nombre, resetUrl) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Recuperación de Contraseña</h1>
+          <h1>Recuperaci&#243;n de Contrase&#241;a</h1>
         </div>
         <div class="content">
           <h2>Hola ${nombre},</h2>
           <p>
-            Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.
+            Hemos recibido una solicitud para restablecer la contrase&#241;a de tu cuenta.
             Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.
           </p>
           <p>
-            Para restablecer tu contraseña, haz clic en el siguiente botón:
+            Para restablecer tu contrase&#241;a, haz clic en el siguiente bot&#243;n:
           </p>
           <div style="text-align: center;">
-            <a href="${resetUrl}" class="button" style="color: #ffffff !important;">Restablecer Contraseña</a>
+            <a href="${resetUrl}" class="button" style="color: #ffffff !important;">Restablecer Contrase&#241;a</a>
           </div>
           <p style="font-size: 14px; color: #999999; margin-top: 20px;">
-            Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:
+            Si el bot&#243;n no funciona, copia y pega el siguiente enlace en tu navegador:
           </p>
           <p style="font-size: 14px; word-break: break-all; color: #666666;">
             ${resetUrl}
           </p>
           <div class="warning">
-            <p><strong>⚠️ Importante:</strong> Este enlace es válido solo por 1 hora y puede ser usado una única vez.</p>
+            <p><strong>&#9888;&#65039; Importante:</strong> Este enlace es v&#225;lido solo por 1 hora y puede ser usado una &#250;nica vez.</p>
           </div>
           <div class="divider"></div>
           <p style="font-size: 14px; color: #999999;">
-            Si no solicitaste restablecer tu contraseña, por favor ignora este correo o contacta al administrador si tienes dudas.
+            Si no solicitaste restablecer tu contrase&#241;a, por favor ignora este correo o contacta al administrador si tienes dudas.
           </p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} Sistema de Navegación Universitaria</p>
-          <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+          <p>&copy; ${new Date().getFullYear()} Sistema de Navegaci&#243;n Universitaria</p>
+          <p>Este es un correo autom&#225;tico, por favor no respondas a este mensaje.</p>
         </div>
       </div>
     </body>
@@ -191,6 +182,7 @@ export const crearEmailBienvenida = (nombre, email, password, loginUrl) => {
     <html lang="es">
     <head>
       <meta charset="UTF-8">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
         body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
@@ -213,19 +205,19 @@ export const crearEmailBienvenida = (nombre, email, password, loginUrl) => {
         </div>
         <div class="content">
           <h2>Hola, ${nombre}</h2>
-          <p>Se ha creado una nueva cuenta de administrador para ti en la App de Navegación UTalca.</p>
+          <p>Se ha creado una nueva cuenta de administrador para ti en la App de Navegaci&#243;n UTalca.</p>
           <p>Tus credenciales de acceso son:</p>
           <div class="credentials">
             <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Contraseña:</strong> ${password}</p>
+            <p><strong>Contrase&#241;a:</strong> ${password}</p>
           </div>
-          <p>Te recomendamos cambiar tu contraseña después de iniciar sesión por primera vez.</p>
+          <p>Te recomendamos cambiar tu contrase&#241;a despu&#233;s de iniciar sesi&#243;n por primera vez.</p>
           <div style="text-align: center;">
-            <a href="${loginUrl}" class="button">Iniciar Sesión</a>
+            <a href="${loginUrl}" class="button">Iniciar Sesi&#243;n</a>
           </div>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} App Navegación UTalca. Todos los derechos reservados.</p>
+          <p>&copy; ${new Date().getFullYear()} App Navegaci&#243;n UTalca. Todos los derechos reservados.</p>
         </div>
       </div>
     </body>
@@ -244,6 +236,7 @@ export const crearEmailActualizacionPerfil = (nombre, cambios) => {
     <html lang="es">
     <head>
       <meta charset="UTF-8">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
         body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
@@ -262,7 +255,7 @@ export const crearEmailActualizacionPerfil = (nombre, cambios) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Actualización de Perfil</h1>
+          <h1>Actualizaci&#243;n de Perfil</h1>
         </div>
         <div class="content">
           <h2>Hola, ${nombre}</h2>
@@ -276,7 +269,7 @@ export const crearEmailActualizacionPerfil = (nombre, cambios) => {
           <p>Si no reconoces estos cambios, por favor contacta al administrador principal inmediatamente.</p>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} App Navegación UTalca. Todos los derechos reservados.</p>
+          <p>&copy; ${new Date().getFullYear()} App Navegaci&#243;n UTalca. Todos los derechos reservados.</p>
         </div>
       </div>
     </body>
@@ -291,6 +284,7 @@ export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
     <html lang="es">
     <head>
       <meta charset="UTF-8">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
         body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
@@ -309,22 +303,22 @@ export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Contraseña Actualizada</h1>
+          <h1>Contrase&#241;a Actualizada</h1>
         </div>
         <div class="content">
           <h2>Hola, ${nombre}</h2>
-          <p>Un administrador ha restablecido tu contraseña.</p>
-          <p>Tu nueva contraseña es:</p>
+          <p>Un administrador ha restablecido tu contrase&#241;a.</p>
+          <p>Tu nueva contrase&#241;a es:</p>
           <div class="credentials">
             <p><strong>${password}</strong></p>
           </div>
-          <p>Te recomendamos cambiarla después de iniciar sesión.</p>
+          <p>Te recomendamos cambiarla despu&#233;s de iniciar sesi&#243;n.</p>
           <div style="text-align: center;">
-            <a href="${loginUrl}" class="button">Iniciar Sesión</a>
+            <a href="${loginUrl}" class="button">Iniciar Sesi&#243;n</a>
           </div>
         </div>
         <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} App Navegación UTalca. Todos los derechos reservados.</p>
+          <p>&copy; ${new Date().getFullYear()} App Navegaci&#243;n UTalca. Todos los derechos reservados.</p>
         </div>
       </div>
     </body>
@@ -332,8 +326,8 @@ export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
   `;
 };
 
-export default { 
-  enviarEmailRecuperacion, 
+export default {
+  enviarEmailRecuperacion,
   crearEmailRecuperacion,
   enviarEmail,
   crearEmailBienvenida,
