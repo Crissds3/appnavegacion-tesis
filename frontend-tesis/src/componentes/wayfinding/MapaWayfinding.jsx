@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
-import 'leaflet-routing-machine';
+import { calcularRuta } from '../../utils/calculadorRutas';
+import grafoCampus from '../../data/grafoCampus.json';
 import './MapaWayfinding.css';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -20,140 +20,11 @@ const CAMPUS_BOUNDS = [
   [-35.000700, -71.228500]  
 ];
 
-// Caminos y vías principales del campus para routing interno
-// Estos puntos forman una red de caminos transitables basada en la topología real
-const CAMINOS_CAMPUS = [
-  // Entrada principal y zona norte
-  { id: 'entrada', lat: -35.001000, lng: -71.230900, conexiones: ['edificio_minas', 'cam_norte'] },
-  { id: 'edificio_minas', lat: -35.001369, lng: -71.230949, conexiones: ['entrada', 'cam_central_norte'] },
-  
-  // Camino central norte-sur (calle principal)
-  { id: 'cam_norte', lat: -35.001200, lng: -71.231100, conexiones: ['entrada', 'cam_central_norte'] },
-  { id: 'cam_central_norte', lat: -35.001800, lng: -71.230900, conexiones: ['edificio_minas', 'cam_norte', 'servicios_multiples', 'cam_central'] },
-  { id: 'cam_central', lat: -35.002200, lng: -71.230700, conexiones: ['cam_central_norte', 'cam_sur', 'estacionamiento'] },
-  { id: 'cam_sur', lat: -35.002600, lng: -71.230500, conexiones: ['cam_central', 'multicancha'] },
-  
-  // Servicios múltiples (zona central)
-  { id: 'servicios_multiples', lat: -35.002195, lng: -71.230251, conexiones: ['cam_central_norte', 'estacionamiento'] },
-  
-  // Zona estacionamiento
-  { id: 'estacionamiento', lat: -35.002400, lng: -71.230400, conexiones: ['cam_central', 'servicios_multiples', 'cam_sur'] },
-  
-  // Zona deportiva sur
-  { id: 'multicancha', lat: -35.003000, lng: -71.230300, conexiones: ['cam_sur'] },
-];
-
-// Función para calcular distancia euclidiana entre dos puntos
-function calcularDistancia(lat1, lng1, lat2, lng2) {
-  const R = 6371000; // Radio de la Tierra en metros
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lng2 - lng1) * Math.PI / 180;
-
-  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-          Math.cos(φ1) * Math.cos(φ2) *
-          Math.sin(Δλ/2) * Math.sin(Δλ/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-  return R * c; // Distancia en metros
-}
-
-// Función para encontrar el camino más cercano a un punto
-function encontrarCaminoCercano(lat, lng) {
-  let minDist = Infinity;
-  let caminoCercano = CAMINOS_CAMPUS[0];
-  
-  CAMINOS_CAMPUS.forEach(camino => {
-    const dist = calcularDistancia(lat, lng, camino.lat, camino.lng);
-    if (dist < minDist) {
-      minDist = dist;
-      caminoCercano = camino;
-    }
-  });
-  
-  console.log(`   🔍 Camino cercano encontrado: ${caminoCercano.id} (${minDist.toFixed(0)}m de distancia)`);
-  return caminoCercano;
-}
-
-// Algoritmo A* para encontrar la ruta más corta entre caminos
-function encontrarRutaEntreCaminos(caminoInicio, caminoFin) {
-  const visitados = new Set();
-  const cola = [[caminoInicio]];
-  const costos = new Map();
-  costos.set(caminoInicio.id, 0);
-  
-  while (cola.length > 0) {
-    // Ordenar por costo + heurística (distancia al objetivo)
-    cola.sort((a, b) => {
-      const ultimoA = a[a.length - 1];
-      const ultimoB = b[b.length - 1];
-      const costoA = costos.get(ultimoA.id) + calcularDistancia(ultimoA.lat, ultimoA.lng, caminoFin.lat, caminoFin.lng);
-      const costoB = costos.get(ultimoB.id) + calcularDistancia(ultimoB.lat, ultimoB.lng, caminoFin.lat, caminoFin.lng);
-      return costoA - costoB;
-    });
-    
-    const ruta = cola.shift();
-    const actual = ruta[ruta.length - 1];
-    
-    if (actual.id === caminoFin.id) {
-      console.log(`   🛣️ Ruta encontrada: ${ruta.map(c => c.id).join(' → ')}`);
-      return ruta;
-    }
-    
-    if (visitados.has(actual.id)) {
-      continue;
-    }
-    
-    visitados.add(actual.id);
-    
-    actual.conexiones.forEach(conexionId => {
-      const siguiente = CAMINOS_CAMPUS.find(c => c.id === conexionId);
-      if (siguiente && !visitados.has(siguiente.id)) {
-        const nuevoCosto = costos.get(actual.id) + calcularDistancia(actual.lat, actual.lng, siguiente.lat, siguiente.lng);
-        
-        if (!costos.has(siguiente.id) || nuevoCosto < costos.get(siguiente.id)) {
-          costos.set(siguiente.id, nuevoCosto);
-          cola.push([...ruta, siguiente]);
-        }
-      }
-    });
-  }
-  
-  console.log('   ⚠️ No se encontró ruta, usando línea directa');
-  return [caminoInicio, caminoFin]; // Fallback: línea directa
-}
-
-// Función para generar ruta con geometría detallada siguiendo caminos
-function generarRutaCampus(origenLat, origenLng, destinoLat, destinoLng) {
-  console.log(`   🎯 Generando ruta desde [${origenLat.toFixed(6)}, ${origenLng.toFixed(6)}]`);
-  console.log(`      hasta [${destinoLat.toFixed(6)}, ${destinoLng.toFixed(6)}]`);
-  
-  // Encontrar caminos más cercanos al origen y destino
-  const caminoOrigen = encontrarCaminoCercano(origenLat, origenLng);
-  const caminoDestino = encontrarCaminoCercano(destinoLat, destinoLng);
-  
-  // Si origen y destino están en el mismo camino o muy cerca
-  if (caminoOrigen.id === caminoDestino.id) {
-    console.log('   ℹ️ Origen y destino en el mismo nodo, ruta directa');
-    return [
-      [origenLat, origenLng],
-      [destinoLat, destinoLng]
-    ];
-  }
-  
-  // Encontrar ruta entre los caminos usando A*
-  const rutaCaminos = encontrarRutaEntreCaminos(caminoOrigen, caminoDestino);
-  
-  // Construir array de coordenadas
-  const coordenadas = [
-    [origenLat, origenLng], // Punto de inicio real
-    ...rutaCaminos.map(camino => [camino.lat, camino.lng]), // Caminos intermedios
-    [destinoLat, destinoLng] // Punto de destino real
-  ];
-  
-  return coordenadas;
-}
+// ─── Motor de rutas offline ────────────────────────────────────────────────
+// calcularRuta() y grafoCampus se importan en la cabecera del archivo.
+// El antiguo sistema de CAMINOS_CAMPUS y las funciones de routing manual
+// han sido eliminados. El algoritmo A* en calculadorRutas.js los reemplaza.
+// ───────────────────────────────────────────────────────────────────────────
 
 const MapBounds = () => {
   const map = useMap();
@@ -166,194 +37,9 @@ const MapBounds = () => {
   return null;
 };
 
-// Componente para manejar el cálculo de rutas con Leaflet Routing Machine
-// y extraer las coordenadas para dibujarlas manualmente
-const RoutingMachine = ({ origen, destino, onRutaCalculada, setCoordenadasRuta }) => {
-  const map = useMap();
-  const routingControlRef = useRef(null);
-  const prevOrigenRef = useRef(null);
-  const prevDestinoRef = useRef(null);
-
-  useEffect(() => {
-    if (!map) return;
-
-    // Verificar si origen o destino han cambiado realmente
-    const origenCambiado = JSON.stringify(origen) !== JSON.stringify(prevOrigenRef.current);
-    const destinoCambiado = JSON.stringify(destino) !== JSON.stringify(prevDestinoRef.current);
-
-    if (!origenCambiado && !destinoCambiado) {
-      return; // No hacer nada si no hay cambios
-    }
-
-    // Actualizar referencias
-    prevOrigenRef.current = origen;
-    prevDestinoRef.current = destino;
-
-    // Limpiar control anterior si existe
-    if (routingControlRef.current) {
-      try {
-        map.removeControl(routingControlRef.current);
-      } catch (e) {
-        // Ignorar errores
-      }
-      routingControlRef.current = null;
-    }
-
-    // Limpiar coordenadas de ruta
-    if (setCoordenadasRuta) {
-      setCoordenadasRuta([]);
-    }
-
-    // Solo crear ruta si hay origen Y destino
-    if (!origen || !destino) {
-      if (onRutaCalculada) {
-        onRutaCalculada(null);
-      }
-      return;
-    }
-
-    // Obtener coordenadas
-    const origenLat = origen.ubicacion.coordinates[1];
-    const origenLng = origen.ubicacion.coordinates[0];
-    const destinoLat = destino.ubicacion.coordinates[1];
-    const destinoLng = destino.ubicacion.coordinates[0];
-
-    console.log('🚶 Calculando ruta con Leaflet Routing Machine');
-    console.log(`   📍 Origen: ${origen.nombre} [${origenLat}, ${origenLng}]`);
-    console.log(`   🎯 Destino: ${destino.nombre} [${destinoLat}, ${destinoLng}]`);
-
-    // Crear el control de routing (SOLO para cálculo, sin dibujar líneas)
-    try {
-      routingControlRef.current = L.Routing.control({
-        waypoints: [
-          L.latLng(origenLat, origenLng),
-          L.latLng(destinoLat, destinoLng)
-        ],
-        router: L.Routing.osrmv1({
-          serviceUrl: 'https://router.project-osrm.org/route/v1',
-          profile: 'foot',
-          language: 'es',
-          // CRÍTICO: Solicitar geometría completa para que la ruta siga las calles
-          useHints: false,
-          suppressDemoServerWarning: true
-        }),
-        lineOptions: {
-          styles: [{ opacity: 0 }] // Línea invisible - usaremos Polyline
-        },
-        show: false,
-        addWaypoints: false,
-        routeWhileDragging: false,
-        draggableWaypoints: false,
-        fitSelectedRoutes: false, // No ajustar automáticamente
-        showAlternatives: false,
-        createMarker: function() { return null; }
-      });
-
-      // NO agregar al mapa aún - esperar a que calcule la ruta
-      
-      console.log('🔧 Control de routing creado (sin agregar al mapa)');
-
-      // Evento: ruta calculada exitosamente
-      routingControlRef.current.on('routesfound', function(e) {
-        const routes = e.routes;
-        const route = routes[0];
-        const summary = route.summary;
-        
-        const distanciaKm = (summary.totalDistance / 1000).toFixed(2);
-        const tiempoMin = Math.max(1, Math.round(summary.totalTime / 60));
-        
-        console.log('✅ Ruta encontrada por Leaflet Routing Machine:');
-        console.log(`   📏 ${distanciaKm} km (${summary.totalDistance.toFixed(0)}m)`);
-        console.log(`   ⏱️ ${tiempoMin} min`);
-        
-        // IMPORTANTE: Obtener la geometría completa de la ruta
-        // route.coordinates contiene TODOS los puntos de la ruta real
-        let coordsArray = [];
-        
-        if (route.coordinates && route.coordinates.length > 0) {
-          // Usar coordenadas detalladas de la ruta
-          coordsArray = route.coordinates.map(coord => [coord.lat, coord.lng]);
-          console.log(`   🗺️ Coordenadas de ruta detallada: ${coordsArray.length} puntos`);
-        } else if (route.waypointIndices && route.inputWaypoints) {
-          // Fallback: usar waypoints si no hay coordinates
-          coordsArray = route.inputWaypoints.map(wp => [wp.latLng.lat, wp.latLng.lng]);
-          console.log(`   ⚠️ Usando waypoints (${coordsArray.length} puntos) - geometría simplificada`);
-        } else {
-          console.warn('⚠️ No se encontró geometría de ruta');
-          coordsArray = [
-            [origenLat, origenLng],
-            [destinoLat, destinoLng]
-          ];
-        }
-        
-        // Pasar coordenadas al estado para que Polyline las dibuje
-        if (setCoordenadasRuta) {
-          setCoordenadasRuta(coordsArray);
-        }
-        
-        if (onRutaCalculada) {
-          onRutaCalculada({
-            distancia: distanciaKm,
-            tiempo: tiempoMin,
-            instrucciones: route.instructions,
-            coordenadas: coordsArray
-          });
-        }
-      });
-
-      // Evento: error al calcular ruta
-      routingControlRef.current.on('routingerror', function(e) {
-        console.error('❌ Error de OSRM (esperado para campus privado):', e.error);
-        console.log('🔄 Usando algoritmo de routing interno del campus...');
-        
-        // Usar algoritmo interno del campus que sigue caminos conocidos
-        const rutaCampus = generarRutaCampus(origenLat, origenLng, destinoLat, destinoLng);
-        
-        console.log(`✅ Ruta generada con algoritmo interno: ${rutaCampus.length} puntos`);
-        
-        if (setCoordenadasRuta) {
-          setCoordenadasRuta(rutaCampus);
-        }
-        
-        // Calcular distancia aproximada
-        let distanciaTotal = 0;
-        for (let i = 0; i < rutaCampus.length - 1; i++) {
-          const dist = map.distance(rutaCampus[i], rutaCampus[i + 1]);
-          distanciaTotal += dist;
-        }
-        
-        if (onRutaCalculada) {
-          onRutaCalculada({
-            distancia: (distanciaTotal / 1000).toFixed(2),
-            tiempo: Math.max(1, Math.round(distanciaTotal / 80)), // ~80m/min caminando
-            coordenadas: rutaCampus,
-            usaAlgoritmoInterno: true
-          });
-        }
-      });
-
-      // Iniciar el cálculo de la ruta sin agregar al mapa
-      routingControlRef.current.route();
-
-    } catch (error) {
-      console.error('❌ Error al crear routing control:', error);
-    }
-
-    // Cleanup
-    return () => {
-      if (routingControlRef.current) {
-        try {
-          // Simplemente limpiar la referencia sin intentar remover del mapa
-          routingControlRef.current = null;
-        } catch (e) {
-          // Ignorar errores
-        }
-      }
-    };
-  }, [map, origen, destino, onRutaCalculada, setCoordenadasRuta]);
-
-  return null;
-};
+// RoutingMachine eliminado. El cálculo de rutas ahora se realiza directamente
+// dentro de MapaWayfinding usando el motor offline calcularRuta() + grafoCampus.
+// Ver el useEffect de routing más abajo en el componente principal.
 
 // Componente para centrar el mapa en la ubicación del usuario y detectar desviaciones
 const MapAutoCenter = ({ ubicacionUsuario, modoViaje, coordenadasRuta, onRecalcularRuta }) => {
@@ -426,8 +112,56 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState('todos');
-  const [coordenadasRuta, setCoordenadasRuta] = useState([]); // Estado para las coordenadas de la ruta
+  const [coordenadasRuta, setCoordenadasRuta] = useState([]);
   const destinoOriginalRef = useRef(null);
+
+  // ── Motor de rutas offline (A* sobre grafoCampus.json) ──────────────────
+  useEffect(() => {
+    // Limpiar ruta anterior si falta origen o destino
+    if (!origen || !destino) {
+      setCoordenadasRuta([]);
+      if (onRutaCalculada) onRutaCalculada(null);
+      return;
+    }
+
+    // GeoJSON almacena [lng, lat]; Leaflet/Haversine necesita (lat, lng)
+    const origenLat  = origen.ubicacion.coordinates[1];
+    const origenLng  = origen.ubicacion.coordinates[0];
+    const destinoLat = destino.ubicacion.coordinates[1];
+    const destinoLng = destino.ubicacion.coordinates[0];
+
+    console.log('🚶 [Motor offline] Calculando ruta A*...');
+    console.log(`   📍 Origen:  ${origen.nombre}  [${origenLat}, ${origenLng}]`);
+    console.log(`   🎯 Destino: ${destino.nombre} [${destinoLat}, ${destinoLng}]`);
+
+    const resultado = calcularRuta(
+      origenLat, origenLng,
+      destinoLat, destinoLng,
+      grafoCampus
+    );
+
+    if (!resultado) {
+      console.warn('⚠️ Motor offline: no existe ruta entre los nodos seleccionados.');
+      setCoordenadasRuta([]);
+      if (onRutaCalculada) onRutaCalculada(null);
+      return;
+    }
+
+    const distanciaKm = (resultado.summary.totalDistance / 1000).toFixed(2);
+    const tiempoMin   = Math.max(1, Math.round(resultado.summary.totalTime / 60));
+
+    console.log(`✅ Ruta calculada: ${distanciaKm} km | ${tiempoMin} min | ${resultado.coordenadas.length} puntos`);
+
+    setCoordenadasRuta(resultado.coordenadas);
+
+    if (onRutaCalculada) {
+      onRutaCalculada({
+        distancia: distanciaKm,
+        tiempo:    tiempoMin,
+        coordenadas: resultado.coordenadas,
+      });
+    }
+  }, [origen, destino]); // Se recalcula solo cuando cambian origen o destino
 
   // Guardar destino original al iniciar viaje
   useEffect(() => {
@@ -754,13 +488,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             </Marker>
           )}
 
-          {/* Sistema de Rutas con Leaflet Routing Machine */}
-          <RoutingMachine 
-            origen={origen}
-            destino={destino}
-            onRutaCalculada={onRutaCalculada}
-            setCoordenadasRuta={setCoordenadasRuta}
-          />
+          {/* Motor de rutas offline — el cálculo ocurre en el useEffect de arriba */}
         </MapContainer>
       </div>
     </div>

@@ -1,0 +1,207 @@
+{
+  "_comentario": "Grafo peatonal del Campus Curicó - Universidad de Talca.",
+  "_instrucciones": [
+    "Nodos: cada cruce de caminos, esquina o punto de interés relevante.",
+    "Aristas: cada vereda o camino válido que conecta dos nodos.",
+    "Distancia: en metros (puedes usar Google Maps > clic derecho > Medir distancia).",
+    "Las aristas son BIDIRECCIONALES por defecto (A→B y B→A).",
+    "Agrega todos los nodos que necesites para cubrir los caminos reales del campus."
+  ],
+  "nodos": [
+    {
+      "id": "nodo_20",
+      "nombre": "nodo_20",
+      "lat": -35.00124903,
+      "lng": -71.23023592
+    },
+    {
+      "id": "nodo_21",
+      "nombre": "nodo_21",
+      "lat": -35.00131164,
+      "lng": -71.23026945
+    },
+    {
+      "id": "nodo_22",
+      "nombre": "nodo_22",
+      "lat": -35.0013858,
+      "lng": -71.23030901
+    },
+    {
+      "id": "nodo_23",
+      "nombre": "nodo_23",
+      "lat": -35.00142809,
+      "lng": -71.23033449
+    },
+    {
+      "id": "nodo_24",
+      "nombre": "nodo_24",
+      "lat": -35.00143468,
+      "lng": -71.23027816
+    },
+    {
+      "id": "nodo_25",
+      "nombre": "nodo_25",
+      "lat": -35.00142205,
+      "lng": -71.23020239
+    },
+    {
+      "id": "nodo_26",
+      "nombre": "nodo_26",
+      "lat": -35.00143139,
+      "lng": -71.23013802
+    },
+    {
+      "id": "nodo_27",
+      "nombre": "nodo_27",
+      "lat": -35.0014572,
+      "lng": -71.2300428
+    },
+    {
+      "id": "nodo_28",
+      "nombre": "nodo_28",
+      "lat": -35.00156541,
+      "lng": -71.22994289
+    },
+    {
+      "id": "nodo_29",
+      "nombre": "nodo_29",
+      "lat": -35.00160935,
+      "lng": -71.23000324
+    },
+    {
+      "id": "nodo_30",
+      "nombre": "nodo_30",
+      "lat": -35.00168131,
+      "lng": -71.23010851
+    },
+    {
+      "id": "nodo_31",
+      "nombre": "nodo_31",
+      "lat": -35.00174502,
+      "lng": -71.23020507
+    },
+    {
+      "id": "nodo_32",
+      "nombre": "nodo_32",
+      "lat": -35.00182631,
+      "lng": -71.23033382
+    },
+    {
+      "id": "nodo_33",
+      "nombre": "nodo_33",
+      "lat": -35.00188728,
+      "lng": -71.23042971
+    },
+    {
+      "id": "nodo_34",
+      "nombre": "nodo_34",
+      "lat": -35.00185762,
+      "lng": -71.23038076
+    },
+    {
+      "id": "nodo_35",
+      "nombre": "nodo_35",
+      "lat": -35.00194331,
+      "lng": -71.23039417
+    },
+    {
+      "id": "nodo_36",
+      "nombre": "nodo_36",
+      "lat": -35.00199439,
+      "lng": -71.23035863
+    },
+    {
+      "id": "nodo_38",
+      "nombre": "nodo_38",
+      "lat": -35.00205948,
+      "lng": -71.23031337
+    }
+  ],
+  "aristas": [
+    {
+      "desde": "nodo_20",
+      "hasta": "nodo_21",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_21",
+      "hasta": "nodo_22",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_22",
+      "hasta": "nodo_23",
+      "distancia": 5
+    },
+    {
+      "desde": "nodo_23",
+      "hasta": "nodo_24",
+      "distancia": 5
+    },
+    {
+      "desde": "nodo_24",
+      "hasta": "nodo_25",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_25",
+      "hasta": "nodo_26",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_26",
+      "hasta": "nodo_27",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_27",
+      "hasta": "nodo_28",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_28",
+      "hasta": "nodo_29",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_29",
+      "hasta": "nodo_30",
+      "distancia": 12
+    },
+    {
+      "desde": "nodo_30",
+      "hasta": "nodo_31",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_31",
+      "hasta": "nodo_32",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_32",
+      "hasta": "nodo_34",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_34",
+      "hasta": "nodo_33",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_33",
+      "hasta": "nodo_35",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_35",
+      "hasta": "nodo_36",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_36",
+      "hasta": "nodo_38",
+      "distancia": 8
+    }
+  ]
+}
