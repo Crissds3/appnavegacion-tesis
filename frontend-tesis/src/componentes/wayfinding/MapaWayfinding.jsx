@@ -192,7 +192,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
   const cargarUbicaciones = async () => {
     try {
       setCargando(true);
-      const response = await fetch('http://localhost:5000/api/ubicaciones/publicas?visible=true');
+      const baseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api';
+      const response = await fetch(`${baseUrl}/ubicaciones/publicas?visible=true`);
       
       if (!response.ok) {
         throw new Error('Error al cargar ubicaciones');
