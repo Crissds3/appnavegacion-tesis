@@ -17,12 +17,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-// CORS: permite el frontend local Y cualquier dominio de Vercel
+// CORS: lista blanca de orígenes permitidos
+// Incluye localhost para desarrollo local y los dominios de producción en Vercel
 const origenesPermitidos = [
   'http://localhost:5173',
+  'http://localhost:5174',
   'http://localhost:4173',
-  /^https:\/\/.*\.vercel\.app$/,   // cualquier subdominio de vercel.app
-  process.env.FRONTEND_URL,        // dominio personalizado (opcional)
+  'https://appnavegacion-tesis.vercel.app',  // URL de producción en Vercel
+  /^https:\/\/appnavegacion-tesis-.*\.vercel\.app$/, // previews automáticos de Vercel
+  process.env.FRONTEND_URL,                  // dominio personalizado (opcional)
 ].filter(Boolean);
 
 app.use(cors({
