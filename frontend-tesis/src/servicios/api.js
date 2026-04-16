@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Configurar la URL base del backend
-const API_URL = 'http://localhost:5000/api';
+// En desarrollo: http://localhost:5000/api
+// En producción: la variable de entorno VITE_API_URL que configuras en Vercel
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5000/api';
 
 // Crear instancia de axios
 export const api = axios.create({
