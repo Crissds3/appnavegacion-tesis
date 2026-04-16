@@ -41,107 +41,134 @@ const MapBounds = () => {
 // dentro de MapaWayfinding usando el motor offline calcularRuta() + grafoCampus.
 // Ver el useEffect de routing más abajo en el componente principal.
 
-// Componente para centrar el mapa en la ubicación del usuario y detectar desviaciones
-const MapAutoCenter = ({ ubicacionUsuario, modoViaje, coordenadasRuta, onRecalcularRuta }) => {
+// ─── Controlador de Navegación en Tiempo Real ─────────────────────────────
+// Este componente vive DENTRO de <MapContainer>, por lo que puede usar useMap().
+// Es el único responsable de:
+//   1. Seguir al usuario con panTo cuando isNavigating === true
+//   2. Recalcular la ruta A* cada vez que la posición del usuario cambia
+//   3. Detectar desviaciones y emitir una advertencia visual
+const NavigationController = ({
+  ubicacionUsuario,
+  isNavigating,
+  destino,
+  coordenadasRuta,
+  onRutaActualizada,  // callback: ({ coordenadas, distancia, tiempo })
+}) => {
   const map = useMap();
-  const prevUbicacionRef = useRef(null);
-  const ultimaRecalculacionRef = useRef(null);
-  const UMBRAL_DESVIACION = 25; // 25 metros de desviación antes de recalcular
-  const TIEMPO_MIN_RECALCULO = 10000; // 10 segundos mínimo entre recálculos
+  const prevLatLngRef          = useRef(null);
+  const ultimoRecalculoRef     = useRef(0);
+  const UMBRAL_MOV_M           = 5;      // mínimo movimiento para disparar lógica
+  const UMBRAL_DESVIACION_M    = 25;     // desviación máxima antes de recalcular
+  const INTERVALO_MIN_RECALC   = 8000;  // ms mínimos entre recálculos A*
+  const ZOOM_NAVEGACION        = 19;
 
   useEffect(() => {
-    if (!modoViaje || !ubicacionUsuario) return;
+    if (!isNavigating || !ubicacionUsuario) return;
 
-    // Verificar si el usuario se desvió de la ruta
-    if (coordenadasRuta && coordenadasRuta.length > 1) {
-      const ubicacionActual = [ubicacionUsuario.lat, ubicacionUsuario.lng];
-      
-      // Calcular distancia mínima a cualquier punto de la ruta
-      let distanciaMinima = Infinity;
-      for (let i = 0; i < coordenadasRuta.length; i++) {
-        const distancia = map.distance(ubicacionActual, coordenadasRuta[i]);
-        if (distancia < distanciaMinima) {
-          distanciaMinima = distancia;
-        }
-      }
-      
-      // Si se desvió más del umbral, recalcular
-      const ahora = Date.now();
-      const tiempoDesdeUltimoRecalculo = ultimaRecalculacionRef.current 
-        ? ahora - ultimaRecalculacionRef.current 
-        : Infinity;
-      
-      if (distanciaMinima > UMBRAL_DESVIACION && tiempoDesdeUltimoRecalculo > TIEMPO_MIN_RECALCULO) {
-        console.log(`⚠️ Desviación detectada: ${distanciaMinima.toFixed(0)}m de la ruta`);
-        console.log('🔄 Recalculando ruta desde posición actual...');
-        ultimaRecalculacionRef.current = ahora;
-        
-        // Llamar función de recálculo
-        if (onRecalcularRuta) {
-          onRecalcularRuta(ubicacionUsuario);
-        }
-      }
+    const nuevaPos = [ubicacionUsuario.lat, ubicacionUsuario.lng];
+
+    // ── 1. Filtrar micro-movimientos (GPS jitter) ──────────────────────────
+    if (prevLatLngRef.current) {
+      const mov = map.distance(prevLatLngRef.current, nuevaPos);
+      if (mov < UMBRAL_MOV_M) return;
+    }
+    prevLatLngRef.current = nuevaPos;
+
+    // ── 2. Seguir al usuario suavemente (panTo) ────────────────────────────
+    map.panTo(nuevaPos, { animate: true, duration: 0.6, easeLinearity: 0.5 });
+    // Mantener zoom de navegación si el usuario no lo cambió manualmente
+    if (map.getZoom() < ZOOM_NAVEGACION - 1) {
+      map.setZoom(ZOOM_NAVEGACION, { animate: true });
     }
 
-    // Solo actualizar si la ubicación cambió significativamente (más de 5 metros)
-    if (prevUbicacionRef.current) {
-      const distancia = map.distance(
-        [prevUbicacionRef.current.lat, prevUbicacionRef.current.lng],
-        [ubicacionUsuario.lat, ubicacionUsuario.lng]
+    // ── 3. Verificar desviación y recalcular si es necesario ───────────────
+    if (!destino || !coordenadasRuta || coordenadasRuta.length < 2) return;
+
+    // Distancia mínima del usuario a cualquier punto de la polilínea actual
+    let distMinRuta = Infinity;
+    for (const punto of coordenadasRuta) {
+      const d = map.distance(nuevaPos, punto);
+      if (d < distMinRuta) distMinRuta = d;
+    }
+
+    const ahora = Date.now();
+    const tiempoDesdeUltimoRecalc = ahora - ultimoRecalculoRef.current;
+
+    if (distMinRuta > UMBRAL_DESVIACION_M && tiempoDesdeUltimoRecalc > INTERVALO_MIN_RECALC) {
+      ultimoRecalculoRef.current = ahora;
+      console.log(`🔄 Desviación ${distMinRuta.toFixed(0)}m → recalculando A*...`);
+
+      const destinoLat = destino.ubicacion.coordinates[1];
+      const destinoLng = destino.ubicacion.coordinates[0];
+
+      const resultado = calcularRuta(
+        ubicacionUsuario.lat, ubicacionUsuario.lng,
+        destinoLat, destinoLng,
+        grafoCampus
       );
-      
-      if (distancia < 5) {
-        return; // No actualizar si el movimiento es muy pequeño
+
+      if (resultado && onRutaActualizada) {
+        const distanciaKm = (resultado.summary.totalDistance / 1000).toFixed(2);
+        const tiempoMin   = Math.max(1, Math.round(resultado.summary.totalTime / 60));
+        console.log(`✅ Ruta recalculada: ${distanciaKm} km | ${tiempoMin} min`);
+        onRutaActualizada({
+          coordenadas: resultado.coordenadas,
+          distancia:   distanciaKm,
+          tiempo:      tiempoMin,
+        });
       }
     }
-
-    prevUbicacionRef.current = ubicacionUsuario;
-    
-    console.log('📍 Centrando mapa en ubicación del usuario');
-    map.setView([ubicacionUsuario.lat, ubicacionUsuario.lng], 18, {
-      animate: true,
-      duration: 0.5
-    });
-  }, [map, ubicacionUsuario, modoViaje]);
+  // ubicacionUsuario cambia cada vez que el GPS emite una nueva posición
+  }, [map, ubicacionUsuario, isNavigating, destino, coordenadasRuta]);
 
   return null;
 };
 
-const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, modoViaje = false, onRecalcularRuta }) => {
+// ─── prop isNavigating reemplaza modoViaje ────────────────────────────────
+const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false }) => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState('todos');
   const [coordenadasRuta, setCoordenadasRuta] = useState([]);
-  const destinoOriginalRef = useRef(null);
 
-  // ── Motor de rutas offline (A* sobre grafoCampus.json) ──────────────────
+  // ── Callback que NavigationController usa para actualizar la ruta en vivo ─
+  const handleRutaActualizada = ({ coordenadas, distancia, tiempo }) => {
+    setCoordenadasRuta(coordenadas);
+    if (onRutaCalculada) onRutaCalculada({ distancia, tiempo, coordenadas });
+  };
+
+  // ── Motor de rutas offline A* ────────────────────────────────────────────
+  // Se dispara cuando:
+  //   a) El usuario selecciona un nuevo origen/destino (planificación estática)
+  //   b) isNavigating se activa por primera vez (calcula la ruta inicial)
+  // El recálculo en tiempo real lo gestiona NavigationController.
   useEffect(() => {
-    // Limpiar ruta anterior si falta origen o destino
-    if (!origen || !destino) {
+    if (!destino) {
       setCoordenadasRuta([]);
       if (onRutaCalculada) onRutaCalculada(null);
       return;
     }
 
-    // GeoJSON almacena [lng, lat]; Leaflet/Haversine necesita (lat, lng)
-    const origenLat  = origen.ubicacion.coordinates[1];
-    const origenLng  = origen.ubicacion.coordinates[0];
+    // En modo navegación usamos ubicacionUsuario como origen dinámico
+    const origenLat = isNavigating && ubicacionUsuario
+      ? ubicacionUsuario.lat
+      : origen?.ubicacion.coordinates[1];
+    const origenLng = isNavigating && ubicacionUsuario
+      ? ubicacionUsuario.lng
+      : origen?.ubicacion.coordinates[0];
+
+    if (origenLat == null || origenLng == null) return;
+
     const destinoLat = destino.ubicacion.coordinates[1];
     const destinoLng = destino.ubicacion.coordinates[0];
 
-    console.log('🚶 [Motor offline] Calculando ruta A*...');
-    console.log(`   📍 Origen:  ${origen.nombre}  [${origenLat}, ${origenLng}]`);
-    console.log(`   🎯 Destino: ${destino.nombre} [${destinoLat}, ${destinoLng}]`);
+    console.log(`🚶 [Motor A*] ${isNavigating ? 'Nav. inicial' : 'Planificación'}: [${origenLat.toFixed(5)},${origenLng.toFixed(5)}] → [${destinoLat.toFixed(5)},${destinoLng.toFixed(5)}]`);
 
-    const resultado = calcularRuta(
-      origenLat, origenLng,
-      destinoLat, destinoLng,
-      grafoCampus
-    );
+    const resultado = calcularRuta(origenLat, origenLng, destinoLat, destinoLng, grafoCampus);
 
     if (!resultado) {
-      console.warn('⚠️ Motor offline: no existe ruta entre los nodos seleccionados.');
+      console.warn('⚠️ Motor A*: sin ruta entre los nodos seleccionados.');
       setCoordenadasRuta([]);
       if (onRutaCalculada) onRutaCalculada(null);
       return;
@@ -149,30 +176,14 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
 
     const distanciaKm = (resultado.summary.totalDistance / 1000).toFixed(2);
     const tiempoMin   = Math.max(1, Math.round(resultado.summary.totalTime / 60));
-
-    console.log(`✅ Ruta calculada: ${distanciaKm} km | ${tiempoMin} min | ${resultado.coordenadas.length} puntos`);
+    console.log(`✅ Ruta calculada: ${distanciaKm} km | ${tiempoMin} min | ${resultado.coordenadas.length} pts`);
 
     setCoordenadasRuta(resultado.coordenadas);
+    if (onRutaCalculada) onRutaCalculada({ distancia: distanciaKm, tiempo: tiempoMin, coordenadas: resultado.coordenadas });
+  // isNavigating entra en las deps para disparar la ruta inicial al presionar "Navegar"
+  }, [origen, destino, isNavigating]);
 
-    if (onRutaCalculada) {
-      onRutaCalculada({
-        distancia: distanciaKm,
-        tiempo:    tiempoMin,
-        coordenadas: resultado.coordenadas,
-      });
-    }
-  }, [origen, destino]); // Se recalcula solo cuando cambian origen o destino
-
-  // Guardar destino original al iniciar viaje
-  useEffect(() => {
-    if (destino && modoViaje && !destinoOriginalRef.current) {
-      destinoOriginalRef.current = destino;
-      console.log('🎯 Destino original guardado:', destino.nombre);
-    }
-    if (!modoViaje) {
-      destinoOriginalRef.current = null;
-    }
-  }, [destino, modoViaje]);
+  // (destinoOriginalRef eliminado — NavigationController maneja el recálculo directamente)
 
   useEffect(() => {
     cargarUbicaciones();
@@ -342,11 +353,13 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
           style={{ height: '100%', width: '100%' }}
         >
           <MapBounds />
-          <MapAutoCenter 
-            ubicacionUsuario={ubicacionUsuario} 
-            modoViaje={modoViaje}
+          {/* Controlador de navegación en tiempo real */}
+          <NavigationController
+            ubicacionUsuario={ubicacionUsuario}
+            isNavigating={isNavigating}
+            destino={destino}
             coordenadasRuta={coordenadasRuta}
-            onRecalcularRuta={onRecalcularRuta}
+            onRutaActualizada={handleRutaActualizada}
           />
           
           {/* Polyline para dibujar la ruta visualmente */}
@@ -463,25 +476,35 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, mo
             </Marker>
           )}
 
-          {/* Marcador de Ubicación del Usuario */}
+          {/* Marcador del usuario — punto azul pulsante */}
           {ubicacionUsuario && (
             <Marker
               position={[ubicacionUsuario.lat, ubicacionUsuario.lng]}
+              zIndexOffset={1000}
               icon={L.divIcon({
-                className: 'custom-marker-usuario',
-                html: `<div style="background-color: #2196F3; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(33, 150, 243, 0.8), 0 0 20px rgba(33, 150, 243, 0.4);"></div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10],
-                popupAnchor: [0, -10]
+                className: '',   // Sin clase base para no interferir con Leaflet default
+                html: `
+                  <div class="usuario-dot-wrapper">
+                    <div class="usuario-dot-pulse"></div>
+                    <div class="usuario-dot-core"></div>
+                  </div>
+                `,
+                iconSize:   [36, 36],
+                iconAnchor: [18, 18],
+                popupAnchor:[0, -18]
               })}
             >
               <Popup>
                 <div className="marker-popup usuario">
-                  <div className="popup-header" style={{ background: '#2196F3' }}>
-                    Tu ubicación
+                  <div className="popup-header" style={{ background: '#2563eb' }}>
+                    📍 Tu ubicación
                   </div>
                   <div className="popup-body">
-                    <p>📱 Estás aquí</p>
+                    <p style={{ margin: 0, fontSize: 12 }}>
+                      {ubicacionUsuario.precision
+                        ? `Precisión: ~${Math.round(ubicacionUsuario.precision)} m`
+                        : 'GPS activo'}
+                    </p>
                   </div>
                 </div>
               </Popup>

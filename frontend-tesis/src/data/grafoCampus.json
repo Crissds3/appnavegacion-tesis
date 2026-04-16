@@ -9,199 +9,1478 @@
   ],
   "nodos": [
     {
+      "id": "entrada",
+      "nombre": "entrada",
+      "lat": -35.00125672,
+      "lng": -71.23024061
+    },
+    {
+      "id": "nodo_2",
+      "nombre": "nodo_2",
+      "lat": -35.00131824,
+      "lng": -71.2302728
+    },
+    {
+      "id": "nodo_4",
+      "nombre": "nodo_4",
+      "lat": -35.00143523,
+      "lng": -71.23033516
+    },
+    {
+      "id": "nodo_5",
+      "nombre": "nodo_5",
+      "lat": -35.00143358,
+      "lng": -71.23027883
+    },
+    {
+      "id": "nodo_6",
+      "nombre": "nodo_6",
+      "lat": -35.00141875,
+      "lng": -71.23019099
+    },
+    {
+      "id": "nodo_7",
+      "nombre": "nodo_7",
+      "lat": -35.00143688,
+      "lng": -71.23011924
+    },
+    {
+      "id": "nodo_8",
+      "nombre": "nodo_8",
+      "lat": -35.0014561,
+      "lng": -71.23004749
+    },
+    {
+      "id": "nodo_9",
+      "nombre": "nodo_9",
+      "lat": -35.00156431,
+      "lng": -71.22994557
+    },
+    {
+      "id": "nodo_10",
+      "nombre": "nodo_10",
+      "lat": -35.00162473,
+      "lng": -71.23002671
+    },
+    {
+      "id": "nodo_11",
+      "nombre": "nodo_11",
+      "lat": -35.00167966,
+      "lng": -71.23010851
+    },
+    {
+      "id": "nodo_12",
+      "nombre": "nodo_12",
+      "lat": -35.00177578,
+      "lng": -71.23025537
+    },
+    {
+      "id": "nodo_13",
+      "nombre": "nodo_13",
+      "lat": -35.00189113,
+      "lng": -71.23043172
+    },
+    {
+      "id": "servicios",
+      "nombre": "servicios",
+      "lat": -35.00205975,
+      "lng": -71.23031169
+    },
+    {
+      "id": "nodo_15",
+      "nombre": "nodo_15",
+      "lat": -35.00173568,
+      "lng": -71.23004884
+    },
+    {
+      "id": "nodo_16",
+      "nombre": "nodo_16",
+      "lat": -35.00179226,
+      "lng": -71.22998245
+    },
+    {
+      "id": "nodo_17",
+      "nombre": "nodo_17",
+      "lat": -35.00184279,
+      "lng": -71.22998044
+    },
+    {
+      "id": "nodo_18",
+      "nombre": "nodo_18",
+      "lat": -35.00188481,
+      "lng": -71.22997776
+    },
+    {
+      "id": "nodo_19",
+      "nombre": "nodo_19",
+      "lat": -35.0019087,
+      "lng": -71.22995462
+    },
+    {
       "id": "nodo_20",
       "nombre": "nodo_20",
-      "lat": -35.00124903,
-      "lng": -71.23023592
+      "lat": -35.00205454,
+      "lng": -71.22997642
     },
     {
       "id": "nodo_21",
       "nombre": "nodo_21",
-      "lat": -35.00131164,
-      "lng": -71.23026945
+      "lat": -35.00221794,
+      "lng": -71.22999419
     },
     {
       "id": "nodo_22",
       "nombre": "nodo_22",
-      "lat": -35.0013858,
-      "lng": -71.23030901
+      "lat": -35.00227342,
+      "lng": -71.230077
     },
     {
-      "id": "nodo_23",
-      "nombre": "nodo_23",
-      "lat": -35.00142809,
-      "lng": -71.23033449
+      "id": "servicios2",
+      "nombre": "servicios2",
+      "lat": -35.00225255,
+      "lng": -71.23010449
     },
     {
-      "id": "nodo_24",
-      "nombre": "nodo_24",
-      "lat": -35.00143468,
-      "lng": -71.23027816
+      "id": "decanato",
+      "nombre": "decanato",
+      "lat": -35.00164725,
+      "lng": -71.22983158
     },
     {
       "id": "nodo_25",
       "nombre": "nodo_25",
-      "lat": -35.00142205,
-      "lng": -71.23020239
+      "lat": -35.00156102,
+      "lng": -71.22982219
     },
     {
       "id": "nodo_26",
       "nombre": "nodo_26",
-      "lat": -35.00143139,
-      "lng": -71.23013802
+      "lat": -35.00155882,
+      "lng": -71.22971222
     },
     {
       "id": "nodo_27",
       "nombre": "nodo_27",
-      "lat": -35.0014572,
-      "lng": -71.2300428
+      "lat": -35.00165549,
+      "lng": -71.22962169
     },
     {
       "id": "nodo_28",
       "nombre": "nodo_28",
-      "lat": -35.00156541,
-      "lng": -71.22994289
+      "lat": -35.00171097,
+      "lng": -71.22957207
     },
     {
       "id": "nodo_29",
       "nombre": "nodo_29",
-      "lat": -35.00160935,
-      "lng": -71.23000324
+      "lat": -35.00177908,
+      "lng": -71.2295419
     },
     {
       "id": "nodo_30",
       "nombre": "nodo_30",
-      "lat": -35.00168131,
-      "lng": -71.23010851
+      "lat": -35.00186531,
+      "lng": -71.22954994
     },
     {
       "id": "nodo_31",
       "nombre": "nodo_31",
-      "lat": -35.00174502,
-      "lng": -71.23020507
+      "lat": -35.00185103,
+      "lng": -71.22984432
     },
     {
       "id": "nodo_32",
       "nombre": "nodo_32",
-      "lat": -35.00182631,
-      "lng": -71.23033382
+      "lat": -35.00187959,
+      "lng": -71.22990265
     },
     {
-      "id": "nodo_33",
-      "nombre": "nodo_33",
-      "lat": -35.00188728,
-      "lng": -71.23042971
+      "id": "estudiantiles",
+      "nombre": "estudiantiles",
+      "lat": -35.00189717,
+      "lng": -71.22989058
     },
     {
-      "id": "nodo_34",
-      "nombre": "nodo_34",
-      "lat": -35.00185762,
-      "lng": -71.23038076
+      "id": "estudiantiles2",
+      "nombre": "estudiantiles2",
+      "lat": -35.00210479,
+      "lng": -71.22991472
     },
     {
       "id": "nodo_35",
       "nombre": "nodo_35",
-      "lat": -35.00194331,
-      "lng": -71.23039417
+      "lat": -35.00212979,
+      "lng": -71.2299858
     },
     {
       "id": "nodo_36",
       "nombre": "nodo_36",
-      "lat": -35.00199439,
-      "lng": -71.23035863
+      "lat": -35.00195017,
+      "lng": -71.23052023
+    },
+    {
+      "id": "nodo_37",
+      "nombre": "nodo_37",
+      "lat": -35.00205728,
+      "lng": -71.23055276
     },
     {
       "id": "nodo_38",
       "nombre": "nodo_38",
-      "lat": -35.00205948,
-      "lng": -71.23031337
+      "lat": -35.00217208,
+      "lng": -71.23055175
+    },
+    {
+      "id": "nodo_39",
+      "nombre": "nodo_39",
+      "lat": -35.00222536,
+      "lng": -71.23053599
+    },
+    {
+      "id": "nodo_40",
+      "nombre": "nodo_40",
+      "lat": -35.00237531,
+      "lng": -71.23039484
+    },
+    {
+      "id": "nodo_41",
+      "nombre": "nodo_41",
+      "lat": -35.00242722,
+      "lng": -71.23034254
+    },
+    {
+      "id": "laboratoriosverde",
+      "nombre": "laboratoriosverde",
+      "lat": -35.00233164,
+      "lng": -71.23006158
+    },
+    {
+      "id": "laboratoriosverde2",
+      "nombre": "laboratoriosverde2",
+      "lat": -35.0025475,
+      "lng": -71.22992344
+    },
+    {
+      "id": "laboratoriosverde3",
+      "nombre": "laboratoriosverde3",
+      "lat": -35.0025151,
+      "lng": -71.23011187
+    },
+    {
+      "id": "nodo_45",
+      "nombre": "nodo_45",
+      "lat": -35.00256398,
+      "lng": -71.23022251
+    },
+    {
+      "id": "nodo_46",
+      "nombre": "nodo_46",
+      "lat": -35.00267329,
+      "lng": -71.23012729
+    },
+    {
+      "id": "nodo_47",
+      "nombre": "nodo_47",
+      "lat": -35.0027035,
+      "lng": -71.22999653
+    },
+    {
+      "id": "nodo_48",
+      "nombre": "nodo_48",
+      "lat": -35.00271338,
+      "lng": -71.22995429
+    },
+    {
+      "id": "nodo_49",
+      "nombre": "nodo_49",
+      "lat": -35.00264198,
+      "lng": -71.22991405
+    },
+    {
+      "id": "nodo_50",
+      "nombre": "nodo_50",
+      "lat": -35.00259584,
+      "lng": -71.22985572
+    },
+    {
+      "id": "nodo_51",
+      "nombre": "nodo_51",
+      "lat": -35.00257112,
+      "lng": -71.22979537
+    },
+    {
+      "id": "nodo_52",
+      "nombre": "nodo_52",
+      "lat": -35.00255794,
+      "lng": -71.22974038
+    },
+    {
+      "id": "nodo_53",
+      "nombre": "nodo_53",
+      "lat": -35.00228441,
+      "lng": -71.2299221
+    },
+    {
+      "id": "nodo_54",
+      "nombre": "nodo_54",
+      "lat": -35.00230583,
+      "lng": -71.22961633
+    },
+    {
+      "id": "nodo_55",
+      "nombre": "nodo_55",
+      "lat": -35.00200483,
+      "lng": -71.22956604
+    },
+    {
+      "id": "talleres",
+      "nombre": "talleres",
+      "lat": -35.0020246,
+      "lng": -71.22928306
+    },
+    {
+      "id": "nodo_57",
+      "nombre": "nodo_57",
+      "lat": -35.00235526,
+      "lng": -71.22918785
+    },
+    {
+      "id": "nodo_58",
+      "nombre": "nodo_58",
+      "lat": -35.002174,
+      "lng": -71.22915566
+    },
+    {
+      "id": "nodo_59",
+      "nombre": "nodo_59",
+      "lat": -35.00231681,
+      "lng": -71.22917309
+    },
+    {
+      "id": "nodo_60",
+      "nombre": "nodo_60",
+      "lat": -35.00233549,
+      "lng": -71.22903228
+    },
+    {
+      "id": "kiosko",
+      "nombre": "kiosko",
+      "lat": -35.00231242,
+      "lng": -71.22901216
+    },
+    {
+      "id": "nodo_62",
+      "nombre": "nodo_62",
+      "lat": -35.0024956,
+      "lng": -71.22964215
+    },
+    {
+      "id": "nodo_63",
+      "nombre": "nodo_63",
+      "lat": -35.00252004,
+      "lng": -71.2292026
+    },
+    {
+      "id": "nodo_64",
+      "nombre": "nodo_64",
+      "lat": -35.00266834,
+      "lng": -71.22926697
+    },
+    {
+      "id": "E1",
+      "nombre": "E1",
+      "lat": -35.00252993,
+      "lng": -71.22907385
+    },
+    {
+      "id": "E2",
+      "nombre": "E2",
+      "lat": -35.00253982,
+      "lng": -71.22895181
+    },
+    {
+      "id": "nodo_67",
+      "nombre": "nodo_67",
+      "lat": -35.0025486,
+      "lng": -71.22889481
+    },
+    {
+      "id": "nodo_68",
+      "nombre": "nodo_68",
+      "lat": -35.00269471,
+      "lng": -71.22890554
+    },
+    {
+      "id": "nodo_69",
+      "nombre": "nodo_69",
+      "lat": -35.00276392,
+      "lng": -71.2299677
+    },
+    {
+      "id": "nodo_70",
+      "nombre": "nodo_70",
+      "lat": -35.00285729,
+      "lng": -71.22993886
+    },
+    {
+      "id": "gimnasio",
+      "nombre": "gimnasio",
+      "lat": -35.00291496,
+      "lng": -71.23000994
+    },
+    {
+      "id": "nodo_72",
+      "nombre": "nodo_72",
+      "lat": -35.00291222,
+      "lng": -71.229904
+    },
+    {
+      "id": "nodo_73",
+      "nombre": "nodo_73",
+      "lat": -35.00295176,
+      "lng": -71.22983627
+    },
+    {
+      "id": "nodo_74",
+      "nombre": "nodo_74",
+      "lat": -35.00298307,
+      "lng": -71.22970618
+    },
+    {
+      "id": "nodo_75",
+      "nombre": "nodo_75",
+      "lat": -35.00305283,
+      "lng": -71.2297149
+    },
+    {
+      "id": "nodo_76",
+      "nombre": "nodo_76",
+      "lat": -35.00308139,
+      "lng": -71.22931927
+    },
+    {
+      "id": "nodo_77",
+      "nombre": "nodo_77",
+      "lat": -35.00322859,
+      "lng": -71.22973502
+    },
+    {
+      "id": "casino",
+      "nombre": "casino",
+      "lat": -35.00355046,
+      "lng": -71.22970954
+    },
+    {
+      "id": "nodo_79",
+      "nombre": "nodo_79",
+      "lat": -35.00258266,
+      "lng": -71.22958884
+    },
+    {
+      "id": "nodo_80",
+      "nombre": "nodo_80",
+      "lat": -35.00264088,
+      "lng": -71.22950301
+    },
+    {
+      "id": "nodo_81",
+      "nombre": "nodo_81",
+      "lat": -35.00270899,
+      "lng": -71.22946277
+    },
+    {
+      "id": "nodo_82",
+      "nombre": "nodo_82",
+      "lat": -35.00279907,
+      "lng": -71.22945473
+    },
+    {
+      "id": "nodo_83",
+      "nombre": "nodo_83",
+      "lat": -35.00291112,
+      "lng": -71.22951508
+    },
+    {
+      "id": "nodo_84",
+      "nombre": "nodo_84",
+      "lat": -35.00295836,
+      "lng": -71.22959018
+    },
+    {
+      "id": "nodo_85",
+      "nombre": "nodo_85",
+      "lat": -35.0028518,
+      "lng": -71.22947216
+    },
+    {
+      "id": "nodo_86",
+      "nombre": "nodo_86",
+      "lat": -35.00333625,
+      "lng": -71.22946277
+    },
+    {
+      "id": "nodo_87",
+      "nombre": "nodo_87",
+      "lat": -35.00357902,
+      "lng": -71.22960493
+    },
+    {
+      "id": "biblioteca",
+      "nombre": "biblioteca",
+      "lat": -35.0028908,
+      "lng": -71.22918785
+    },
+    {
+      "id": "auditorio",
+      "nombre": "auditorio",
+      "lat": -35.00271119,
+      "lng": -71.22907989
+    },
+    {
+      "id": "nodo_90",
+      "nombre": "nodo_90",
+      "lat": -35.00287597,
+      "lng": -71.22929379
+    },
+    {
+      "id": "nodo_91",
+      "nombre": "nodo_91",
+      "lat": -35.00268153,
+      "lng": -71.22908324
+    },
+    {
+      "id": "labing",
+      "nombre": "labing",
+      "lat": -35.00312259,
+      "lng": -71.22926295
+    },
+    {
+      "id": "nodo_93",
+      "nombre": "nodo_93",
+      "lat": -35.00311435,
+      "lng": -71.22933134
+    },
+    {
+      "id": "nodo_94",
+      "nombre": "nodo_94",
+      "lat": -35.00346148,
+      "lng": -71.22935951
+    },
+    {
+      "id": "nodo_95",
+      "nombre": "nodo_95",
+      "lat": -35.00347466,
+      "lng": -71.22932062
+    },
+    {
+      "id": "i+d",
+      "nombre": "i+d",
+      "lat": -35.00351311,
+      "lng": -71.22932732
+    },
+    {
+      "id": "i+d2",
+      "nombre": "i+d2",
+      "lat": -35.00354826,
+      "lng": -71.22937426
+    },
+    {
+      "id": "nodo_98",
+      "nombre": "nodo_98",
+      "lat": -35.00354277,
+      "lng": -71.22940913
+    },
+    {
+      "id": "nodo_99",
+      "nombre": "nodo_99",
+      "lat": -35.00371853,
+      "lng": -71.22943193
+    },
+    {
+      "id": "containers",
+      "nombre": "containers",
+      "lat": -35.00376138,
+      "lng": -71.22929782
+    },
+    {
+      "id": "nodo_101",
+      "nombre": "nodo_101",
+      "lat": -35.00352904,
+      "lng": -71.22957408
+    },
+    {
+      "id": "nodo_102",
+      "nombre": "nodo_102",
+      "lat": -35.00354716,
+      "lng": -71.22981414
+    },
+    {
+      "id": "nodo_103",
+      "nombre": "nodo_103",
+      "lat": -35.00382839,
+      "lng": -71.22985438
+    },
+    {
+      "id": "cancha",
+      "nombre": "cancha",
+      "lat": -35.00381081,
+      "lng": -71.2300998
+    },
+    {
+      "id": "gimnasio2",
+      "nombre": "gimnasio2",
+      "lat": -35.00313632,
+      "lng": -71.23004481
+    },
+    {
+      "id": "nodo_106",
+      "nombre": "nodo_106",
+      "lat": -35.003222,
+      "lng": -71.22990802
+    },
+    {
+      "id": "nodo_107",
+      "nombre": "nodo_107",
+      "lat": -35.00328132,
+      "lng": -71.2301065
+    },
+    {
+      "id": "nodo_108",
+      "nombre": "nodo_108",
+      "lat": -35.00329121,
+      "lng": -71.23027816
+    },
+    {
+      "id": "sintetica",
+      "nombre": "sintetica",
+      "lat": -35.00308908,
+      "lng": -71.23059198
+    },
+    {
+      "id": "nodo_110",
+      "nombre": "nodo_110",
+      "lat": -35.00283532,
+      "lng": -71.2303479
+    },
+    {
+      "id": "multicanchas",
+      "nombre": "multicanchas",
+      "lat": -35.00272162,
+      "lng": -71.23048201
+    },
+    {
+      "id": "nodo_112",
+      "nombre": "nodo_112",
+      "lat": -35.00192079,
+      "lng": -71.23065636
+    },
+    {
+      "id": "nodo_113",
+      "nombre": "nodo_113",
+      "lat": -35.00188454,
+      "lng": -71.23080656
+    },
+    {
+      "id": "nodo_114",
+      "nombre": "nodo_114",
+      "lat": -35.00183016,
+      "lng": -71.23099767
+    },
+    {
+      "id": "nodo_115",
+      "nombre": "nodo_115",
+      "lat": -35.0019098,
+      "lng": -71.23104997
+    },
+    {
+      "id": "electrica",
+      "nombre": "electrica",
+      "lat": -35.00189937,
+      "lng": -71.2311244
+    },
+    {
+      "id": "nodo_117",
+      "nombre": "nodo_117",
+      "lat": -35.0018016,
+      "lng": -71.23146772
+    },
+    {
+      "id": "nodo_118",
+      "nombre": "nodo_118",
+      "lat": -35.00176864,
+      "lng": -71.23152673
+    },
+    {
+      "id": "nodo_119",
+      "nombre": "nodo_119",
+      "lat": -35.00156431,
+      "lng": -71.23139262
+    },
+    {
+      "id": "nodo_120",
+      "nombre": "nodo_120",
+      "lat": -35.00145446,
+      "lng": -71.23130009
+    },
+    {
+      "id": "nodo_121",
+      "nombre": "nodo_121",
+      "lat": -35.00159177,
+      "lng": -71.23084411
+    },
+    {
+      "id": "nodo_122",
+      "nombre": "nodo_122",
+      "lat": -35.00169064,
+      "lng": -71.23051152
+    },
+    {
+      "id": "nodo_123",
+      "nombre": "nodo_123",
+      "lat": -35.00167966,
+      "lng": -71.23146906
+    },
+    {
+      "id": "nodo_124",
+      "nombre": "nodo_124",
+      "lat": -35.00174447,
+      "lng": -71.23124644
+    },
+    {
+      "id": "nodo_125",
+      "nombre": "nodo_125",
+      "lat": -35.00150169,
+      "lng": -71.2303707
+    },
+    {
+      "id": "nodo_126",
+      "nombre": "nodo_126",
+      "lat": -35.00169504,
+      "lng": -71.23046458
+    },
+    {
+      "id": "nodo_127",
+      "nombre": "nodo_127",
+      "lat": -35.00183236,
+      "lng": -71.2303412
+    },
+    {
+      "id": "nodo_128",
+      "nombre": "nodo_128",
+      "lat": -35.00197517,
+      "lng": -71.23037204
     }
   ],
   "aristas": [
     {
+      "desde": "entrada",
+      "hasta": "nodo_2",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_2",
+      "hasta": "nodo_4",
+      "distancia": 14
+    },
+    {
+      "desde": "nodo_4",
+      "hasta": "nodo_5",
+      "distancia": 5
+    },
+    {
+      "desde": "nodo_5",
+      "hasta": "nodo_6",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_6",
+      "hasta": "nodo_7",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_7",
+      "hasta": "nodo_8",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_8",
+      "hasta": "nodo_9",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_9",
+      "hasta": "nodo_10",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_10",
+      "hasta": "nodo_11",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_11",
+      "hasta": "nodo_12",
+      "distancia": 17
+    },
+    {
+      "desde": "nodo_12",
+      "hasta": "nodo_13",
+      "distancia": 21
+    },
+    {
+      "desde": "nodo_13",
+      "hasta": "servicios",
+      "distancia": 22
+    },
+    {
+      "desde": "nodo_11",
+      "hasta": "nodo_15",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_15",
+      "hasta": "nodo_16",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_16",
+      "hasta": "nodo_17",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_17",
+      "hasta": "nodo_18",
+      "distancia": 5
+    },
+    {
+      "desde": "nodo_18",
+      "hasta": "nodo_19",
+      "distancia": 3
+    },
+    {
+      "desde": "nodo_19",
+      "hasta": "nodo_20",
+      "distancia": 16
+    },
+    {
       "desde": "nodo_20",
       "hasta": "nodo_21",
-      "distancia": 8
+      "distancia": 18
     },
     {
       "desde": "nodo_21",
       "hasta": "nodo_22",
-      "distancia": 9
+      "distancia": 10
     },
     {
       "desde": "nodo_22",
-      "hasta": "nodo_23",
-      "distancia": 5
+      "hasta": "servicios2",
+      "distancia": 3
     },
     {
-      "desde": "nodo_23",
-      "hasta": "nodo_24",
-      "distancia": 5
+      "desde": "nodo_9",
+      "hasta": "decanato",
+      "distancia": 14
     },
     {
-      "desde": "nodo_24",
+      "desde": "nodo_9",
       "hasta": "nodo_25",
-      "distancia": 7
+      "distancia": 11
     },
     {
       "desde": "nodo_25",
       "hasta": "nodo_26",
-      "distancia": 6
+      "distancia": 10
     },
     {
       "desde": "nodo_26",
       "hasta": "nodo_27",
-      "distancia": 9
+      "distancia": 14
     },
     {
       "desde": "nodo_27",
       "hasta": "nodo_28",
-      "distancia": 15
+      "distancia": 8
     },
     {
       "desde": "nodo_28",
       "hasta": "nodo_29",
-      "distancia": 7
+      "distancia": 8
     },
     {
       "desde": "nodo_29",
       "hasta": "nodo_30",
-      "distancia": 12
+      "distancia": 10
     },
     {
       "desde": "nodo_30",
       "hasta": "nodo_31",
-      "distancia": 11
+      "distancia": 27
     },
     {
       "desde": "nodo_31",
       "hasta": "nodo_32",
-      "distancia": 15
+      "distancia": 6
     },
     {
       "desde": "nodo_32",
-      "hasta": "nodo_34",
+      "hasta": "estudiantiles",
+      "distancia": 2
+    },
+    {
+      "desde": "nodo_19",
+      "hasta": "nodo_32",
       "distancia": 6
     },
     {
-      "desde": "nodo_34",
-      "hasta": "nodo_33",
-      "distancia": 6
-    },
-    {
-      "desde": "nodo_33",
+      "desde": "nodo_20",
       "hasta": "nodo_35",
-      "distancia": 7
+      "distancia": 8
     },
     {
       "desde": "nodo_35",
-      "hasta": "nodo_36",
+      "hasta": "estudiantiles2",
       "distancia": 7
     },
     {
+      "desde": "nodo_21",
+      "hasta": "nodo_35",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_13",
+      "hasta": "nodo_36",
+      "distancia": 10
+    },
+    {
       "desde": "nodo_36",
+      "hasta": "nodo_37",
+      "distancia": 12
+    },
+    {
+      "desde": "nodo_37",
       "hasta": "nodo_38",
+      "distancia": 13
+    },
+    {
+      "desde": "nodo_38",
+      "hasta": "nodo_39",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_39",
+      "hasta": "nodo_40",
+      "distancia": 21
+    },
+    {
+      "desde": "nodo_40",
+      "hasta": "nodo_41",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_41",
+      "hasta": "nodo_22",
+      "distancia": 30
+    },
+    {
+      "desde": "nodo_22",
+      "hasta": "laboratoriosverde",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_41",
+      "hasta": "nodo_45",
+      "distancia": 19
+    },
+    {
+      "desde": "nodo_45",
+      "hasta": "laboratoriosverde3",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_45",
+      "hasta": "nodo_46",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_46",
+      "hasta": "nodo_47",
+      "distancia": 12
+    },
+    {
+      "desde": "nodo_47",
+      "hasta": "nodo_48",
+      "distancia": 4
+    },
+    {
+      "desde": "nodo_48",
+      "hasta": "nodo_49",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_49",
+      "hasta": "nodo_50",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_50",
+      "hasta": "nodo_51",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_51",
+      "hasta": "nodo_52",
+      "distancia": 5
+    },
+    {
+      "desde": "nodo_50",
+      "hasta": "laboratoriosverde2",
       "distancia": 8
+    },
+    {
+      "desde": "nodo_21",
+      "hasta": "nodo_53",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_53",
+      "hasta": "nodo_54",
+      "distancia": 28
+    },
+    {
+      "desde": "nodo_54",
+      "hasta": "nodo_55",
+      "distancia": 34
+    },
+    {
+      "desde": "nodo_55",
+      "hasta": "nodo_30",
+      "distancia": 16
+    },
+    {
+      "desde": "nodo_55",
+      "hasta": "talleres",
+      "distancia": 26
+    },
+    {
+      "desde": "nodo_58",
+      "hasta": "nodo_59",
+      "distancia": 16
+    },
+    {
+      "desde": "nodo_59",
+      "hasta": "nodo_57",
+      "distancia": 4
+    },
+    {
+      "desde": "nodo_57",
+      "hasta": "nodo_54",
+      "distancia": 39
+    },
+    {
+      "desde": "nodo_59",
+      "hasta": "nodo_60",
+      "distancia": 13
+    },
+    {
+      "desde": "nodo_60",
+      "hasta": "kiosko",
+      "distancia": 3
+    },
+    {
+      "desde": "nodo_52",
+      "hasta": "nodo_62",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_62",
+      "hasta": "nodo_54",
+      "distancia": 21
+    },
+    {
+      "desde": "nodo_57",
+      "hasta": "nodo_63",
+      "distancia": 18
+    },
+    {
+      "desde": "nodo_63",
+      "hasta": "nodo_64",
+      "distancia": 18
+    },
+    {
+      "desde": "nodo_63",
+      "hasta": "E1",
+      "distancia": 12
+    },
+    {
+      "desde": "E1",
+      "hasta": "E2",
+      "distancia": 11
+    },
+    {
+      "desde": "E2",
+      "hasta": "nodo_67",
+      "distancia": 5
+    },
+    {
+      "desde": "nodo_67",
+      "hasta": "nodo_68",
+      "distancia": 16
+    },
+    {
+      "desde": "nodo_68",
+      "hasta": "nodo_64",
+      "distancia": 33
+    },
+    {
+      "desde": "nodo_48",
+      "hasta": "nodo_69",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_69",
+      "hasta": "nodo_70",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_70",
+      "hasta": "gimnasio",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_70",
+      "hasta": "nodo_72",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_72",
+      "hasta": "nodo_73",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_73",
+      "hasta": "nodo_74",
+      "distancia": 12
+    },
+    {
+      "desde": "nodo_74",
+      "hasta": "nodo_75",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_75",
+      "hasta": "nodo_77",
+      "distancia": 20
+    },
+    {
+      "desde": "nodo_77",
+      "hasta": "casino",
+      "distancia": 36
+    },
+    {
+      "desde": "nodo_75",
+      "hasta": "nodo_76",
+      "distancia": 36
+    },
+    {
+      "desde": "nodo_76",
+      "hasta": "nodo_86",
+      "distancia": 31
+    },
+    {
+      "desde": "nodo_86",
+      "hasta": "nodo_87",
+      "distancia": 30
+    },
+    {
+      "desde": "nodo_64",
+      "hasta": "nodo_76",
+      "distancia": 46
+    },
+    {
+      "desde": "nodo_52",
+      "hasta": "nodo_79",
+      "distancia": 14
+    },
+    {
+      "desde": "nodo_79",
+      "hasta": "nodo_80",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_80",
+      "hasta": "nodo_81",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_81",
+      "hasta": "nodo_82",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_82",
+      "hasta": "nodo_85",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_85",
+      "hasta": "nodo_83",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_83",
+      "hasta": "nodo_84",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_84",
+      "hasta": "nodo_74",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_91",
+      "hasta": "nodo_64",
+      "distancia": 17
+    },
+    {
+      "desde": "nodo_91",
+      "hasta": "auditorio",
+      "distancia": 3
+    },
+    {
+      "desde": "nodo_64",
+      "hasta": "nodo_90",
+      "distancia": 23
+    },
+    {
+      "desde": "nodo_76",
+      "hasta": "nodo_90",
+      "distancia": 23
+    },
+    {
+      "desde": "nodo_90",
+      "hasta": "biblioteca",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_93",
+      "hasta": "labing",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_76",
+      "hasta": "nodo_93",
+      "distancia": 4
+    },
+    {
+      "desde": "nodo_93",
+      "hasta": "nodo_86",
+      "distancia": 27
+    },
+    {
+      "desde": "nodo_93",
+      "hasta": "nodo_94",
+      "distancia": 39
+    },
+    {
+      "desde": "nodo_94",
+      "hasta": "nodo_95",
+      "distancia": 4
+    },
+    {
+      "desde": "nodo_95",
+      "hasta": "i+d",
+      "distancia": 4
+    },
+    {
+      "desde": "i+d2",
+      "hasta": "nodo_98",
+      "distancia": 3
+    },
+    {
+      "desde": "nodo_101",
+      "hasta": "nodo_98",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_101",
+      "hasta": "nodo_87",
+      "distancia": 6
+    },
+    {
+      "desde": "nodo_101",
+      "hasta": "nodo_86",
+      "distancia": 24
+    },
+    {
+      "desde": "nodo_98",
+      "hasta": "nodo_99",
+      "distancia": 20
+    },
+    {
+      "desde": "nodo_99",
+      "hasta": "containers",
+      "distancia": 13
+    },
+    {
+      "desde": "casino",
+      "hasta": "nodo_102",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_102",
+      "hasta": "nodo_103",
+      "distancia": 31
+    },
+    {
+      "desde": "nodo_103",
+      "hasta": "cancha",
+      "distancia": 22
+    },
+    {
+      "desde": "nodo_46",
+      "hasta": "nodo_110",
+      "distancia": 27
+    },
+    {
+      "desde": "nodo_110",
+      "hasta": "sintetica",
+      "distancia": 36
+    },
+    {
+      "desde": "sintetica",
+      "hasta": "nodo_108",
+      "distancia": 36
+    },
+    {
+      "desde": "nodo_108",
+      "hasta": "nodo_107",
+      "distancia": 16
+    },
+    {
+      "desde": "nodo_107",
+      "hasta": "nodo_106",
+      "distancia": 19
+    },
+    {
+      "desde": "nodo_106",
+      "hasta": "nodo_77",
+      "distancia": 16
+    },
+    {
+      "desde": "nodo_106",
+      "hasta": "gimnasio2",
+      "distancia": 16
+    },
+    {
+      "desde": "nodo_110",
+      "hasta": "multicanchas",
+      "distancia": 18
+    },
+    {
+      "desde": "nodo_36",
+      "hasta": "nodo_112",
+      "distancia": 13
+    },
+    {
+      "desde": "nodo_113",
+      "hasta": "nodo_112",
+      "distancia": 14
+    },
+    {
+      "desde": "nodo_113",
+      "hasta": "nodo_114",
+      "distancia": 18
+    },
+    {
+      "desde": "nodo_115",
+      "hasta": "nodo_114",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_115",
+      "hasta": "electrica",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_117",
+      "hasta": "nodo_118",
+      "distancia": 7
+    },
+    {
+      "desde": "nodo_123",
+      "hasta": "nodo_118",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_123",
+      "hasta": "nodo_119",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_119",
+      "hasta": "nodo_120",
+      "distancia": 15
+    },
+    {
+      "desde": "nodo_120",
+      "hasta": "nodo_121",
+      "distancia": 44
+    },
+    {
+      "desde": "nodo_121",
+      "hasta": "nodo_122",
+      "distancia": 32
+    },
+    {
+      "desde": "nodo_123",
+      "hasta": "nodo_124",
+      "distancia": 22
+    },
+    {
+      "desde": "nodo_124",
+      "hasta": "nodo_114",
+      "distancia": 25
+    },
+    {
+      "desde": "nodo_4",
+      "hasta": "nodo_125",
+      "distancia": 8
+    },
+    {
+      "desde": "nodo_125",
+      "hasta": "nodo_126",
+      "distancia": 23
+    },
+    {
+      "desde": "nodo_126",
+      "hasta": "nodo_122",
+      "distancia": 4
+    },
+    {
+      "desde": "nodo_126",
+      "hasta": "nodo_12",
+      "distancia": 21
+    },
+    {
+      "desde": "nodo_12",
+      "hasta": "nodo_127",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_127",
+      "hasta": "nodo_13",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_13",
+      "hasta": "nodo_128",
+      "distancia": 11
+    },
+    {
+      "desde": "nodo_128",
+      "hasta": "servicios",
+      "distancia": 11
     }
   ]
 }

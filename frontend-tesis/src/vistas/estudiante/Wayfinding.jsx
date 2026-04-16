@@ -36,10 +36,9 @@ const Wayfinding = () => {
   const [destino, setDestino] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [modoSeleccion, setModoSeleccion] = useState(null); // 'origen' o 'destino'
-  const [infoRuta, setInfoRuta] = useState(null);
-  const [modoViaje, setModoViaje] = useState(false); // Nuevo: modo navegación activa
+  const [infoRuta,        setInfoRuta]        = useState(null);
+  const [isNavigating,    setIsNavigating]    = useState(false);
   const [usarUbicacionSimulada, setUsarUbicacionSimulada] = useState(false);
-  const [notificacionRecalculo, setNotificacionRecalculo] = useState(false);
 
   // Custom Hook para geolocalización reactiva
   const { ubicacion: ubicacionUsuario, error: errorGeo, cargando: cargandoGeo, permisosConcedidos } = useGeolocation({
@@ -113,7 +112,7 @@ const Wayfinding = () => {
     setDestino(null);
     setModoSeleccion(null);
     setInfoRuta(null);
-    setModoViaje(false); // Detener modo viaje
+    setIsNavigating(false);
   };
 
   const usarMiUbicacion = () => {
@@ -154,25 +153,6 @@ const Wayfinding = () => {
     setInfoRuta(ruta);
   };
 
-  const recalcularRuta = (nuevaUbicacion) => {
-    if (!destino) return;
-    
-    console.log('🔄 Recalculando ruta desde posición actual...');
-    
-    // Mostrar notificación
-    setNotificacionRecalculo(true);
-    setTimeout(() => setNotificacionRecalculo(false), 3000);
-    
-    // Actualizar origen a la posición actual del usuario
-    setOrigen({
-      _id: 'ubicacion-actual-recalculada',
-      nombre: 'Tu ubicación actual',
-      ubicacion: {
-        coordinates: [nuevaUbicacion.lng, nuevaUbicacion.lat]
-      }
-    });
-  };
-
   const iniciarViaje = () => {
     if (!ubicacionActual) {
       alert('No se puede iniciar el viaje sin tu ubicación');
@@ -182,23 +162,16 @@ const Wayfinding = () => {
       alert('Selecciona un destino primero');
       return;
     }
-    
-    // Verificar que origen ya está establecido
     if (!origen) {
       alert('Por favor, selecciona un punto de origen primero');
       return;
     }
-    
-    console.log('🚀 Iniciando viaje...');
-    console.log('Origen:', origen);
-    console.log('Destino:', destino);
-    console.log('Ubicación actual:', ubicacionActual);
-    
-    setModoViaje(true);
+    console.log('🚀 Iniciando navegación en tiempo real...');
+    setIsNavigating(true);
   };
 
   const detenerViaje = () => {
-    setModoViaje(false);
+    setIsNavigating(false);
   };
 
   const getIconoPorTipo = (tipo) => {
@@ -227,8 +200,7 @@ const Wayfinding = () => {
               destino={destino}
               ubicacionUsuario={ubicacionActual}
               onRutaCalculada={handleRutaCalculada}
-              modoViaje={modoViaje}
-              onRecalcularRuta={recalcularRuta}
+              isNavigating={isNavigating}
             />
           </div>
 
@@ -277,9 +249,9 @@ const Wayfinding = () => {
                   )}
                 </div>
 
-                {(origen && destino) && (
+                {(origen || destino) && (
                   <div className="ruta-acciones">
-                    {!modoViaje ? (
+                    {!isNavigating ? (
                       <>
                         <button onClick={iniciarViaje} className="btn-iniciar-viaje">
                           <Compass size={20} /> Navegar
@@ -442,12 +414,12 @@ const Wayfinding = () => {
                 </div>
               )}
               
-              {/* Notificación de recalculación de ruta */}
-              {notificacionRecalculo && (
+              {/* Notificación de navegación activa */}
+              {isNavigating && (
                 <div className="info-card recalculo">
                   <p>
-                    <strong><RefreshCw size={16} className="spin" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Recalculando ruta...</strong><br />
-                    Te desviaste del camino
+                    <strong><RefreshCw size={16} className="spin" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Navegación activa</strong><br />
+                    La ruta se recalcula si te devías del camino
                   </p>
                 </div>
               )}

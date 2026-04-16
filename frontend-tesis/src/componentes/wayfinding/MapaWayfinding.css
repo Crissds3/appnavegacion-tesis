@@ -6,20 +6,42 @@
   gap: 1rem;
 }
 
-/* Animación para el marcador de usuario */
-@keyframes pulseMarker {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.8;
-  }
+/* ─── Marcador pulsante del usuario (estilo Google Maps) ─────────────────── */
+@keyframes usuario-pulse-ring {
+  0%   { transform: scale(0.5); opacity: 0.8; }
+  80%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
 }
 
-.custom-marker-usuario {
-  animation: pulseMarker 2s infinite;
+.usuario-dot-wrapper {
+  position: relative;
+  width:  36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Aro exterior pulsante */
+.usuario-dot-pulse {
+  position: absolute;
+  width:  18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.45);
+  animation: usuario-pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Núcleo azul sólido */
+.usuario-dot-core {
+  position: absolute;
+  width:  16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.55);
+  z-index: 1;
 }
 
 .custom-marker {
