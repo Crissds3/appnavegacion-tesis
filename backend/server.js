@@ -17,7 +17,18 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-app.use(cors());
+// CORS: permite el frontend local Y cualquier dominio de Vercel
+const origenesPermitidos = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  /^https:\/\/.*\.vercel\.app$/,   // cualquier subdominio de vercel.app
+  process.env.FRONTEND_URL,        // dominio personalizado (opcional)
+].filter(Boolean);
+
+app.use(cors({
+  origin: origenesPermitidos,
+  credentials: true,
+}));
 // Aumentar límite para imágenes en Base64 (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
