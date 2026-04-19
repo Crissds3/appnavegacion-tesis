@@ -9,7 +9,7 @@ const ubicacionSchema = new mongoose.Schema({
   tipo: {
     type: String,
     required: [true, 'El tipo de ubicación es obligatorio'],
-    enum: ['edificio', 'servicio', 'entrada', 'estacionamiento', 'otro'],
+    enum: ['edificio', 'biblioteca', 'casino', 'cancha', 'laboratorio', 'entrada', 'estacionamiento', 'servicio', 'otro'],
     default: 'otro'
   },
   descripcion: {
@@ -42,6 +42,11 @@ const ubicacionSchema = new mongoose.Schema({
   icono: {
     type: String,
     default: 'marker'
+  },
+  categoria: {
+    type: String,
+    enum: ['edificio', 'biblioteca', 'casino', 'cancha', 'laboratorio', 'entrada', 'estacionamiento', 'servicio', 'otro'],
+    default: 'edificio'
   },
   visible: {
     type: Boolean,

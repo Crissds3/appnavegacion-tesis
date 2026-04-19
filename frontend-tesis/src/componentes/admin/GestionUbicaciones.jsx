@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import api from '../../servicios/api';
 import { showSuccess, showError, showConfirm, showToast } from '../../utils/sweetAlert';
+import { getIconoPorCategoria, CATEGORIAS } from '../../utils/iconosMapa';
 import { 
   MapPin, 
   Plus, 
@@ -56,6 +57,7 @@ const GestionUbicaciones = () => {
   const [formulario, setFormulario] = useState({
     nombre: '',
     tipo: 'edificio',
+    categoria: 'edificio',
     descripcion: '',
     latitud: '',
     longitud: '',
@@ -138,6 +140,7 @@ const GestionUbicaciones = () => {
       const initialData = {
         nombre: ubicacion.nombre,
         tipo: ubicacion.tipo,
+        categoria: ubicacion.categoria || 'edificio',
         descripcion: ubicacion.descripcion || '',
         latitud: lat.toString(),
         longitud: lng.toString(),
@@ -158,16 +161,21 @@ const GestionUbicaciones = () => {
       resetFormulario();
       setModoEdicion(false);
       setFormularioOriginal(null);
-      // Si ya hay una coordenada seleccionada en el mapa, usarla
+
       if (coordenadaSeleccionada) {
+        // Ya hay coordenadas: pre-rellenar y abrir modal directamente
         setFormulario(prev => ({
           ...prev,
           latitud: coordenadaSeleccionada.lat.toFixed(6),
           longitud: coordenadaSeleccionada.lng.toFixed(6)
         }));
+        setShowModal(true);
+      } else {
+        // Sin coordenadas: forzar selección en el mapa primero
+        setSeleccionandoUbicacion(true);
+        showToast({ title: 'Primero selecciona la ubicación en el mapa', icon: 'info' });
       }
     }
-    setShowModal(true);
   };
 
   const cerrarModal = () => {
@@ -197,6 +205,7 @@ const GestionUbicaciones = () => {
       const datos = {
         nombre: formulario.nombre,
         tipo: formulario.tipo,
+        categoria: formulario.categoria,
         descripcion: formulario.descripcion,
         latitud: parseFloat(formulario.latitud),
         longitud: parseFloat(formulario.longitud),
@@ -250,6 +259,7 @@ const GestionUbicaciones = () => {
     setFormulario({
       nombre: '',
       tipo: 'edificio',
+      categoria: 'edificio',
       descripcion: '',
       latitud: '',
       longitud: '',
@@ -343,17 +353,22 @@ const GestionUbicaciones = () => {
                   />
                   <MapClickHandler onLocationSelect={handleMapClick} isSelecting={seleccionandoUbicacion} />
                   
-                  {/* Marcador de selección actual */}
+                  {/* Marcador arrastrable para la nueva posición */}
                   {coordenadaSeleccionada && (
-                    <Marker position={[coordenadaSeleccionada.lat, coordenadaSeleccionada.lng]} opacity={1.0} />
+                    <Marker
+                      position={[coordenadaSeleccionada.lat, coordenadaSeleccionada.lng]}
+                      icon={getIconoPorCategoria(formulario.categoria)}
+                      opacity={1.0}
+                    />
                   )}
 
                   {/* Marcadores existentes */}
                   {ubicaciones.map(ubi => (
-                    <Marker 
-                      key={ubi._id} 
+                    <Marker
+                      key={ubi._id}
                       position={[ubi.ubicacion.coordinates[1], ubi.ubicacion.coordinates[0]]}
-                      opacity={0.8}
+                      icon={getIconoPorCategoria(ubi.categoria || ubi.tipo)}
+                      opacity={0.9}
                     >
                       <Popup>
                         <div className="popup-content">
@@ -470,12 +485,34 @@ const GestionUbicaciones = () => {
                     required
                     className="select-modern"
                   >
-                    <option value="edificio">Edificio</option>
-                    <option value="servicio">Servicio</option>
-                    <option value="entrada">Entrada</option>
-                    <option value="estacionamiento">Estacionamiento</option>
-                    <option value="otro">Otro</option>
+                    {CATEGORIAS.map(cat => (
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
+                    ))}
                   </select>
+                </div>
+
+                {/* Selector visual de categoría */}
+                <div className="form-group full-width">
+                  <label>Categoría (icono en el mapa)</label>
+                  <div className="categoria-chips">
+                    {CATEGORIAS.map(cat => (
+                      <button
+                        key={cat.value}
+                        type="button"
+                        className={`categoria-chip ${formulario.categoria === cat.value ? 'active' : ''}`}
+                        style={{
+                          '--chip-color': cat.color,
+                        }}
+                        onClick={() => setFormulario(prev => ({ ...prev, categoria: cat.value }))}
+                      >
+                        <span
+                          className="chip-dot"
+                          style={{ background: cat.color }}
+                        />
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="form-group">

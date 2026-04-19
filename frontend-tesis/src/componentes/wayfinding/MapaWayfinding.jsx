@@ -4,7 +4,9 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { calcularRuta } from '../../utils/calculadorRutas';
 import grafoCampus from '../../data/grafoCampus.json';
+import { getIconoPorCategoria } from '../../utils/iconosMapa';
 import './MapaWayfinding.css';
+
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -284,24 +286,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
       });
     }
 
-    // Iconos por tipo de ubicación
-    const colores = {
-      edificio: '#E53935',
-      servicio: '#E53935',
-      entrada: '#E53935',
-      estacionamiento: '#E53935',
-      otro: '#E53935'
-    };
-    
-    const color = colores[tipo] || colores.otro;
-    
-    return L.divIcon({
-      className: 'custom-marker',
-      html: `<div style="background-color: ${color}; width: 25px; height: 25px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
-      iconSize: [25, 25],
-      iconAnchor: [12.5, 12.5],
-      popupAnchor: [0, -12.5]
-    });
+    // Para ubicaciones regulares: usar icono por categoría
+    return getIconoPorCategoria(tipo || 'otro');
   };
 
   if (cargando) {
@@ -402,7 +388,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
               <Marker
                 key={ubicacion._id}
                 position={position}
-                icon={obtenerIcono(ubicacion.tipo)}
+                icon={obtenerIcono(ubicacion.categoria || ubicacion.tipo)}
               >
                 <Popup>
                   <div className="marker-popup">

@@ -55,7 +55,7 @@ export const obtenerUbicacionPorId = async (req, res) => {
 // Crear nueva ubicación
 export const crearUbicacion = async (req, res) => {
   try {
-    const { nombre, tipo, descripcion, latitud, longitud, icono, metadatos } = req.body;
+    const { nombre, tipo, categoria, descripcion, latitud, longitud, icono, metadatos } = req.body;
     
     if (!nombre || !tipo) {
       return res.status(400).json({
@@ -100,6 +100,7 @@ export const crearUbicacion = async (req, res) => {
     const nuevaUbicacion = new Ubicacion({
       nombre,
       tipo,
+      categoria,
       descripcion,
       ubicacion: {
         type: 'Point',
@@ -129,7 +130,7 @@ export const crearUbicacion = async (req, res) => {
 // Actualizar ubicación
 export const actualizarUbicacion = async (req, res) => {
   try {
-    const { nombre, tipo, descripcion, latitud, longitud, icono, visible, metadatos } = req.body;
+    const { nombre, tipo, categoria, descripcion, latitud, longitud, icono, visible, metadatos } = req.body;
     
     const ubicacion = await Ubicacion.findById(req.params.id);
     
@@ -142,6 +143,7 @@ export const actualizarUbicacion = async (req, res) => {
     
     if (nombre !== undefined) ubicacion.nombre = nombre;
     if (tipo !== undefined) ubicacion.tipo = tipo;
+    if (categoria !== undefined) ubicacion.categoria = categoria;
     if (descripcion !== undefined) ubicacion.descripcion = descripcion;
     if (icono !== undefined) ubicacion.icono = icono;
     if (visible !== undefined) ubicacion.visible = visible;
