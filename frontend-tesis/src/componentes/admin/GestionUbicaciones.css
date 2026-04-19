@@ -748,3 +748,96 @@
   flex-shrink: 0;
 }
 
+/* ── Toolbar del mapa ─────────────────────────────────────────────────────── */
+.mapa-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.mapa-toolbar-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #aaa;
+}
+
+.mapa-toolbar-hint svg {
+  color: #E53935;
+  flex-shrink: 0;
+}
+
+.mapa-toolbar-filtros {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.toolbar-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1.5px solid #e4e4e4;
+  background: #f7f7f7;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.toolbar-cat-btn:hover {
+  border-color: var(--cat-color, #E53935);
+  color: var(--cat-color, #E53935);
+  background: white;
+}
+
+.toolbar-cat-btn.active {
+  border-color: var(--cat-color, #E53935);
+  color: var(--cat-color, #E53935);
+  background: white;
+  font-weight: 700;
+}
+
+.toolbar-cat-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+
+/* ── Popup moderno (admin) — mismas clases que wayfinding, se comparten via CSS global ── */
+.popup-moderno {
+  font-family: 'Inter', sans-serif;
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 190px;
+}
+.popup-moderno-head { display: flex; align-items: center; gap: 9px; }
+.popup-moderno-icon {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 2.5px solid currentColor;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.popup-moderno-nombre { font-size: 0.9rem; font-weight: 700; color: #1a1a1a; line-height: 1.25; }
+.popup-moderno-badge {
+  display: inline-block; font-size: 0.7rem; font-weight: 600;
+  padding: 2px 9px; border-radius: 20px; background: #f1f1f1; color: #555;
+  letter-spacing: 0.02em; align-self: flex-start; text-transform: capitalize;
+}
+.popup-moderno-actions { padding-top: 6px; }
+
+

@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { calcularRuta } from '../../utils/calculadorRutas';
 import grafoCampus from '../../data/grafoCampus.json';
-import { getIconoPorCategoria } from '../../utils/iconosMapa';
+import { getIconoPorCategoria, CATEGORIA_CONFIG } from '../../utils/iconosMapa';
 import './MapaWayfinding.css';
 
 
@@ -390,28 +390,38 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
                 position={position}
                 icon={obtenerIcono(ubicacion.categoria || ubicacion.tipo)}
               >
-                <Popup>
-                  <div className="marker-popup">
-                    <div className="popup-header">
-                      {ubicacion.nombre}
-                    </div>
-                    <div className="popup-body">
-                      <p><strong>Tipo:</strong> {ubicacion.tipo.charAt(0).toUpperCase() + ubicacion.tipo.slice(1)}</p>
-                      {ubicacion.descripcion && (
-                        <p>{ubicacion.descripcion}</p>
-                      )}
-                      {ubicacion.metadatos && (
-                        <div className="popup-metadatos">
-                          {ubicacion.metadatos.horario && (
-                            <p><strong>Horario:</strong> {ubicacion.metadatos.horario}</p>
-                          )}
-                          {ubicacion.metadatos.contacto && (
-                            <p><strong>Contacto:</strong> {ubicacion.metadatos.contacto}</p>
-                          )}
+                <Popup autoPan={false}>
+                  {(() => {
+                    const cat = ubicacion.categoria || ubicacion.tipo || 'otro';
+                    const cfg = CATEGORIA_CONFIG[cat] || CATEGORIA_CONFIG.otro;
+                    return (
+                      <div className="popup-moderno">
+                        <div className="popup-moderno-head">
+                          <div
+                            className="popup-moderno-icon"
+                            style={{ color: cfg.color }}
+                            dangerouslySetInnerHTML={{
+                              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="${cfg.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`
+                            }}
+                          />
+                          <div className="popup-moderno-nombre">{ubicacion.nombre}</div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                        <span
+                          className="popup-moderno-badge"
+                          style={{ background: cfg.color + '18', color: cfg.color }}
+                        >
+                          {cfg.label}
+                        </span>
+                        {(ubicacion.descripcion || (ubicacion.metadatos && (ubicacion.metadatos.horario || ubicacion.metadatos.contacto))) && (
+                          <div className="popup-moderno-meta">
+                            {ubicacion.descripcion && <p>{ubicacion.descripcion}</p>}
+                            {ubicacion.metadatos?.horario && <p><strong>Horario:</strong> {ubicacion.metadatos.horario}</p>}
+                            {ubicacion.metadatos?.contacto && <p><strong>Contacto:</strong> {ubicacion.metadatos.contacto}</p>}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </Popup>
               </Marker>
             );
@@ -421,20 +431,18 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           {origen && (
             <Marker
               position={[
-                origen.ubicacion.coordinates[1], // lat
-                origen.ubicacion.coordinates[0]  // lng
+                origen.ubicacion.coordinates[1],
+                origen.ubicacion.coordinates[0]
               ]}
               icon={obtenerIcono(null, true, false)}
             >
-              <Popup>
-                <div className="marker-popup origen">
-                  <div className="popup-header" style={{ background: '#4CAF50' }}>
-                    📍 Origen
+              <Popup autoPan={false}>
+                <div className="popup-moderno">
+                  <div className="popup-moderno-head">
+                    <div className="popup-moderno-icon" style={{ color: '#2E7D32' }}>&#9679;</div>
+                    <div className="popup-moderno-nombre">{origen.nombre}</div>
                   </div>
-                  <div className="popup-body">
-                    <p><strong>{origen.nombre}</strong></p>
-                    <p>Punto de partida</p>
-                  </div>
+                  <span className="popup-moderno-badge" style={{ background: '#e8f5e9', color: '#2E7D32' }}>Origen</span>
                 </div>
               </Popup>
             </Marker>
@@ -444,20 +452,18 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           {destino && (
             <Marker
               position={[
-                destino.ubicacion.coordinates[1], // lat
-                destino.ubicacion.coordinates[0]  // lng
+                destino.ubicacion.coordinates[1],
+                destino.ubicacion.coordinates[0]
               ]}
               icon={obtenerIcono(null, false, true)}
             >
-              <Popup>
-                <div className="marker-popup destino">
-                  <div className="popup-header">
-                    🎯 Destino
+              <Popup autoPan={false}>
+                <div className="popup-moderno">
+                  <div className="popup-moderno-head">
+                    <div className="popup-moderno-icon" style={{ color: '#E53935' }}>&#9679;</div>
+                    <div className="popup-moderno-nombre">{destino.nombre}</div>
                   </div>
-                  <div className="popup-body">
-                    <p><strong>{destino.nombre}</strong></p>
-                    <p>Punto de llegada</p>
-                  </div>
+                  <span className="popup-moderno-badge" style={{ background: '#ffebee', color: '#E53935' }}>Destino</span>
                 </div>
               </Popup>
             </Marker>
@@ -481,18 +487,15 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
                 popupAnchor:[0, -18]
               })}
             >
-              <Popup>
-                <div className="marker-popup usuario">
-                  <div className="popup-header" style={{ background: '#2563eb' }}>
-                    📍 Tu ubicación
+              <Popup autoPan={false}>
+                <div className="popup-moderno">
+                  <div className="popup-moderno-head">
+                    <div className="popup-moderno-icon" style={{ color: '#2563eb' }}>&#9679;</div>
+                    <div className="popup-moderno-nombre">Tu ubicación</div>
                   </div>
-                  <div className="popup-body">
-                    <p style={{ margin: 0, fontSize: 12 }}>
-                      {ubicacionUsuario.precision
-                        ? `Precisión: ~${Math.round(ubicacionUsuario.precision)} m`
-                        : 'GPS activo'}
-                    </p>
-                  </div>
+                  <span className="popup-moderno-badge" style={{ background: '#eff6ff', color: '#2563eb' }}>
+                    {ubicacionUsuario.precision ? `Precisión ~${Math.round(ubicacionUsuario.precision)} m` : 'GPS activo'}
+                  </span>
                 </div>
               </Popup>
             </Marker>

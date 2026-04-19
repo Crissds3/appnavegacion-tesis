@@ -272,65 +272,147 @@
   font-family: inherit;
 }
 
-/* Estilos personalizados para Leaflet */
+/* ── Overrides globales de Leaflet popup ──────────────────────────────────── */
 .leaflet-popup-content-wrapper {
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 0;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.13) !important;
+  padding: 0 !important;
   overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  min-width: 200px;
 }
 
 .leaflet-popup-content {
-  margin: 0;
-  line-height: 1.5;
+  margin: 0 !important;
+  width: auto !important;
+}
+
+/* Ocultar el aspa de cerrar (ocupa espacio sin sentido en nuestro layout) */
+.leaflet-popup-close-button {
+  display: none !important;
+}
+
+.leaflet-popup-tip-container {
+  margin-top: -1px;
 }
 
 .leaflet-popup-tip {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: none !important;
+  background: white !important;
 }
 
-/* Personalización del contenido del popup */
-.popup-header {
-  background: #E53935;
-  color: white;
-  padding: 12px 16px;
-  font-weight: 600;
-  font-size: 1rem;
+/* ── Popup unificado moderno ──────────────────────────────────────────────── */
+.popup-moderno {
+  font-family: 'Inter', sans-serif;
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 190px;
 }
 
-.popup-body {
-  padding: 12px 16px;
+.popup-moderno-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
 }
 
-.popup-body p {
-  margin: 0 0 8px 0;
-  color: #555;
+.popup-moderno-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2.5px solid currentColor;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.popup-moderno-nombre {
   font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.25;
 }
 
-.popup-body p:last-child {
-  margin-bottom: 0;
+.popup-moderno-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  color: #555;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+  text-transform: capitalize;
+}
+
+.popup-moderno-meta {
+  padding-top: 6px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.popup-moderno-meta p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.popup-moderno-meta strong {
+  color: #444;
+}
+
+.popup-moderno-actions {
+  padding-top: 6px;
 }
 
 .popup-btn {
   display: block;
   width: 100%;
-  margin-top: 12px;
-  padding: 8px;
-  background: #FFEBEE;
+  padding: 7px;
+  background: #fff5f5;
   color: #E53935;
-  border: none;
-  border-radius: 6px;
+  border: 1px solid rgba(229,57,53,0.2);
+  border-radius: 7px;
   font-weight: 600;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.18s;
   text-align: center;
+  font-family: 'Inter', sans-serif;
 }
 
 .popup-btn:hover {
   background: #E53935;
   color: white;
+  border-color: #E53935;
 }
+
+/* ── Popups de origen / destino / usuario (heredan el wrapper moderno) ─── */
+.popup-header {
+  background: #E53935;
+  color: white;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.popup-body {
+  padding: 10px 14px;
+}
+
+.popup-body p {
+  margin: 0 0 6px 0;
+  color: #555;
+  font-size: 0.85rem;
+}
+
+.popup-body p:last-child { margin-bottom: 0; }
+
 
 /* Estilos para Leaflet Routing Machine */
 .routing-container {

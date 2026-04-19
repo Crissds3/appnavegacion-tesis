@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import api from '../../servicios/api';
 import { showSuccess, showError, showConfirm, showToast } from '../../utils/sweetAlert';
-import { getIconoPorCategoria, CATEGORIAS } from '../../utils/iconosMapa';
+import { getIconoPorCategoria, CATEGORIAS, CATEGORIA_CONFIG } from '../../utils/iconosMapa';
 import { 
   MapPin, 
   Plus, 
@@ -75,6 +75,8 @@ const GestionUbicaciones = () => {
 
   const [coordenadaSeleccionada, setCoordenadaseleccionada] = useState(null);
   const [seleccionandoUbicacion, setSeleccionandoUbicacion] = useState(false);
+
+  const [filtroCategoria, setFiltroCategoria] = useState('todos');
 
   useEffect(() => {
     cargarUbicaciones();
@@ -157,6 +159,7 @@ const GestionUbicaciones = () => {
       setFormulario(initialData);
       setFormularioOriginal(initialData);
       setCoordenadaseleccionada({ lat, lng });
+      setShowModal(true); // abrir modal en modo edición
     } else {
       resetFormulario();
       setModoEdicion(false);
@@ -278,10 +281,12 @@ const GestionUbicaciones = () => {
     setUbicacionActual(null);
   };
 
-  const ubicacionesFiltradas = ubicaciones.filter(u => 
-    u.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
-    u.tipo.toLowerCase().includes(filtro.toLowerCase())
-  );
+  const ubicacionesFiltradas = ubicaciones.filter(u => {
+    const matchTexto = u.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
+      u.tipo.toLowerCase().includes(filtro.toLowerCase());
+    const matchCat = filtroCategoria === 'todos' || (u.categoria || u.tipo) === filtroCategoria;
+    return matchTexto && matchCat;
+  });
 
   return (
     <div className="gestion-ubicaciones">
@@ -316,9 +321,30 @@ const GestionUbicaciones = () => {
           {/* Columna Izquierda: Mapa */}
           <div className="left-column">
             <div className="mapa-card full-height">
-              <div className="card-header">
-                <h3><MapPin size={20} /> Mapa del Campus</h3>
-                <p className="card-subtitle">Haz clic en el mapa para seleccionar coordenadas o ver detalles</p>
+              <div className="mapa-toolbar">
+                <div className="mapa-toolbar-hint">
+                  <MapPin size={15} />
+                  <span>Clic en el mapa para ver detalles o agregar una ubicación</span>
+                </div>
+                <div className="mapa-toolbar-filtros">
+                  <button
+                    className={`toolbar-cat-btn ${filtroCategoria === 'todos' ? 'active' : ''}`}
+                    onClick={() => setFiltroCategoria('todos')}
+                  >
+                    Todos
+                  </button>
+                  {CATEGORIAS.map(cat => (
+                    <button
+                      key={cat.value}
+                      className={`toolbar-cat-btn ${filtroCategoria === cat.value ? 'active' : ''}`}
+                      style={{ '--cat-color': cat.color }}
+                      onClick={() => setFiltroCategoria(prev => prev === cat.value ? 'todos' : cat.value)}
+                    >
+                      <span className="toolbar-cat-dot" style={{ background: cat.color }} />
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="mapa-container full-height-map">
                 {seleccionandoUbicacion && (
@@ -363,21 +389,41 @@ const GestionUbicaciones = () => {
                   )}
 
                   {/* Marcadores existentes */}
-                  {ubicaciones.map(ubi => (
+                  {ubicacionesFiltradas.map(ubi => (
                     <Marker
                       key={ubi._id}
                       position={[ubi.ubicacion.coordinates[1], ubi.ubicacion.coordinates[0]]}
                       icon={getIconoPorCategoria(ubi.categoria || ubi.tipo)}
                       opacity={0.9}
                     >
-                      <Popup>
-                        <div className="popup-content">
-                          <strong>{ubi.nombre}</strong>
-                          <span className={`badge badge-${ubi.tipo}`}>{ubi.tipo}</span>
-                          <div className="popup-actions">
-                            <button onClick={() => abrirModal(ubi)}>Editar</button>
-                          </div>
-                        </div>
+                      <Popup autoPan={false}>
+                        {(() => {
+                          const cat = ubi.categoria || ubi.tipo || 'otro';
+                          const cfg = CATEGORIA_CONFIG[cat] || CATEGORIA_CONFIG.otro;
+                          return (
+                            <div className="popup-moderno">
+                              <div className="popup-moderno-head">
+                                <div
+                                  className="popup-moderno-icon"
+                                  style={{ color: cfg.color }}
+                                  dangerouslySetInnerHTML={{
+                                    __html: `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="${cfg.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`
+                                  }}
+                                />
+                                <div className="popup-moderno-nombre">{ubi.nombre}</div>
+                              </div>
+                              <span
+                                className="popup-moderno-badge"
+                                style={{ background: cfg.color + '18', color: cfg.color }}
+                              >
+                                {cfg.label}
+                              </span>
+                              <div className="popup-moderno-actions">
+                                <button className="popup-btn" onClick={() => abrirModal(ubi)}>Editar ubicación</button>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </Popup>
                     </Marker>
                   ))}
