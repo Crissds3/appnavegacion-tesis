@@ -555,13 +555,15 @@ const GestionNoticias = () => {
                   <div className="evento-fields full-width">
                     <div className="form-group">
                       <label><Calendar size={16} /> Fecha del evento</label>
-                      <input
-                        type="date"
-                        name="fechaEvento"
-                        value={formData.fechaEvento}
-                        onChange={handleInputChange}
-                        className="input-modern"
-                      />
+                      <div className="date-input-wrapper">
+                        <input
+                          type="date"
+                          name="fechaEvento"
+                          value={formData.fechaEvento}
+                          onChange={handleInputChange}
+                          className="input-modern input-date"
+                        />
+                      </div>
                     </div>
 
                     <div className="form-group">

@@ -554,6 +554,7 @@
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+  text-align: justify;
 }
 
 .input-with-icon {
@@ -591,33 +592,54 @@
   border: 2px solid #e0e0e0;
 }
 
-.checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding: 12px 0;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* ── Checkbox card (igual que GestionNoticias) ─────────────── */
+.checkbox-card-modal {
+  display: block;
   cursor: pointer;
-  user-select: none;
+  position: relative;
 }
 
-.checkbox-label input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
-  accent-color: #E53935;
-  cursor: pointer;
+.checkbox-card-modal input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.checkbox-text {
-  font-size: 14px;
-  font-weight: 500;
+.checkbox-card-modal .checkbox-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.checkbox-card-modal:hover .checkbox-content {
+  border-color: #E53935;
+  background: #fff5f5;
+}
+
+.checkbox-card-modal.checked .checkbox-content {
+  border-color: #E53935;
+  background: #fff5f5;
+}
+
+.checkbox-title {
+  display: block;
+  font-weight: 600;
   color: #333;
+  margin-bottom: 4px;
+  font-size: 14px;
 }
+
+.checkbox-desc {
+  display: block;
+  font-size: 12px;
+  color: #666;
+}
+
 
 .modal-footer {
   display: flex;

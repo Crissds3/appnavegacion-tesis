@@ -16,6 +16,7 @@ import {
   Clock, 
   Target, 
   Eye, 
+  EyeOff,
   Star, 
   Phone, 
   Building2,
@@ -73,6 +74,19 @@ const GestionInfoUniversidad = () => {
     'GraduationCap': <GraduationCap size={20} />,
     'MapPin': <MapPin size={20} />,
     'Clock': <Clock size={20} />
+  };
+
+  // Etiquetas en español para el selector
+  const iconLabels = {
+    'BookOpen': 'Libro / Historia',
+    'Target': 'Objetivo / Misión',
+    'Eye': 'Visión',
+    'Star': 'Valores / Destacado',
+    'Phone': 'Contacto / Teléfono',
+    'Building2': 'Edificio / Instalaciones',
+    'GraduationCap': 'Educación / Graduación',
+    'MapPin': 'Ubicación / Mapa',
+    'Clock': 'Horario / Tiempo'
   };
 
   const iconosDisponibles = Object.keys(iconMap);
@@ -515,7 +529,7 @@ const GestionInfoUniversidad = () => {
                       className="form-select"
                     >
                       {iconosDisponibles.map(icono => (
-                        <option key={icono} value={icono}>{icono}</option>
+                        <option key={icono} value={icono}>{iconLabels[icono] || icono}</option>
                       ))}
                     </select>
                     <div className="icon-preview">
@@ -564,17 +578,21 @@ const GestionInfoUniversidad = () => {
                 </div>
                 <div className="form-group">
                   <label>&nbsp;</label>
-                  <div className="checkbox-wrapper">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="activo"
-                        checked={infoForm.activo}
-                        onChange={handleInfoInputChange}
-                      />
-                      <span className="checkbox-text">Visible al público</span>
-                    </label>
-                  </div>
+                  <label className={`checkbox-card-modal ${infoForm.activo ? 'checked' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="activo"
+                      checked={infoForm.activo}
+                      onChange={handleInfoInputChange}
+                    />
+                    <div className="checkbox-content">
+                      {infoForm.activo ? <Eye size={20} /> : <EyeOff size={20} />}
+                      <div>
+                        <span className="checkbox-title">Visible al público</span>
+                        <span className="checkbox-desc">La sección será visible en la app</span>
+                      </div>
+                    </div>
+                  </label>
                 </div>
               </div>
 
@@ -725,17 +743,21 @@ const GestionInfoUniversidad = () => {
                 </div>
                 <div className="form-group">
                   <label>&nbsp;</label>
-                  <div className="checkbox-wrapper">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        name="activo"
-                        checked={carreraForm.activo}
-                        onChange={handleCarreraInputChange}
-                      />
-                      <span className="checkbox-text">Carrera activa</span>
-                    </label>
-                  </div>
+                  <label className={`checkbox-card-modal ${carreraForm.activo ? 'checked' : ''}`}>
+                    <input
+                      type="checkbox"
+                      name="activo"
+                      checked={carreraForm.activo}
+                      onChange={handleCarreraInputChange}
+                    />
+                    <div className="checkbox-content">
+                      {carreraForm.activo ? <Eye size={20} /> : <EyeOff size={20} />}
+                      <div>
+                        <span className="checkbox-title">Carrera activa</span>
+                        <span className="checkbox-desc">Visible en el catálogo de carreras</span>
+                      </div>
+                    </div>
+                  </label>
                 </div>
               </div>
 
