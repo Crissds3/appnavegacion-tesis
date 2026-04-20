@@ -321,31 +321,32 @@ const GestionUbicaciones = () => {
           {/* Columna Izquierda: Mapa */}
           <div className="left-column">
             <div className="mapa-card full-height">
-              <div className="mapa-toolbar">
-                <div className="mapa-toolbar-hint">
-                  <MapPin size={15} />
-                  <span>Clic en el mapa para ver detalles o agregar una ubicación</span>
-                </div>
-                <div className="mapa-toolbar-filtros">
-                  <button
-                    className={`toolbar-cat-btn ${filtroCategoria === 'todos' ? 'active' : ''}`}
-                    onClick={() => setFiltroCategoria('todos')}
-                  >
-                    Todos
-                  </button>
-                  {CATEGORIAS.map(cat => (
+              <div className="mapa-controles-admin">
+                <h3>Filtrar por tipo:</h3>
+                <div className="filtro-tipos">
+                  {[{ value: 'todos', label: 'Todos', color: '#E53935' }, ...CATEGORIAS].map(cat => (
                     <button
                       key={cat.value}
-                      className={`toolbar-cat-btn ${filtroCategoria === cat.value ? 'active' : ''}`}
-                      style={{ '--cat-color': cat.color }}
+                      className={`filtro-btn ${filtroCategoria === cat.value ? 'activo' : ''}`}
+                      style={filtroCategoria === cat.value ? { background: cat.color, borderColor: cat.color } : {}}
                       onClick={() => setFiltroCategoria(prev => prev === cat.value ? 'todos' : cat.value)}
                     >
-                      <span className="toolbar-cat-dot" style={{ background: cat.color }} />
+                      {cat.value !== 'todos' && (
+                        <span style={{
+                          display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+                          background: filtroCategoria === cat.value ? 'white' : cat.color,
+                          marginRight: 6, flexShrink: 0, verticalAlign: 'middle'
+                        }} />
+                      )}
                       {cat.label}
                     </button>
                   ))}
                 </div>
+                <div className="mapa-info">
+                  <p>Ubicaciones visibles: {ubicacionesFiltradas.length}</p>
+                </div>
               </div>
+
               <div className="mapa-container full-height-map">
                 {seleccionandoUbicacion && (
                   <div className="selection-banner">

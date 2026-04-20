@@ -61,13 +61,13 @@
 .sobre-header {
   text-align: center;
   border-radius: 24px;
-  padding: 60px 30px;
-  max-width: 80%;
-  margin: 0 auto 40px;
+  padding: 50px 30px;
+  max-width: 75%;
+  margin: 0 auto 20px;
   background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #8B0000 100%);
   color: white;
-  box-shadow: 0 10px 40px rgba(211, 47, 47, 0.25),
-              0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(211, 47, 47, 0.3),
+              0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -86,10 +86,10 @@
 .sobre-header h1 {
   font-size: 48px;
   font-weight: 800;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   position: relative;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 }
 
 .sobre-subtitle {

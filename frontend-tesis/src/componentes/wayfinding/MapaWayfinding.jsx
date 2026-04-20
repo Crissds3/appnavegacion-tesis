@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { calcularRuta } from '../../utils/calculadorRutas';
 import grafoCampus from '../../data/grafoCampus.json';
-import { getIconoPorCategoria, CATEGORIA_CONFIG } from '../../utils/iconosMapa';
+import { getIconoPorCategoria, CATEGORIA_CONFIG, CATEGORIAS } from '../../utils/iconosMapa';
 import './MapaWayfinding.css';
 
 
@@ -133,6 +133,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
   const [error, setError] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState('todos');
   const [coordenadasRuta, setCoordenadasRuta] = useState([]);
+  const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(null);
 
   // ── Callback que NavigationController usa para actualizar la ruta en vivo ─
   const handleRutaActualizada = ({ coordenadas, distancia, tiempo }) => {
@@ -222,11 +223,20 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
     }
   };
 
-  const ubicacionesFiltradas = filtroTipo === 'todos' 
-    ? ubicaciones 
-    : ubicaciones.filter(ub => ub.tipo === filtroTipo);
+  // Filtrar por tipo Y ocultar origen/destino del listado general
+  const idsEspeciales = new Set([
+    origen?._id,
+    destino?._id,
+  ].filter(Boolean));
 
-  const tiposUnicos = ['todos', ...new Set(ubicaciones.map(ub => ub.tipo))];
+  const ubicacionesFiltradas = ubicaciones.filter(ub => {
+    if (idsEspeciales.has(ub._id)) return false; // ya tienen marcador especial
+    if (filtroTipo === 'todos') return true;
+    return (ub.categoria || ub.tipo) === filtroTipo;
+  });
+
+  // Construir botones de filtro desde CATEGORIAS (siempre completo)
+  const categoriasFiltro = [{ value: 'todos', label: 'Todos', color: '#E53935' }, ...CATEGORIAS];
 
   const obtenerIcono = (tipo, esOrigen = false, esDestino = false) => {
     // Iconos especiales para origen y destino
@@ -316,13 +326,21 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
       <div className="mapa-controles">
         <h3>Filtrar por tipo:</h3>
         <div className="filtro-tipos">
-          {tiposUnicos.map(tipo => (
+          {categoriasFiltro.map(cat => (
             <button
-              key={tipo}
-              className={`filtro-btn ${filtroTipo === tipo ? 'activo' : ''}`}
-              onClick={() => setFiltroTipo(tipo)}
+              key={cat.value}
+              className={`filtro-btn ${filtroTipo === cat.value ? 'activo' : ''}`}
+              style={filtroTipo === cat.value ? { background: cat.color, borderColor: cat.color } : {}}
+              onClick={() => setFiltroTipo(cat.value)}
             >
-              {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+              {cat.value !== 'todos' && (
+                <span style={{
+                  display: 'inline-block', width: 8, height: 8,
+                  borderRadius: '50%', background: cat.color,
+                  marginRight: 5, flexShrink: 0
+                }} />
+              )}
+              {cat.label}
             </button>
           ))}
         </div>
@@ -331,7 +349,37 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
         </div>
       </div>
 
-      <div className="mapa-contenedor">
+      {/* Tarjeta flotante de ubicación seleccionada */}
+      <div className="mapa-contenedor" style={{ position: 'relative' }}>
+        {ubicacionSeleccionada && (() => {
+          const cat = ubicacionSeleccionada.categoria || ubicacionSeleccionada.tipo || 'otro';
+          const cfg = CATEGORIA_CONFIG[cat] || CATEGORIA_CONFIG.otro;
+          return (
+            <div className="info-card-flotante">
+              <div className="info-card-head">
+                <div className="info-card-icon" style={{ color: cfg.color }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke={cfg.color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="info-card-nombre">{ubicacionSeleccionada.nombre}</div>
+                  <span className="info-card-badge" style={{ background: cfg.color + '20', color: cfg.color }}>{cfg.label}</span>
+                </div>
+                <button className="info-card-close" onClick={() => setUbicacionSeleccionada(null)}>&#x2715;</button>
+              </div>
+              {(ubicacionSeleccionada.descripcion || ubicacionSeleccionada.metadatos?.horario) && (
+                <div className="info-card-meta">
+                  {ubicacionSeleccionada.descripcion && <p>{ubicacionSeleccionada.descripcion}</p>}
+                  {ubicacionSeleccionada.metadatos?.horario && <p><strong>Horario:</strong> {ubicacionSeleccionada.metadatos.horario}</p>}
+                  {ubicacionSeleccionada.metadatos?.contacto && <p><strong>Contacto:</strong> {ubicacionSeleccionada.metadatos.contacto}</p>}
+                </div>
+              )}
+            </div>
+          );
+        })()}
         <MapContainer
           center={CAMPUS_CENTER}
           zoom={16}
@@ -348,19 +396,33 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
             coordenadasRuta={coordenadasRuta}
             onRutaActualizada={handleRutaActualizada}
           />
-          
-          {/* Polyline para dibujar la ruta visualmente */}
+
+          {/* Polyline dual: halo debajo + línea sólida encima — efecto Google Maps */}
           {coordenadasRuta.length > 0 && (
-            <Polyline
-              positions={coordenadasRuta}
-              pathOptions={{
-                color: '#2563eb',
-                weight: 8,
-                opacity: 0.9,
-                lineJoin: 'round',
-                lineCap: 'round'
-              }}
-            />
+            <>
+              {/* Halo semi-transparente */}
+              <Polyline
+                positions={coordenadasRuta}
+                pathOptions={{
+                  color: '#93c5fd',
+                  weight: 14,
+                  opacity: 0.45,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              />
+              {/* Línea principal sólida */}
+              <Polyline
+                positions={coordenadasRuta}
+                pathOptions={{
+                  color: '#3b82f6',
+                  weight: 6,
+                  opacity: 1,
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              />
+            </>
           )}
           
           <TileLayer
@@ -370,64 +432,27 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
             maxNativeZoom={19}
           />
 
-          {/* Marcadores de ubicaciones */}
+          {/* Marcadores de ubicaciones (excluye origen/destino para evitar superposición) */}
           {ubicacionesFiltradas.map((ubicacion) => {
-            // GeoJSON usa [lng, lat], Leaflet usa [lat, lng]
-            // Siempre invertir: coordinates[0]=lng, coordinates[1]=lat
             const lng = ubicacion.ubicacion.coordinates[0];
             const lat = ubicacion.ubicacion.coordinates[1];
-            const position = [lat, lng]; // Formato Leaflet: [lat, lng]
-            
-            // Validar que las coordenadas estén en rangos válidos
-            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-              console.warn(`⚠️ Coordenadas inválidas para ${ubicacion.nombre}: [${lat}, ${lng}]`);
-              return null;
-            }
-            
+            const position = [lat, lng];
+
+            if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+
             return (
               <Marker
                 key={ubicacion._id}
                 position={position}
                 icon={obtenerIcono(ubicacion.categoria || ubicacion.tipo)}
-              >
-                <Popup autoPan={false}>
-                  {(() => {
-                    const cat = ubicacion.categoria || ubicacion.tipo || 'otro';
-                    const cfg = CATEGORIA_CONFIG[cat] || CATEGORIA_CONFIG.otro;
-                    return (
-                      <div className="popup-moderno">
-                        <div className="popup-moderno-head">
-                          <div
-                            className="popup-moderno-icon"
-                            style={{ color: cfg.color }}
-                            dangerouslySetInnerHTML={{
-                              __html: `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="${cfg.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`
-                            }}
-                          />
-                          <div className="popup-moderno-nombre">{ubicacion.nombre}</div>
-                        </div>
-                        <span
-                          className="popup-moderno-badge"
-                          style={{ background: cfg.color + '18', color: cfg.color }}
-                        >
-                          {cfg.label}
-                        </span>
-                        {(ubicacion.descripcion || (ubicacion.metadatos && (ubicacion.metadatos.horario || ubicacion.metadatos.contacto))) && (
-                          <div className="popup-moderno-meta">
-                            {ubicacion.descripcion && <p>{ubicacion.descripcion}</p>}
-                            {ubicacion.metadatos?.horario && <p><strong>Horario:</strong> {ubicacion.metadatos.horario}</p>}
-                            {ubicacion.metadatos?.contacto && <p><strong>Contacto:</strong> {ubicacion.metadatos.contacto}</p>}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </Popup>
-              </Marker>
+                eventHandlers={{
+                  click: () => setUbicacionSeleccionada(ubicacion),
+                }}
+              />
             );
           })}
 
-          {/* Marcador de Origen */}
+          {/* Marcador de Origen — sin Popup, la tarjeta flotante lo reemplaza */}
           {origen && (
             <Marker
               position={[
@@ -435,17 +460,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
                 origen.ubicacion.coordinates[0]
               ]}
               icon={obtenerIcono(null, true, false)}
-            >
-              <Popup autoPan={false}>
-                <div className="popup-moderno">
-                  <div className="popup-moderno-head">
-                    <div className="popup-moderno-icon" style={{ color: '#2E7D32' }}>&#9679;</div>
-                    <div className="popup-moderno-nombre">{origen.nombre}</div>
-                  </div>
-                  <span className="popup-moderno-badge" style={{ background: '#e8f5e9', color: '#2E7D32' }}>Origen</span>
-                </div>
-              </Popup>
-            </Marker>
+              eventHandlers={{ click: () => setUbicacionSeleccionada({ ...origen, _override: 'Origen' }) }}
+            />
           )}
 
           {/* Marcador de Destino */}
@@ -456,26 +472,17 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
                 destino.ubicacion.coordinates[0]
               ]}
               icon={obtenerIcono(null, false, true)}
-            >
-              <Popup autoPan={false}>
-                <div className="popup-moderno">
-                  <div className="popup-moderno-head">
-                    <div className="popup-moderno-icon" style={{ color: '#E53935' }}>&#9679;</div>
-                    <div className="popup-moderno-nombre">{destino.nombre}</div>
-                  </div>
-                  <span className="popup-moderno-badge" style={{ background: '#ffebee', color: '#E53935' }}>Destino</span>
-                </div>
-              </Popup>
-            </Marker>
+              eventHandlers={{ click: () => setUbicacionSeleccionada({ ...destino, _override: 'Destino' }) }}
+            />
           )}
 
-          {/* Marcador del usuario — punto azul pulsante */}
+          {/* Marcador del usuario */}
           {ubicacionUsuario && (
             <Marker
               position={[ubicacionUsuario.lat, ubicacionUsuario.lng]}
               zIndexOffset={1000}
               icon={L.divIcon({
-                className: '',   // Sin clase base para no interferir con Leaflet default
+                className: '',
                 html: `
                   <div class="usuario-dot-wrapper">
                     <div class="usuario-dot-pulse"></div>
@@ -484,21 +491,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
                 `,
                 iconSize:   [36, 36],
                 iconAnchor: [18, 18],
-                popupAnchor:[0, -18]
               })}
-            >
-              <Popup autoPan={false}>
-                <div className="popup-moderno">
-                  <div className="popup-moderno-head">
-                    <div className="popup-moderno-icon" style={{ color: '#2563eb' }}>&#9679;</div>
-                    <div className="popup-moderno-nombre">Tu ubicación</div>
-                  </div>
-                  <span className="popup-moderno-badge" style={{ background: '#eff6ff', color: '#2563eb' }}>
-                    {ubicacionUsuario.precision ? `Precisión ~${Math.round(ubicacionUsuario.precision)} m` : 'GPS activo'}
-                  </span>
-                </div>
-              </Popup>
-            </Marker>
+            />
           )}
 
           {/* Motor de rutas offline — el cálculo ocurre en el useEffect de arriba */}
