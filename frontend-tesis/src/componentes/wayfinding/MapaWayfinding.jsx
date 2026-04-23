@@ -22,38 +22,18 @@ const CAMPUS_BOUNDS = [
   [-35.000700, -71.228500]  
 ];
 
-// 🛠️  Modo desarrollo: desactiva restricciones geográficas del mapa
-//   Se controla desde el botón en el sidebar de Wayfinding.jsx
-
 // ─── Motor de rutas offline ────────────────────────────────────────────────
 // calcularRuta() y grafoCampus se importan en la cabecera del archivo.
 // El antiguo sistema de CAMINOS_CAMPUS y las funciones de routing manual
 // han sido eliminados. El algoritmo A* en calculadorRutas.js los reemplaza.
 // ───────────────────────────────────────────────────────────────────────────
 
-// BoundsController: vive DENTRO de MapContainer — único lugar donde useMap() funciona.
-// Reacciona al cambio de devMode para activar/desactivar los límites del campus en tiempo real.
-const BoundsController = ({ devMode, ubicacionUsuario }) => {
+const MapBounds = () => {
   const map = useMap();
-
   useEffect(() => {
-    if (devMode) {
-      // Liberar el mapa completamente
-      map.setMaxBounds(null);
-      map.setMinZoom(3);
-      // Volar a la ubicación real del usuario si está disponible
-      const center = ubicacionUsuario
-        ? [ubicacionUsuario.lat, ubicacionUsuario.lng]
-        : CAMPUS_CENTER;
-      map.flyTo(center, 17, { animate: true, duration: 1 });
-    } else {
-      // Restaurar restricciones del campus
-      map.setMinZoom(15);
-      map.setMaxBounds(CAMPUS_BOUNDS);
-      map.fitBounds(CAMPUS_BOUNDS, { animate: true });
-    }
-  }, [devMode]); // eslint-disable-line react-hooks/exhaustive-deps
-
+    map.setMaxBounds(CAMPUS_BOUNDS);
+    map.fitBounds(CAMPUS_BOUNDS);
+  }, [map]);
   return null;
 };
 
@@ -145,7 +125,7 @@ const NavigationController = ({
 };
 
 // ─── prop isNavigating reemplaza modoViaje ────────────────────────────────
-const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false, heading = null, devMode = false }) => {
+const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false, heading = null }) => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -318,24 +298,39 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
     return getIconoPorCategoria(tipo || 'otro');
   };
 
-  // ── Ícono del usuario con cono de rumbo ──────────────────────────────────
+  // ── Ícono del usuario estilo Google Maps ─────────────────────────────────
+  // Sector azul con degradado: ancho ±40°, radio 80px, fading toward tip.
+  // viewBox 120×120, centro en (60,60). Puntos del sector (±40° desde arriba):
+  //   Left : 60 + 80·sin(−40°) = 8.6  |  60 − 80·cos(40°) = −1.3  → ~(8.6, −1.3)
+  //   Right: 60 + 80·sin( 40°) = 111.4 |  mismo Y
+  //   Arc  : r=80, large-arc=0, sweep=1
   const crearIconoUsuario = (headingDeg) => {
     const tieneRumbo = headingDeg !== null && headingDeg !== undefined;
 
-    const conoSVG = tieneRumbo
-      ? `<div class="usuario-heading-cone" style="transform: rotate(${headingDeg}deg);">
-           <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" style="overflow:visible">
-             <!-- Cono de visión -->
-             <path
-               d="M30 30 L18 4 Q30 0 42 4 Z"
-               fill="rgba(66,133,244,0.25)"
-               stroke="rgba(66,133,244,0.6)"
-               stroke-width="1"
-               stroke-linejoin="round"
-             />
-           </svg>
-         </div>`
-      : '';
+    const conoSVG = tieneRumbo ? `
+      <div class="usuario-heading-cone" style="transform:rotate(${headingDeg}deg);">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="120" height="120"
+          viewBox="0 0 120 120"
+          style="overflow:visible; display:block;"
+        >
+          <defs>
+            <!-- Degradado radial: opaco en el centro (userloc), transparente en el tip -->
+            <radialGradient id="hdg-grad" cx="50%" cy="100%" r="80%" fx="50%" fy="100%">
+              <stop offset="0%"   stop-color="#4285F4" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#4285F4" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <!-- Sector ±40° apuntando hacia arriba -->
+          <path
+            d="M 60 60 L 8.6 -1.3 A 80 80 0 0 1 111.4 -1.3 Z"
+            fill="url(#hdg-grad)"
+            stroke="rgba(66,133,244,0.3)"
+            stroke-width="0.5"
+          />
+        </svg>
+      </div>` : '';
 
     return L.divIcon({
       className: '',
@@ -346,8 +341,8 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           <div class="usuario-dot-core"></div>
         </div>
       `,
-      iconSize:   [60, 60],
-      iconAnchor: [30, 30],
+      iconSize:   [120, 120],
+      iconAnchor: [60, 60],
     });
   };
 
@@ -432,13 +427,13 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           );
         })()}
         <MapContainer
-          center={ubicacionUsuario ? [ubicacionUsuario.lat, ubicacionUsuario.lng] : CAMPUS_CENTER}
-          zoom={devMode ? 17 : 16}
-          minZoom={devMode ? 3 : 15}
-          maxZoom={20}
+          center={CAMPUS_CENTER}
+          zoom={16}
+          minZoom={15}
+          maxZoom={18}
           style={{ height: '100%', width: '100%' }}
         >
-          <BoundsController devMode={devMode} ubicacionUsuario={ubicacionUsuario} />
+          <MapBounds />
           {/* Controlador de navegación en tiempo real */}
           <NavigationController
             ubicacionUsuario={ubicacionUsuario}

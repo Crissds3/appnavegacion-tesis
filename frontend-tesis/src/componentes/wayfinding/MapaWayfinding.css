@@ -15,8 +15,8 @@
 
 .usuario-dot-wrapper {
   position: relative;
-  width:  60px;
-  height: 60px;
+  width:  120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,14 +27,14 @@
   position: absolute;
   top: 0;
   left: 0;
-  width:  60px;
-  height: 60px;
+  width:  120px;
+  height: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  transform-origin: 50% 50%;
-  transition: transform 0.3s ease-out;
+  transform-origin: 60px 60px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Aro exterior pulsante */
@@ -47,16 +47,16 @@
   animation: usuario-pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
 
-/* Núcleo azul sólido */
+/* Núcleo azul sólido — estilo Google Maps */
 .usuario-dot-core {
   position: absolute;
-  width:  16px;
-  height: 16px;
+  width:  20px;
+  height: 20px;
   border-radius: 50%;
-  background: #2563eb;
-  border: 2.5px solid #ffffff;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.55);
-  z-index: 1;
+  background: #4285F4;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 2px rgba(66,133,244,0.35), 0 3px 10px rgba(66,133,244,0.6);
+  z-index: 2;
 }
 
 .custom-marker {
