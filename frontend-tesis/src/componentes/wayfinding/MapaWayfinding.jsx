@@ -22,20 +22,38 @@ const CAMPUS_BOUNDS = [
   [-35.000700, -71.228500]  
 ];
 
+// 🛠️  Modo desarrollo: desactiva restricciones geográficas del mapa
+//   Se controla desde el botón en el sidebar de Wayfinding.jsx
+
 // ─── Motor de rutas offline ────────────────────────────────────────────────
 // calcularRuta() y grafoCampus se importan en la cabecera del archivo.
 // El antiguo sistema de CAMINOS_CAMPUS y las funciones de routing manual
 // han sido eliminados. El algoritmo A* en calculadorRutas.js los reemplaza.
 // ───────────────────────────────────────────────────────────────────────────
 
-const MapBounds = () => {
+// BoundsController: vive DENTRO de MapContainer — único lugar donde useMap() funciona.
+// Reacciona al cambio de devMode para activar/desactivar los límites del campus en tiempo real.
+const BoundsController = ({ devMode, ubicacionUsuario }) => {
   const map = useMap();
-  
+
   useEffect(() => {
-    map.setMaxBounds(CAMPUS_BOUNDS);
-    map.fitBounds(CAMPUS_BOUNDS);
-  }, [map]);
-  
+    if (devMode) {
+      // Liberar el mapa completamente
+      map.setMaxBounds(null);
+      map.setMinZoom(3);
+      // Volar a la ubicación real del usuario si está disponible
+      const center = ubicacionUsuario
+        ? [ubicacionUsuario.lat, ubicacionUsuario.lng]
+        : CAMPUS_CENTER;
+      map.flyTo(center, 17, { animate: true, duration: 1 });
+    } else {
+      // Restaurar restricciones del campus
+      map.setMinZoom(15);
+      map.setMaxBounds(CAMPUS_BOUNDS);
+      map.fitBounds(CAMPUS_BOUNDS, { animate: true });
+    }
+  }, [devMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return null;
 };
 
@@ -127,7 +145,7 @@ const NavigationController = ({
 };
 
 // ─── prop isNavigating reemplaza modoViaje ────────────────────────────────
-const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false, heading = null }) => {
+const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false, heading = null, devMode = false }) => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -414,13 +432,13 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           );
         })()}
         <MapContainer
-          center={CAMPUS_CENTER}
-          zoom={16}
-          minZoom={15}
-          maxZoom={18}
+          center={ubicacionUsuario ? [ubicacionUsuario.lat, ubicacionUsuario.lng] : CAMPUS_CENTER}
+          zoom={devMode ? 17 : 16}
+          minZoom={devMode ? 3 : 15}
+          maxZoom={20}
           style={{ height: '100%', width: '100%' }}
         >
-          <MapBounds />
+          <BoundsController devMode={devMode} ubicacionUsuario={ubicacionUsuario} />
           {/* Controlador de navegación en tiempo real */}
           <NavigationController
             ubicacionUsuario={ubicacionUsuario}

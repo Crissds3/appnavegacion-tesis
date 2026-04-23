@@ -49,7 +49,14 @@ const Wayfinding = () => {
   });
 
   // Custom Hook para el rumbo del dispositivo (brújula)
-  const { heading, requestCompassPermission } = useCompass();
+  const { heading: headingReal, requestCompassPermission } = useCompass();
+
+  // Modo de prueba: desactiva límites del mapa y activa controles de debug
+  const [devMode, setDevMode] = useState(false);
+  // Simula el heading manualmente cuando el slider está activo
+  const [headingDebug, setHeadingDebug] = useState(null);
+  const heading = devMode && headingDebug !== null ? headingDebug : headingReal;
+  const ubicacionActual = usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
 
   // Ubicación simulada dentro del campus (entrada principal)
   const ubicacionSimulada = {
@@ -57,9 +64,6 @@ const Wayfinding = () => {
     lng: -71.230519,
     accuracy: 10
   };
-
-  // Usar ubicación simulada si está activada, sino la real
-  const ubicacionActual = usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
 
   useEffect(() => {
     cargarUbicaciones();
@@ -208,6 +212,7 @@ const Wayfinding = () => {
               onRutaCalculada={handleRutaCalculada}
               isNavigating={isNavigating}
               heading={heading}
+              devMode={devMode}
             />
           </div>
 
@@ -378,6 +383,65 @@ const Wayfinding = () => {
             <div className="info-section">
               <h3>Información</h3>
               
+              {/* 🛠️ Toggle Modo de Prueba */}
+              <div
+                className="info-card"
+                style={{
+                  background: devMode ? '#fffbeb' : 'white',
+                  border: devMode ? '1px solid #fcd34d' : '1px solid #f0f0f0',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={devMode}
+                    onChange={() => { setDevMode(v => !v); setHeadingDebug(null); }}
+                    style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#d97706' }}
+                  />
+                  <div>
+                    <strong style={{ color: devMode ? '#92400e' : '#333', fontSize: 14 }}>
+                      🛠️ Modo de prueba
+                    </strong><br />
+                    <small style={{ color: devMode ? '#b45309' : '#888' }}>
+                      {devMode ? 'Mapa sin límites • Brujula simulada activa' : 'Quita límites del mapa y activa simulación de brújula'}
+                    </small>
+                  </div>
+                </label>
+
+                {/* Slider de heading — solo visible en modo prueba */}
+                {devMode && (
+                  <div style={{ marginTop: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, color: '#92400e', fontWeight: 600 }}>Rumbo simulado</span>
+                      <span style={{
+                        marginLeft: 'auto', background: '#d97706', color: 'white',
+                        fontSize: 12, fontWeight: 700, padding: '2px 10px', borderRadius: 20
+                      }}>
+                        {headingDebug ?? '—'}°
+                      </span>
+                    </div>
+                    <input
+                      type="range" min={0} max={359} step={1}
+                      value={headingDebug ?? 0}
+                      onChange={(e) => setHeadingDebug(Number(e.target.value))}
+                      style={{ width: '100%', accentColor: '#d97706' }}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#92400e', marginTop: 4 }}>
+                      <span>N 0°</span><span>E 90°</span><span>S 180°</span><span>O 270°</span>
+                    </div>
+                    {headingDebug !== null && (
+                      <button
+                        onClick={() => setHeadingDebug(null)}
+                        style={{ marginTop: 8, fontSize: 12, color: '#92400e', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                      >
+                        Usar brújula real del dispositivo
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Toggle para ubicación simulada */}
               <div className="info-card simulation">
                 <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
