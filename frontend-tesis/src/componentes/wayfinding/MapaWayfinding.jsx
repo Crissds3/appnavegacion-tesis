@@ -127,7 +127,7 @@ const NavigationController = ({
 };
 
 // ─── prop isNavigating reemplaza modoViaje ────────────────────────────────
-const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false }) => {
+const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false, heading = null }) => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -298,6 +298,39 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
 
     // Para ubicaciones regulares: usar icono por categoría
     return getIconoPorCategoria(tipo || 'otro');
+  };
+
+  // ── Ícono del usuario con cono de rumbo ──────────────────────────────────
+  const crearIconoUsuario = (headingDeg) => {
+    const tieneRumbo = headingDeg !== null && headingDeg !== undefined;
+
+    const conoSVG = tieneRumbo
+      ? `<div class="usuario-heading-cone" style="transform: rotate(${headingDeg}deg);">
+           <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" style="overflow:visible">
+             <!-- Cono de visión -->
+             <path
+               d="M30 30 L18 4 Q30 0 42 4 Z"
+               fill="rgba(66,133,244,0.25)"
+               stroke="rgba(66,133,244,0.6)"
+               stroke-width="1"
+               stroke-linejoin="round"
+             />
+           </svg>
+         </div>`
+      : '';
+
+    return L.divIcon({
+      className: '',
+      html: `
+        <div class="usuario-dot-wrapper">
+          ${conoSVG}
+          <div class="usuario-dot-pulse"></div>
+          <div class="usuario-dot-core"></div>
+        </div>
+      `,
+      iconSize:   [60, 60],
+      iconAnchor: [30, 30],
+    });
   };
 
   if (cargando) {
@@ -476,22 +509,12 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
             />
           )}
 
-          {/* Marcador del usuario */}
+          {/* Marcador del usuario con cono de rumbo */}
           {ubicacionUsuario && (
             <Marker
               position={[ubicacionUsuario.lat, ubicacionUsuario.lng]}
               zIndexOffset={1000}
-              icon={L.divIcon({
-                className: '',
-                html: `
-                  <div class="usuario-dot-wrapper">
-                    <div class="usuario-dot-pulse"></div>
-                    <div class="usuario-dot-core"></div>
-                  </div>
-                `,
-                iconSize:   [36, 36],
-                iconAnchor: [18, 18],
-              })}
+              icon={crearIconoUsuario(heading)}
             />
           )}
 

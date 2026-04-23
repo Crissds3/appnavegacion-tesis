@@ -15,11 +15,26 @@
 
 .usuario-dot-wrapper {
   position: relative;
-  width:  36px;
-  height: 36px;
+  width:  60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Cono de rumbo (heading) — rota con transform inline */
+.usuario-heading-cone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width:  60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+  transition: transform 0.3s ease-out;
 }
 
 /* Aro exterior pulsante */

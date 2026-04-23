@@ -23,6 +23,7 @@ import {
 import Navbar from '../../componentes/compartidos/Navbar';
 import MapaWayfinding from '../../componentes/wayfinding/MapaWayfinding';
 import useGeolocation from '../../hooks/useGeolocation';
+import useCompass from '../../hooks/useCompass';
 import api from '../../servicios/api';
 import './Wayfinding.css';
 
@@ -46,6 +47,9 @@ const Wayfinding = () => {
     timeout: 10000,
     maximumAge: 5000
   });
+
+  // Custom Hook para el rumbo del dispositivo (brújula)
+  const { heading, requestCompassPermission } = useCompass();
 
   // Ubicación simulada dentro del campus (entrada principal)
   const ubicacionSimulada = {
@@ -166,6 +170,8 @@ const Wayfinding = () => {
       alert('Por favor, selecciona un punto de origen primero');
       return;
     }
+    // ✨ Pedir permiso de brújula AQUÍ (dentro de un gesto del usuario — iOS 13+ lo exige)
+    requestCompassPermission();
     console.log('🚀 Iniciando navegación en tiempo real...');
     setIsNavigating(true);
   };
@@ -201,6 +207,7 @@ const Wayfinding = () => {
               ubicacionUsuario={ubicacionActual}
               onRutaCalculada={handleRutaCalculada}
               isNavigating={isNavigating}
+              heading={heading}
             />
           </div>
 
