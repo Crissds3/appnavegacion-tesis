@@ -18,8 +18,8 @@ L.Icon.Default.mergeOptions({
 // Coordenadas del Campus Curicó - Universidad de Talca 
 const CAMPUS_CENTER = [-35.002607, -71.230519]; 
 const CAMPUS_BOUNDS = [
-  [-35.004500, -71.232500], 
-  [-35.000700, -71.228500]  
+  [-35.007000, -71.235500],  // suroeste — más holgado
+  [-34.998000, -71.225500]   // noreste — más holgado
 ];
 
 // ─── Motor de rutas offline ────────────────────────────────────────────────
@@ -431,7 +431,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
         <MapContainer
           center={CAMPUS_CENTER}
           zoom={16}
-          minZoom={15}
+          minZoom={14}
           maxZoom={18}
           style={{ height: '100%', width: '100%' }}
         >
