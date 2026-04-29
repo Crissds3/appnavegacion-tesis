@@ -369,31 +369,33 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
 
   return (
     <div className="mapa-wayfinding-container">
-      <div className="mapa-controles">
-        <h3>Filtrar por tipo:</h3>
-        <div className="filtro-tipos">
-          {categoriasFiltro.map(cat => (
-            <button
-              key={cat.value}
-              className={`filtro-btn ${filtroTipo === cat.value ? 'activo' : ''}`}
-              style={filtroTipo === cat.value ? { background: cat.color, borderColor: cat.color } : {}}
-              onClick={() => setFiltroTipo(cat.value)}
-            >
-              {cat.value !== 'todos' && (
-                <span style={{
-                  display: 'inline-block', width: 8, height: 8,
-                  borderRadius: '50%', background: cat.color,
-                  marginRight: 5, flexShrink: 0
-                }} />
-              )}
-              {cat.label}
-            </button>
-          ))}
+      {!isNavigating && (
+        <div className="mapa-controles">
+          <h3>Filtrar por tipo:</h3>
+          <div className="filtro-tipos">
+            {categoriasFiltro.map(cat => (
+              <button
+                key={cat.value}
+                className={`filtro-btn ${filtroTipo === cat.value ? 'activo' : ''}`}
+                style={filtroTipo === cat.value ? { background: cat.color, borderColor: cat.color } : {}}
+                onClick={() => setFiltroTipo(cat.value)}
+              >
+                {cat.value !== 'todos' && (
+                  <span style={{
+                    display: 'inline-block', width: 8, height: 8,
+                    borderRadius: '50%', background: cat.color,
+                    marginRight: 5, flexShrink: 0
+                  }} />
+                )}
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          <div className="mapa-info">
+            <p>Ubicaciones visibles: {ubicacionesFiltradas.length}</p>
+          </div>
         </div>
-        <div className="mapa-info">
-          <p>Ubicaciones visibles: {ubicacionesFiltradas.length}</p>
-        </div>
-      </div>
+      )}
 
       {/* Tarjeta flotante de ubicación seleccionada */}
       <div className="mapa-contenedor" style={{ position: 'relative' }}>
