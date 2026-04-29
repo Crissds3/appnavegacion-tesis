@@ -189,15 +189,68 @@ const Wayfinding = () => {
     }
   };
 
+  const metrosRestantes = infoRuta?.distancia
+    ? (parseFloat(infoRuta.distancia) * 1000).toFixed(0)
+    : null;
+
   return (
     <div className="wayfinding-container">
       <Navbar brandName="Módulo de navegación" />
 
-      <main className="wayfinding-main">
-        <div className="wayfinding-header">
-          <h1>Sistema de Navegación Wayfinding</h1>
-          <p className="subtitle">Encuentra tu camino en el Campus Curicó - Universidad de Talca</p>
+      {/* ──────── MODO NAVEGACIÓN FULLSCREEN (Google Maps style) ──────── */}
+      {isNavigating && (
+        <div className="nav-fullscreen-wrapper">
+          <div className="nav-fullscreen-map">
+            <MapaWayfinding
+              origen={origen}
+              destino={destino}
+              ubicacionUsuario={ubicacionActual}
+              onRutaCalculada={handleRutaCalculada}
+              isNavigating={isNavigating}
+              heading={heading}
+            />
+          </div>
+
+          {/* Botón salir — top-right */}
+          <button className="nav-btn-salir" onClick={detenerViaje} aria-label="Salir de la navegación">
+            <X size={18} /> Salir
+          </button>
+
+          {/* Tarjeta inferior con distancia y tiempo */}
+          {infoRuta && (
+            <div className="nav-info-card">
+              <div className="nav-info-card-handle" />
+              <div className="nav-info-card-body">
+                <div className="nav-info-stat">
+                  <span className="nav-info-value">{infoRuta.tiempo}</span>
+                  <span className="nav-info-unit">min</span>
+                </div>
+                <div className="nav-info-divider" />
+                <div className="nav-info-stat">
+                  <span className="nav-info-value">{metrosRestantes}</span>
+                  <span className="nav-info-unit">m</span>
+                </div>
+                <div className="nav-info-destino">
+                  <MapPin size={14} />
+                  <span>{destino?.nombre}</span>
+                </div>
+              </div>
+              <div className="nav-info-recalc">
+                <RefreshCw size={13} className="spin" />
+                <span>Ruta en tiempo real</span>
+              </div>
+            </div>
+          )}
         </div>
+      )}
+
+      {/* ──────── MODO NORMAL ──────── */}
+      {!isNavigating && (
+        <main className="wayfinding-main">
+          <div className="wayfinding-header">
+            <h1>Sistema de Navegación Wayfinding</h1>
+            <p className="subtitle">Encuentra tu camino en el Campus Curicó - Universidad de Talca</p>
+          </div>
 
         <div className="wayfinding-content">
           <div className="wayfinding-map">
@@ -258,20 +311,12 @@ const Wayfinding = () => {
 
                 {(origen || destino) && (
                   <div className="ruta-acciones">
-                    {!isNavigating ? (
-                      <>
-                        <button onClick={iniciarViaje} className="btn-iniciar-viaje">
-                          <Compass size={20} /> Navegar
-                        </button>
-                        <button onClick={limpiarRuta} className="btn-limpiar-ruta">
-                          Limpiar
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={detenerViaje} className="btn-detener-viaje">
-                        <Square size={20} fill="currentColor" /> Detener Navegación
-                      </button>
-                    )}
+                    <button onClick={iniciarViaje} className="btn-iniciar-viaje">
+                      <Compass size={20} /> Navegar
+                    </button>
+                    <button onClick={limpiarRuta} className="btn-limpiar-ruta">
+                      Limpiar
+                    </button>
                   </div>
                 )}
 
@@ -434,6 +479,7 @@ const Wayfinding = () => {
           </div>
         </div>
       </main>
+      )}
     </div>
   );
 };

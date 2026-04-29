@@ -578,3 +578,15 @@ path[stroke] {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
 }
+
+/* El mapa llena el wrapper fullscreen de navegacion */
+.nav-fullscreen-map .mapa-wayfinding-container {
+  height: 100%;
+}
+.nav-fullscreen-map .mapa-contenedor {
+  flex: 1;
+  min-height: 0;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}

@@ -1170,3 +1170,106 @@
     font-size: 10px;
   }
 }
+
+/* ---------------------------------------------------------------
+   MODO NAVEGACIÓN FULLSCREEN — Google Maps style
+--------------------------------------------------------------- */
+.nav-fullscreen-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #e8e8e8;
+}
+.nav-fullscreen-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.nav-btn-salir {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: white;
+  color: #D32F2F;
+  border: 2px solid #FFCDD2;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+.nav-btn-salir:hover {
+  background: #D32F2F;
+  color: white;
+  border-color: #D32F2F;
+  transform: scale(1.04);
+}
+.nav-info-card {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10001;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.15);
+  padding: 12px 20px 28px;
+  animation: navCardUp 0.3s ease-out;
+}
+@keyframes navCardUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.nav-info-card-handle {
+  width: 36px;
+  height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  margin: 0 auto 14px;
+}
+.nav-info-card-body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.nav-info-stat { display: flex; align-items: baseline; gap: 4px; }
+.nav-info-value { font-size: 32px; font-weight: 800; color: #1a1a1a; line-height: 1; }
+.nav-info-unit  { font-size: 14px; font-weight: 600; color: #757575; }
+.nav-info-divider { width: 1px; height: 32px; background: #e0e0e0; flex-shrink: 0; }
+.nav-info-destino {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  color: #757575;
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 160px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nav-info-destino svg { color: #D32F2F; flex-shrink: 0; }
+.nav-info-recalc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #2196F3;
+  font-weight: 500;
+}
+@media (max-width: 480px) {
+  .nav-btn-salir { top: 12px; right: 12px; padding: 8px 14px; font-size: 13px; }
+  .nav-info-value { font-size: 26px; }
+  .nav-info-card  { padding: 10px 16px 22px; }
+}
