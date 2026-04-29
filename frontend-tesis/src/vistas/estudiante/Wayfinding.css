@@ -1,4 +1,4 @@
-.wayfinding-container {
+﻿.wayfinding-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -322,7 +322,7 @@
   gap: 10px;
 }
 
-/* Botones de selección */
+/* Botones de selecciÃ³n */
 .btn-seleccionar {
   flex: 1;
   padding: 12px 16px;
@@ -383,7 +383,7 @@
   transform: translateY(-1px);
 }
 
-/* Ubicación Seleccionada */
+/* UbicaciÃ³n Seleccionada */
 .ubicacion-seleccionada {
   display: flex;
   align-items: center;
@@ -944,7 +944,6 @@
   }
 
   .wayfinding-sidebar {
-    order: -1;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
@@ -1172,7 +1171,7 @@
 }
 
 /* ---------------------------------------------------------------
-   MODO NAVEGACI�N FULLSCREEN � Google Maps style
+   MODO NAVEGACIÓN FULLSCREEN — Google Maps style
 --------------------------------------------------------------- */
 .nav-fullscreen-wrapper {
   position: fixed;
@@ -1273,3 +1272,4 @@
   .nav-info-value { font-size: 26px; }
   .nav-info-card  { padding: 10px 16px 22px; }
 }
+
