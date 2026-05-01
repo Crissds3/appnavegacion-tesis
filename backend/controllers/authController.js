@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import User from '../models/User.js';
-import { 
-  enviarEmailRecuperacion, 
+import {
+  enviarEmailRecuperacion,
   crearEmailRecuperacion,
   enviarEmail,
   crearEmailBienvenida,
@@ -383,7 +383,7 @@ export const solicitarRecuperacion = async (req, res) => {
 
     // Generar token de recuperación
     const resetToken = crypto.randomBytes(32).toString('hex');
-    
+
     // Hash del token para guardar en la base de datos
     const resetPasswordToken = crypto
       .createHash('sha256')
