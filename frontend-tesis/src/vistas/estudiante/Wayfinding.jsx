@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import L from 'leaflet';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   MapPin, 
@@ -40,6 +41,7 @@ const Wayfinding = () => {
   const [infoRuta,        setInfoRuta]        = useState(null);
   const [isNavigating,    setIsNavigating]    = useState(false);
   const [usarUbicacionSimulada, setUsarUbicacionSimulada] = useState(false);
+  const [haLlegado, setHaLlegado] = useState(false);
 
   // Custom Hook para geolocalización reactiva
   const { ubicacion: ubicacionUsuario, error: errorGeo, cargando: cargandoGeo, permisosConcedidos } = useGeolocation({
@@ -64,6 +66,26 @@ const Wayfinding = () => {
   useEffect(() => {
     cargarUbicaciones();
   }, []);
+
+  // ── Detección de llegada al destino ──────────────────────────────────────
+  useEffect(() => {
+    if (!isNavigating || !ubicacionActual || !destino) return;
+
+    // Obtener coordenadas del destino
+    const coordsDestino = destino.ubicacion?.coordinates;
+    if (!coordsDestino || coordsDestino.length < 2) return;
+
+    // GeoJSON almacena [lng, lat], Leaflet usa [lat, lng]
+    const puntoDestino = L.latLng(coordsDestino[1], coordsDestino[0]);
+    const puntoUsuario = L.latLng(ubicacionActual.lat, ubicacionActual.lng);
+    const distancia = puntoUsuario.distanceTo(puntoDestino); // metros
+
+    if (distancia < 15) {
+      console.log('🎉 ¡Has llegado a tu destino! Distancia:', distancia.toFixed(1), 'm');
+      setIsNavigating(false);
+      setHaLlegado(true);
+    }
+  }, [isNavigating, ubicacionActual, destino]);
 
   // Efecto para manejar navegación desde otras vistas (ej: Carreras)
   useEffect(() => {
@@ -117,6 +139,13 @@ const Wayfinding = () => {
     setModoSeleccion(null);
     setInfoRuta(null);
     setIsNavigating(false);
+    setHaLlegado(false);
+  };
+
+  // Cerrar la celebración y limpiar la ruta para una nueva búsqueda
+  const cerrarCelebracion = () => {
+    setHaLlegado(false);
+    limpiarRuta();
   };
 
   const usarMiUbicacion = () => {
@@ -479,6 +508,25 @@ const Wayfinding = () => {
           </div>
         </div>
       </main>
+      )}
+
+      {/* ──────── MODAL CELEBRACIÓN DE LLEGADA ──────── */}
+      {haLlegado && (
+        <div className="modal-llegada-overlay">
+          <div className="modal-llegada-content">
+            <div className="modal-llegada-icon">🎉</div>
+            <h2 className="modal-llegada-titulo">¡Has llegado a tu destino!</h2>
+            {destino && (
+              <p className="modal-llegada-destino">
+                <MapPin size={18} /> {destino.nombre}
+              </p>
+            )}
+            <p className="modal-llegada-mensaje">Tu recorrido ha finalizado exitosamente.</p>
+            <button className="modal-llegada-btn" onClick={cerrarCelebracion}>
+              <CheckCircle size={18} /> Aceptar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

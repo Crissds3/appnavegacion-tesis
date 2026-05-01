@@ -1273,3 +1273,117 @@
   .nav-info-card  { padding: 10px 16px 22px; }
 }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL DE CELEBRACIÓN — Llegada al destino
+═══════════════════════════════════════════════════════════════ */
+.modal-llegada-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modalFadeIn 0.3s ease-out;
+  padding: 20px;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-llegada-content {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 36px 32px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.1);
+  animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+  from { transform: translateY(40px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-llegada-icon {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 16px;
+  animation: modalBounce 0.6s ease 0.3s both;
+}
+
+@keyframes modalBounce {
+  0%   { transform: scale(0); }
+  50%  { transform: scale(1.3); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.modal-llegada-titulo {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin: 0 0 12px;
+  font-family: 'Inter', sans-serif;
+}
+
+.modal-llegada-destino {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #D32F2F;
+  margin: 0 0 8px;
+  padding: 8px 16px;
+  background: #FFEBEE;
+  border-radius: 12px;
+}
+
+.modal-llegada-mensaje {
+  font-size: 14px;
+  color: #757575;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.modal-llegada-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #43A047 0%, #2E7D32 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(67, 160, 71, 0.35);
+  transition: all 0.2s ease;
+}
+
+.modal-llegada-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(67, 160, 71, 0.45);
+}
+
+.modal-llegada-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .modal-llegada-content { padding: 32px 24px 24px; border-radius: 20px; }
+  .modal-llegada-icon { font-size: 52px; }
+  .modal-llegada-titulo { font-size: 20px; }
+}
