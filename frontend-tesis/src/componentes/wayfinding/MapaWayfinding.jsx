@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { Target } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { calcularRuta } from '../../utils/calculadorRutas';
@@ -35,6 +36,33 @@ const MapBounds = () => {
     map.fitBounds(CAMPUS_BOUNDS);
   }, [map]);
   return null;
+};
+
+// ─── Botón Flotante para Centrar el Mapa en el Usuario ─────────────────────
+const BotonCentrar = ({ ubicacionActual }) => {
+  const map = useMap();
+  
+  if (!ubicacionActual) return null;
+
+  const handleCentrar = () => {
+    map.flyTo([ubicacionActual.lat, ubicacionActual.lng], 18, { animate: true, duration: 1.5 });
+  };
+
+  return (
+    <div className="btn-centrar-gps-wrapper">
+      <button 
+        className="btn-centrar-gps" 
+        onClick={(e) => {
+          e.stopPropagation(); // Evitar que el clic se propague al mapa
+          handleCentrar();
+        }} 
+        aria-label="Centrar en mi ubicación"
+        title="Centrar en mi ubicación"
+      >
+        <Target size={24} color="#1a73e8" />
+      </button>
+    </div>
+  );
 };
 
 // RoutingMachine eliminado. El cálculo de rutas ahora se realiza directamente
@@ -470,6 +498,9 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           style={{ height: '100%', width: '100%' }}
         >
           <MapBounds />
+          
+          {/* Botón flotante para centrar la cámara */}
+          <BotonCentrar ubicacionActual={ubicacionUsuario} />
           {/* Controlador de navegación en tiempo real */}
           <NavigationController
             ubicacionUsuario={ubicacionUsuario}

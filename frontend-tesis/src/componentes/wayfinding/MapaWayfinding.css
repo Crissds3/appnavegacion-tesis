@@ -628,3 +628,46 @@ path[stroke] {
 .info-card-share:active {
   transform: translateY(0);
 }
+
+/* ---------------------------------------------------------------
+   BOTÓN CENTRAR EN MÍ (GPS)
+--------------------------------------------------------------- */
+.btn-centrar-gps-wrapper {
+  position: absolute;
+  bottom: 120px;
+  right: 20px;
+  z-index: 1000; /* Sobre el mapa Leaflet */
+}
+
+.btn-centrar-gps {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.btn-centrar-gps:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-centrar-gps:active {
+  transform: translateY(0);
+  background-color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .btn-centrar-gps-wrapper {
+    bottom: 140px; /* Un poco más alto en móviles por si hay tarjetas abajo */
+    right: 16px;
+  }
+}
