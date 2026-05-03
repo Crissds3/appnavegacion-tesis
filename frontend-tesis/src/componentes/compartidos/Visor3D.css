@@ -79,6 +79,34 @@
   color: #ccc;
 }
 
+.visor3d-ar-button {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  color: #1f1f1f;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.visor3d-ar-button:hover {
+  background-color: #E53935;
+  color: white;
+}
+
+.visor3d-ar-button:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
 @media (min-width: 768px) {
   .visor3d-overlay {
     padding: 24px;

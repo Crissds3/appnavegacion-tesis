@@ -21,7 +21,15 @@ const Visor3D = ({ url, nombre, onClose }) => {
             auto-rotate
             camera-controls
             shadow-intensity="1"
-          ></model-viewer>
+            ar
+            ar-modes="webxr scene-viewer quick-look"
+            ar-scale="auto"
+            ar-placement="floor"
+          >
+            <button slot="ar-button" className="visor3d-ar-button">
+              📷 Ver en mi entorno (AR)
+            </button>
+          </model-viewer>
         ) : (
           <div className="visor3d-empty">No hay modelo disponible.</div>
         )}
