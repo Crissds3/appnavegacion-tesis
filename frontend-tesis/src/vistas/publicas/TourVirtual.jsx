@@ -68,7 +68,7 @@ const TourVirtual = () => {
                     {edificio.descripcion && <p>{edificio.descripcion}</p>}
                   </div>
                   <button type="button" onClick={() => handleExplorar(edificio)}>
-                    👁️ Explorar en 3D
+                    Explorar en 3D
                   </button>
                 </div>
               ))}

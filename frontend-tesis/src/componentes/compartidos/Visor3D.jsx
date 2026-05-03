@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import './Visor3D.css';
 
 const Visor3D = ({ url, nombre, onClose }) => {
@@ -9,7 +10,7 @@ const Visor3D = ({ url, nombre, onClose }) => {
           <h2 className="visor3d-title">{nombre || 'Modelo 3D'}</h2>
         </div>
         <button type="button" className="visor3d-close" onClick={onClose}>
-          ❌ Cerrar Tour
+          <X size={18} /> Cerrar Tour
         </button>
       </div>
 
