@@ -282,7 +282,9 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
 
   const ubicacionesFiltradas = ubicaciones.filter(ub => {
     if (idsEspeciales.has(ub._id)) return false; // ya tienen marcador especial
-    if (filtroTipo === 'todos') return true;
+    if (filtroTipo === 'todos') {
+      return (ub.categoria || ub.tipo) !== 'evento';
+    }
     return (ub.categoria || ub.tipo) === filtroTipo;
   });
 

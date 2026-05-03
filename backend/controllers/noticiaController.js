@@ -1,4 +1,5 @@
 import Noticia from '../models/Noticia.js';
+import Ubicacion from '../models/Ubicacion.js';
 
 // Obtener todas las noticias activas (público)
 export const obtenerNoticiasPublicas = async (req, res) => {
@@ -167,24 +168,36 @@ export const actualizarNoticia = async (req, res) => {
 
 // Eliminar noticia (admin)
 export const eliminarNoticia = async (req, res) => {
-  try {
-    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Solo los administradores pueden eliminar noticias'
-      });
-    }
+    try {
+      if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
+        return res.status(403).json({
+          success: false,
+          message: 'Solo los administradores pueden eliminar noticias'
+        });
+      }
+  
+      const noticia = await Noticia.findById(req.params.id);
+  
+      if (!noticia) {
+        return res.status(404).json({
+          success: false,
+          message: 'Noticia no encontrada'
+        });
+      }
 
-    const noticia = await Noticia.findByIdAndDelete(req.params.id);
-
-    if (!noticia) {
-      return res.status(404).json({
-        success: false,
-        message: 'Noticia no encontrada'
-      });
-    }
-
-    res.json({
+      const ubicacionId = noticia.ubicacionWayfinding;
+      
+      await Noticia.findByIdAndDelete(req.params.id);
+      
+      // Si la noticia tenía una ubicación creada específicamente como evento, eliminarla también
+      if (ubicacionId) {
+        const ubicacion = await Ubicacion.findById(ubicacionId);
+        if (ubicacion && ubicacion.tipo === 'evento') {
+          await Ubicacion.findByIdAndDelete(ubicacionId);
+        }
+      }
+  
+      res.json({
       success: true,
       message: 'Noticia eliminada exitosamente'
     });

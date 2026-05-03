@@ -102,7 +102,29 @@ const Wayfinding = () => {
   const cargarUbicaciones = async () => {
     try {
       const response = await api.get('/ubicaciones/publicas?visible=true');
-      setUbicaciones(response.data.data || []);
+      const allUbicaciones = response.data.data || [];
+      
+      // Filtrar eventos vencidos (mantenerlos activos hasta que termine su día)
+      const fechaActual = new Date();
+      fechaActual.setHours(0, 0, 0, 0);
+
+      const ubicacionesFiltradas = allUbicaciones.filter(ub => {
+        if (ub.tipo === 'evento' && ub.metadatos?.fechaEvento) {
+          // Asegurarnos de tratar la fecha en el formato correcto (ej: '2023-10-25')
+          // Al parsearla se crea en la zona horaria UTC, por lo que sumamos el timezone offset
+          // O simplemente evitamos que desaparezca prematuramente
+          const partesFecha = ub.metadatos.fechaEvento.split('-');
+          if (partesFecha.length === 3) {
+            const fechaEvento = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
+            if (fechaEvento < fechaActual) {
+              return false; // El evento ya pasó
+            }
+          }
+        }
+        return true;
+      });
+
+      setUbicaciones(ubicacionesFiltradas);
     } catch (error) {
       console.error('Error al cargar ubicaciones:', error);
     }

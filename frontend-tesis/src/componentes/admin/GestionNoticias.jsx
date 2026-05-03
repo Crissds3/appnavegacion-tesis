@@ -15,7 +15,25 @@ import {
   EyeOff,
   Upload
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import './GestionNoticias.css';
+
+const CAMPUS_CENTER = [-35.002607, -71.230519]; 
+const CAMPUS_BOUNDS = [
+  [-35.007000, -71.235500],
+  [-34.998000, -71.225500] 
+];
+
+const LocationPicker = ({ onLocationSelect }) => {
+  useMapEvents({
+    click(e) {
+      onLocationSelect([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return null;
+};
 
 const GestionNoticias = () => {
   const [noticias, setNoticias] = useState([]);
@@ -26,6 +44,8 @@ const GestionNoticias = () => {
   const [noticiaOriginal, setNoticiaOriginal] = useState(null);
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
   const [imagenPreview, setImagenPreview] = useState(null);
+  const [modoUbicacion, setModoUbicacion] = useState('existente'); // 'existente' o 'mapa'
+  const [coordsEvento, setCoordsEvento] = useState(null);
   const fileInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
@@ -174,15 +194,35 @@ const GestionNoticias = () => {
     e.preventDefault();
     
     try {
+      let finalFormData = { ...formData };
+
+      // Crear ubicación temporal tipo evento si se eligió del mapa
+      if (formData.tipo === 'Evento' && modoUbicacion === 'mapa' && coordsEvento) {
+        const ubicacionPayload = {
+          nombre: formData.titulo,
+          tipo: 'evento',
+          categoria: 'evento',
+          latitud: coordsEvento[0],
+          longitud: coordsEvento[1],
+          metadatos: {
+            fechaEvento: formData.fechaEvento
+          }
+        };
+        const respUbicacion = await ubicacionesService.createUbicacion(ubicacionPayload);
+        if (respUbicacion.success) {
+          finalFormData.ubicacionWayfinding = respUbicacion.data._id;
+        }
+      }
+
       if (editingNoticia) {
-        const response = await noticiasService.updateNoticia(editingNoticia._id, formData);
+        const response = await noticiasService.updateNoticia(editingNoticia._id, finalFormData);
         if (response.success) {
           showSuccess('Noticia actualizada exitosamente');
           cargarNoticias();
           cerrarModal();
         }
       } else {
-        const response = await noticiasService.createNoticia(formData);
+        const response = await noticiasService.createNoticia(finalFormData);
         if (response.success) {
           showSuccess('Noticia creada exitosamente');
           cargarNoticias();
@@ -219,6 +259,8 @@ const GestionNoticias = () => {
     } else {
       setImagenPreview(null);
     }
+    setModoUbicacion('existente');
+    setCoordsEvento(null);
     setShowModal(true);
   };
 
@@ -262,6 +304,8 @@ const GestionNoticias = () => {
     setEditingNoticia(null);
     setNoticiaOriginal(null);
     setImagenPreview(null);
+    setModoUbicacion('existente');
+    setCoordsEvento(null);
     setFormData({
       titulo: '',
       descripcion: '',
@@ -580,17 +624,65 @@ const GestionNoticias = () => {
 
                     <div className="form-group">
                       <label><MapPin size={16} /> Ubicación Wayfinding (Mapa)</label>
-                      <select
-                        name="ubicacionWayfinding"
-                        value={formData.ubicacionWayfinding || ''}
-                        onChange={handleInputChange}
-                        className="select-modern"
-                      >
-                        <option value="">Seleccionar ubicación del mapa...</option>
-                        {ubicaciones.map(ub => (
-                          <option key={ub._id} value={ub._id}>{ub.nombre}</option>
-                        ))}
-                      </select>
+                      <div style={{ display: 'flex', gap: '15px', marginBottom: '10px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                          <input 
+                            type="radio" 
+                            checked={modoUbicacion === 'existente'} 
+                            onChange={() => setModoUbicacion('existente')} 
+                          /> Ubicación Existente
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                          <input 
+                            type="radio" 
+                            checked={modoUbicacion === 'mapa'} 
+                            onChange={() => setModoUbicacion('mapa')} 
+                          /> Fijar en el Mapa
+                        </label>
+                      </div>
+
+                      {modoUbicacion === 'existente' ? (
+                        <select
+                          name="ubicacionWayfinding"
+                          value={formData.ubicacionWayfinding || ''}
+                          onChange={handleInputChange}
+                          className="select-modern"
+                        >
+                          <option value="">Seleccionar ubicación del mapa...</option>
+                          {ubicaciones.map(ub => (
+                            <option key={ub._id} value={ub._id}>{ub.nombre}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                          <div style={{ height: '300px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd' }}>
+                            <MapContainer
+                              center={CAMPUS_CENTER}
+                              zoom={16}
+                              minZoom={15}
+                              maxZoom={18}
+                              maxBounds={CAMPUS_BOUNDS}
+                              style={{ height: '100%', width: '100%' }}
+                            >
+                              <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                maxZoom={18}
+                                maxNativeZoom={19}
+                              />
+                              <LocationPicker onLocationSelect={setCoordsEvento} />
+                              {coordsEvento && (
+                                <Marker position={coordsEvento} />
+                              )}
+                            </MapContainer>
+                          </div>
+                          {!coordsEvento ? (
+                            <small style={{ color: '#666' }}>Haz clic en el mapa para fijar la ubicación del evento.</small>
+                          ) : (
+                            <small style={{ color: '#28a745' }}>Ubicación fijada correctamente.</small>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

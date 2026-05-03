@@ -342,6 +342,15 @@ export const ubicacionesService = {
       throw error.response?.data || { success: false, message: 'Error al obtener ubicaciones' };
     }
   },
+
+  createUbicacion: async (ubicacionData) => {
+    try {
+      const response = await api.post('/ubicaciones', ubicacionData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al crear ubicación' };
+    }
+  },
 };
 
 export default api;
