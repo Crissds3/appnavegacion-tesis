@@ -6,6 +6,7 @@ import GestionNoticias from '../../componentes/admin/GestionNoticias';
 import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversidad';
 import GestionUsuarios from '../../componentes/admin/GestionUsuarios';
 import GestionUbicaciones from '../../componentes/admin/GestionUbicaciones';
+import AdminTourVirtual from '../../componentes/admin/AdminTourVirtual';
 import './Tablero.css';
 
 const Tablero = () => {
@@ -127,14 +128,12 @@ const Tablero = () => {
             <div className="tab-content">
               <div className="section-card">
                 <div className="section-header">
-                  <h2>Contenido de Realidad Aumentada</h2>
+                  <h2>Contenido de Minitour Virtual</h2>
                   <p className="section-subtitle">
-                    Gestiona los elementos AR del campus
+                    Gestiona los modelos 3D que se muestran en la galeria publica.
                   </p>
                 </div>
-                <div className="empty-state">
-                  <p>🎯 Módulo AR en desarrollo...</p>
-                </div>
+                <AdminTourVirtual />
               </div>
             </div>
           )}

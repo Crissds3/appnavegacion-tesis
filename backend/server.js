@@ -1,12 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import authRoutes from './routes/authRoutes.js';
 import noticiaRoutes from './routes/noticiaRoutes.js';
 import infoRoutes from './routes/infoRoutes.js';
 import carreraRoutes from './routes/carreraRoutes.js';
 import ubicacionRoutes from './routes/ubicacionRoutes.js';
+import tourVirtualRoutes from './routes/tourVirtualRoutes.js';
 
 dotenv.config();
 
@@ -15,6 +18,8 @@ connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Middlewares
 // CORS: lista blanca de orígenes permitidos
@@ -35,6 +40,7 @@ app.use(cors({
 // Aumentar límite para imágenes en Base64 (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rutas
 app.get('/api', (req, res) => {
@@ -59,6 +65,7 @@ app.use('/api/carreras', carreraRoutes);
 
 // Rutas de ubicaciones/wayfinding
 app.use('/api/ubicaciones', ubicacionRoutes);
+app.use('/api/tour-virtual', tourVirtualRoutes);
 
 // Manejador de rutas no encontradas
 app.use((req, res) => {

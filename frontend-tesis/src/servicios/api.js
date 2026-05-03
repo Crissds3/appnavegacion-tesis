@@ -353,4 +353,65 @@ export const ubicacionesService = {
   },
 };
 
+// Servicios de tour virtual
+export const tourVirtualService = {
+  // Obtener edificios públicos
+  getEdificiosPublicos: async () => {
+    try {
+      const response = await api.get('/tour-virtual/publicas');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener edificios' };
+    }
+  },
+
+  // Obtener edificios (admin)
+  getEdificiosAdmin: async () => {
+    try {
+      const response = await api.get('/tour-virtual');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener edificios' };
+    }
+  },
+
+  // Crear edificio (admin) con archivo .glb
+  createEdificio: async (formData) => {
+    try {
+      const response = await api.post('/tour-virtual', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al crear edificio' };
+    }
+  },
+
+  // Actualizar edificio (admin)
+  updateEdificio: async (id, formData) => {
+    try {
+      const response = await api.put(`/tour-virtual/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al actualizar edificio' };
+    }
+  },
+
+  // Eliminar edificio (admin)
+  deleteEdificio: async (id) => {
+    try {
+      const response = await api.delete(`/tour-virtual/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al eliminar edificio' };
+    }
+  },
+};
+
 export default api;

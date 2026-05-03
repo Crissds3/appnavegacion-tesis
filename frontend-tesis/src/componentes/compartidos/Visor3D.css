@@ -1,0 +1,90 @@
+.visor3d-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  font-family: 'Inter', sans-serif;
+}
+
+.visor3d-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.visor3d-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: white;
+}
+
+.visor3d-label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.visor3d-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.visor3d-close {
+  background: white;
+  color: #1f1f1f;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+}
+
+.visor3d-close:hover {
+  background: #E53935;
+  color: white;
+}
+
+.visor3d-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.visor3d-viewer {
+  width: 100%;
+  flex-grow: 1;
+  background: #111;
+  border-radius: 16px;
+}
+
+.visor3d-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 16px;
+  border: 1px dashed #444;
+  color: #ccc;
+}
+
+@media (min-width: 768px) {
+  .visor3d-overlay {
+    padding: 24px;
+  }
+
+  .visor3d-title {
+    font-size: 22px;
+  }
+}

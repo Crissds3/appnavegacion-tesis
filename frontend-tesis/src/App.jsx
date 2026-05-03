@@ -10,6 +10,7 @@ import Tablero from './vistas/admin/Tablero';
 import Principal from './vistas/estudiante/Principal';
 import Wayfinding from './vistas/estudiante/Wayfinding';
 import SobreUniversidad from './vistas/estudiante/SobreUniversidad';
+import TourVirtual from './vistas/publicas/TourVirtual';
 import './App.css';
 
 // ─── Herramienta de desarrollo: MapeadorVisual ─────────────────────────────
@@ -42,6 +43,7 @@ function App() {
           <Route path="/principal" element={<Principal />} />
           <Route path="/sobre-universidad" element={<SobreUniversidad />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/tour-virtual" element={<TourVirtual />} />
           <Route path="/solicitar-recuperacion" element={<SolicitarRecuperacion />} />
           <Route path="/restablecer-password/:token" element={<RestablecerPassword />} />
           <Route

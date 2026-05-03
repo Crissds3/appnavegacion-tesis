@@ -1,0 +1,151 @@
+.tour-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  font-family: 'Inter', sans-serif;
+}
+
+.tour-main {
+  padding-top: 100px;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+.tour-header {
+  text-align: center;
+  border-radius: 24px;
+  padding: 50px 30px;
+  max-width: 75%;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #8B0000 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(211, 47, 47, 0.3),
+              0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tour-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 1;
+}
+
+.tour-header h1 {
+  font-size: 48px;
+  font-weight: 800;
+  margin: 0 0 12px 0;
+  position: relative;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.5px;
+}
+
+.tour-subtitle {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+  opacity: 0.95;
+  position: relative;
+  letter-spacing: 0.3px;
+  color: white;
+}
+
+.tour-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.tour-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.tour-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  transition: all 0.3s ease;
+}
+
+.tour-card h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.tour-card p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.tour-card button {
+  align-self: flex-start;
+  padding: 10px 16px;
+  background: #E53935;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tour-card button:hover {
+  background: #C62828;
+  transform: translateY(-1px);
+}
+
+.tour-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.tour-state {
+  text-align: center;
+  color: #666;
+}
+
+.tour-state.error {
+  color: #c62828;
+}
+
+.tour-empty {
+  grid-column: 1 / -1;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px dashed #ddd;
+  text-align: center;
+  color: #666;
+}
+
+@media (min-width: 768px) {
+  .tour-main {
+    padding-bottom: 60px;
+  }
+
+  .tour-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .tour-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

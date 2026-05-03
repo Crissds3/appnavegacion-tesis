@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexto/ContextoAuth';
-import { Home, Map, Info, Newspaper, LogIn, LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
+import { Home, Map, Info, Newspaper, LogIn, LogOut, LayoutDashboard, Menu, X, ScanLine } from 'lucide-react';
 import './Navbar.css';
 import logo from '../../assets/logo.png';
 
@@ -19,6 +19,7 @@ const Navbar = ({
   const defaultNavLinks = [
     { name: 'Noticias', path: '/estudiante', icon: <Newspaper size={18} /> },
     { name: 'Mapa', path: '/wayfinding', icon: <Map size={18} /> },
+    { name: 'Minitour 3D', path: '/tour-virtual', icon: <ScanLine size={18} /> },
     { name: 'Sobre Nosotros', path: '/sobre-universidad', icon: <Info size={18} /> },
   ];
 
