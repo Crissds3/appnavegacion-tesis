@@ -126,15 +126,7 @@ const Tablero = () => {
 
           {activeTab === 'ar' && (
             <div className="tab-content">
-              <div className="section-card">
-                <div className="section-header">
-                  <h2>Contenido de Minitour Virtual</h2>
-                  <p className="section-subtitle">
-                    Gestiona los modelos 3D que se muestran en la galeria publica.
-                  </p>
-                </div>
-                <AdminTourVirtual />
-              </div>
+              <AdminTourVirtual />
             </div>
           )}
 

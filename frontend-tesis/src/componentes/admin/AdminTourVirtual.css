@@ -1,31 +1,74 @@
 .admin-tour-virtual {
   font-family: 'Inter', sans-serif;
-  padding: 24px 0;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.admin-tour-card {
+.admin-tour-main-card {
   background: white;
-  border-radius: 18px;
-  padding: 28px;
+  border-radius: 16px;
   border: 1px solid #f0f0f0;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
-.admin-tour-header {
-  margin-bottom: 24px;
+.admin-tour-main-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
 }
 
-.admin-tour-header h2 {
-  margin: 0 0 6px;
+.admin-tour-main-title h2 {
   color: #E53935;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
+}
+
+.admin-tour-main-subtitle {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.admin-tour-body {
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-tour-form-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #f0d0d0;
+  box-shadow: 0 2px 10px rgba(229, 57, 53, 0.05);
+}
+
+.admin-tour-form-header {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-tour-form-header h3 {
+  margin: 0;
+  color: #E53935;
+  font-size: 18px;
   font-weight: 700;
 }
 
-.admin-tour-header p {
+.admin-tour-form-header p {
   margin: 0;
   color: #666;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .admin-tour-form {
@@ -60,18 +103,23 @@
 .admin-tour-field textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ccc;
+  border: 2px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
   font-family: 'Inter', sans-serif;
   transition: all 0.2s ease;
 }
 
+.admin-tour-field input[type="text"]:hover,
+.admin-tour-field textarea:hover {
+  border-color: #E53935;
+}
+
 .admin-tour-field input[type="text"]:focus,
 .admin-tour-field textarea:focus {
   outline: none;
   border-color: #E53935;
-  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.12);
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15);
 }
 
 .admin-tour-file-control {
@@ -90,9 +138,9 @@
   justify-content: center;
   gap: 8px;
   padding: 10px 16px;
-  background: #fff5f5;
-  color: #C62828;
-  border: 1px solid #f2bcbc;
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: #fff;
+  border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -100,10 +148,17 @@
   width: fit-content;
 }
 
+.admin-tour-field .admin-tour-file-button {
+  color: #fff;
+}
+
+.admin-tour-file-button svg {
+  stroke: #fff;
+}
+
 .admin-tour-file-button:hover {
-  background: #E53935;
-  color: white;
-  border-color: #E53935;
+  box-shadow: 0 6px 16px rgba(229, 57, 53, 0.25);
+  transform: translateY(-1px);
 }
 
 .admin-tour-file-name {
@@ -149,9 +204,9 @@
 }
 
 .admin-tour-list {
-  margin-top: 28px;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 20px;
+  margin-top: 0;
+  border-top: 1px solid #f0d0d0;
+  padding-top: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -174,10 +229,11 @@
 }
 
 .admin-tour-list-row {
-  background: #fafafa;
+  background: white;
   border-radius: 12px;
   padding: 14px 16px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #f0d0d0;
+  box-shadow: 0 2px 10px rgba(229, 57, 53, 0.05);
 }
 
 .admin-tour-list-row p {
@@ -241,6 +297,41 @@
   border-color: #E53935;
   color: #E53935;
   background: #FFEBEE;
+}
+
+@media (max-width: 1024px) {
+  .admin-tour-virtual {
+    padding: 16px;
+  }
+
+  .admin-tour-main-header {
+    padding: 20px 24px;
+  }
+
+  .admin-tour-body {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-tour-main-header {
+    padding: 18px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .admin-tour-main-title h2 {
+    font-size: 20px;
+  }
+
+  .admin-tour-body {
+    padding: 18px 20px;
+  }
+
+  .admin-tour-form-card {
+    padding: 16px;
+  }
 }
 
 @media (min-width: 768px) {

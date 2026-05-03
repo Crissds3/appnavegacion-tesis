@@ -866,3 +866,52 @@
   color: #aaa;
   font-weight: 500;
 }
+
+@media (max-width: 1200px) {
+  .gestion-body-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: auto;
+  }
+
+  .mapa-card.full-height {
+    height: auto;
+  }
+
+  .mapa-container.full-height-map {
+    min-height: 360px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .gestion-ubicaciones {
+    padding: 16px;
+  }
+
+  .gestion-header {
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .gestion-body-grid {
+    padding: 16px;
+  }
+
+  .mapa-card {
+    padding: 12px;
+  }
+
+  .mapa-container.full-height-map {
+    min-height: 300px;
+  }
+
+  .coords-inputs {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Upload } from 'lucide-react';
 import { showConfirm, showError, showSuccess } from '../../utils/sweetAlert';
 import { tourVirtualService } from '../../servicios/api';
 import './AdminTourVirtual.css';
@@ -127,105 +128,119 @@ const AdminTourVirtual = () => {
 
   return (
     <div className="admin-tour-virtual">
-      <div className="admin-tour-card">
-        <header className="admin-tour-header">
-          <h2>Minitour Virtual</h2>
-          <p>Sube modelos 3D (.glb) para la galeria publica</p>
-        </header>
+      <div className="admin-tour-main-card">
+        <div className="admin-tour-main-header">
+          <div className="admin-tour-main-title">
+            <h2>Contenido de Minitour Virtual</h2>
+            <p className="admin-tour-main-subtitle">
+              Gestiona los modelos 3D que se muestran en la galeria publica.
+            </p>
+          </div>
+        </div>
 
-        <form className="admin-tour-form" onSubmit={handleSubmit}>
-          <div className="admin-tour-grid">
-            <div className="admin-tour-field">
-              <label htmlFor="nombre">Nombre del edificio</label>
-              <input
-                id="nombre"
-                name="nombre"
-                type="text"
-                value={formData.nombre}
-                onChange={handleInputChange}
-                placeholder="Ej. Biblioteca Central"
-              />
+        <div className="admin-tour-body">
+          <div className="admin-tour-form-card">
+            <div className="admin-tour-form-header">
+              <h3>Minitour Virtual</h3>
+              <p>Sube modelos 3D (.glb) para la galeria publica</p>
             </div>
 
-            <div className="admin-tour-field full-width">
-              <label htmlFor="descripcion">Descripcion breve</label>
-              <textarea
-                id="descripcion"
-                name="descripcion"
-                rows={3}
-                value={formData.descripcion}
-                onChange={handleInputChange}
-                placeholder="Describe el edificio en una o dos lineas."
-              />
-            </div>
+            <form className="admin-tour-form" onSubmit={handleSubmit}>
+              <div className="admin-tour-grid">
+                <div className="admin-tour-field">
+                  <label htmlFor="nombre">Nombre del edificio</label>
+                  <input
+                    id="nombre"
+                    name="nombre"
+                    type="text"
+                    value={formData.nombre}
+                    onChange={handleInputChange}
+                    placeholder="Ej. Biblioteca Central"
+                  />
+                </div>
 
-            <div className="admin-tour-field full-width">
-              <label htmlFor="archivo">Modelo 3D (.glb)</label>
-              <div className="admin-tour-file-control">
-                <input
-                  id="archivo"
-                  name="archivo"
-                  type="file"
-                  accept=".glb,model/gltf-binary"
-                  onChange={handleFileChange}
-                  ref={fileInputRef}
-                  className="admin-tour-file-input"
-                />
-                <label htmlFor="archivo" className="admin-tour-file-button">
-                  📁 Seleccionar archivo .glb
-                </label>
-                <span className="admin-tour-file-name">
-                  {formData.archivo ? formData.archivo.name : 'Sin archivo seleccionado'}
-                </span>
+                <div className="admin-tour-field full-width">
+                  <label htmlFor="descripcion">Descripcion breve</label>
+                  <textarea
+                    id="descripcion"
+                    name="descripcion"
+                    rows={3}
+                    value={formData.descripcion}
+                    onChange={handleInputChange}
+                    placeholder="Describe el edificio en una o dos lineas."
+                  />
+                </div>
+
+                <div className="admin-tour-field full-width">
+                  <label htmlFor="archivo">Modelo 3D (.glb)</label>
+                  <div className="admin-tour-file-control">
+                    <input
+                      id="archivo"
+                      name="archivo"
+                      type="file"
+                      accept=".glb,model/gltf-binary"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                      className="admin-tour-file-input"
+                    />
+                    <label htmlFor="archivo" className="admin-tour-file-button">
+                      <Upload size={16} />
+                      Seleccionar archivo .glb
+                    </label>
+                    <span className="admin-tour-file-name">
+                      {formData.archivo ? formData.archivo.name : 'Sin archivo seleccionado'}
+                    </span>
+                  </div>
+                  <p className="admin-tour-hint">
+                    Solo archivos .glb. El backend guardara el archivo y devolvera la URL.
+                  </p>
+                </div>
               </div>
-              <p className="admin-tour-hint">
-                Solo archivos .glb. El backend guardara el archivo y devolvera la URL.
-              </p>
-            </div>
-          </div>
 
-          <div className="admin-tour-actions">
-            <button type="submit" className="admin-tour-submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Subiendo...' : 'Guardar edificio'}
-            </button>
-          </div>
-        </form>
-
-        <div className="admin-tour-list">
-          <div className="admin-tour-list-header">
-            <span>Edificio</span>
-            <span>Estado</span>
-            <span>Acciones</span>
-          </div>
-          {isLoadingModelos && (
-            <div className="admin-tour-list-row empty">Cargando modelos...</div>
-          )}
-          {!isLoadingModelos && listError && (
-            <div className="admin-tour-list-row empty error">{listError}</div>
-          )}
-          {!isLoadingModelos && !listError && modelos.length === 0 && (
-            <div className="admin-tour-list-row empty">Aun no hay modelos cargados.</div>
-          )}
-          {!isLoadingModelos && !listError && modelos.map((edificio) => (
-            <div key={edificio._id} className="admin-tour-list-row">
-              <div>
-                <strong>{edificio.nombre}</strong>
-                {edificio.descripcion && <p>{edificio.descripcion}</p>}
-              </div>
-              <span className={`admin-tour-status ${edificio.activo ? 'activo' : 'inactivo'}`}>
-                {edificio.activo ? 'Activo' : 'Inactivo'}
-              </span>
-              <div className="admin-tour-actions-cell">
-                <button
-                  type="button"
-                  className="admin-tour-delete"
-                  onClick={() => handleDelete(edificio._id)}
-                >
-                  Eliminar
+              <div className="admin-tour-actions">
+                <button type="submit" className="admin-tour-submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Subiendo...' : 'Guardar edificio'}
                 </button>
               </div>
+            </form>
+          </div>
+
+          <div className="admin-tour-list">
+            <div className="admin-tour-list-header">
+              <span>Edificio</span>
+              <span>Estado</span>
+              <span>Acciones</span>
             </div>
-          ))}
+            {isLoadingModelos && (
+              <div className="admin-tour-list-row empty">Cargando modelos...</div>
+            )}
+            {!isLoadingModelos && listError && (
+              <div className="admin-tour-list-row empty error">{listError}</div>
+            )}
+            {!isLoadingModelos && !listError && modelos.length === 0 && (
+              <div className="admin-tour-list-row empty">Aun no hay modelos cargados.</div>
+            )}
+            {!isLoadingModelos && !listError && modelos.map((edificio) => (
+              <div key={edificio._id} className="admin-tour-list-row">
+                <div>
+                  <strong>{edificio.nombre}</strong>
+                  {edificio.descripcion && <p>{edificio.descripcion}</p>}
+                </div>
+                <span className={`admin-tour-status ${edificio.activo ? 'activo' : 'inactivo'}`}>
+                  {edificio.activo ? 'Activo' : 'Inactivo'}
+                </span>
+                <div className="admin-tour-actions-cell">
+                  <button
+                    type="button"
+                    className="admin-tour-delete"
+                    onClick={() => handleDelete(edificio._id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

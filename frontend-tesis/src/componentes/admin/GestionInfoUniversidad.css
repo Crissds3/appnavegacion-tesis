@@ -679,6 +679,59 @@
   color: #333;
 }
 
+@media (max-width: 1024px) {
+  .gestion-info-container {
+    padding: 16px;
+  }
+
+  .gestion-main-card {
+    padding: 24px;
+  }
+
+  .acciones-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tabs-container {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tab-button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .gestion-info-header h2 {
+    font-size: 22px;
+  }
+
+  .gestion-info-header p {
+    font-size: 14px;
+  }
+
+  .secciones-grid,
+  .carreras-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gestion-main-card {
+    padding: 20px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+}
+
 .btn-modal-unique-save {
   display: flex;
   align-items: center;
