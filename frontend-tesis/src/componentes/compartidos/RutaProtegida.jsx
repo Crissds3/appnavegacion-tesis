@@ -19,7 +19,7 @@ const RutaProtegida = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  return isAuthenticated ? children : <Navigate to="/" />;
 };
 
 export default RutaProtegida;
