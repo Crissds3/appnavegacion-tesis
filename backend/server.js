@@ -17,30 +17,27 @@ dotenv.config();
 connectDB();
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middlewares
-// CORS: lista blanca de orígenes permitidos
-// Incluye localhost para desarrollo local y los dominios de producción en Vercel
-const origenesPermitidos = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:4173',
-  'https://appnavegacion-tesis.vercel.app',  // URL de producción en Vercel
-  /^https:\/\/appnavegacion-tesis-.*\.vercel\.app$/, // previews automáticos de Vercel
-  process.env.FRONTEND_URL,                  // dominio personalizado (opcional)
-].filter(Boolean);
+app.use(cors());
 
-app.use(cors({
-  origin: origenesPermitidos,
-  credentials: true,
-}));
 // Aumentar límite para imágenes en Base64 (50MB)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/uploads', cors(), express.static(path.join(__dirname, 'uploads'), {
+    setHeaders: (res, path) => {
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+        if (path.endsWith('.glb')) {
+            res.set('Content-Type', 'model/gltf-binary');
+        }
+    }
+}));
 
 // Rutas
 app.get('/api', (req, res) => {
