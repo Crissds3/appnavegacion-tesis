@@ -16,25 +16,19 @@ const Visor3D = ({ url, nombre, onClose }) => {
 
       <div className="visor3d-stage">
         {url ? (
-          <model-viewer 
-            src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
-            ar 
-            ar-modes="webxr scene-viewer quick-look" 
-            ar-scale="auto" 
-            ar-placement="floor"
-            camera-controls 
+          <model-viewer
+            className="visor3d-viewer"
+            src={url}
             auto-rotate
-            environment-image="neutral"
-            exposure="1"
-            style={{ width: '100%', height: '100%', minHeight: '60vh', backgroundColor: '#1a1a1a' }}
+            camera-controls
+            shadow-intensity="1"
+            ar
+            ar-modes="webxr scene-viewer quick-look"
+            ar-scale="auto"
+            ar-placement="floor"
           >
-            <button slot="ar-button" style={{
-                position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)',
-                backgroundColor: '#cc0000', color: 'white', padding: '12px 24px', 
-                borderRadius: '25px', border: 'none', fontWeight: 'bold', boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                cursor: 'pointer'
-            }}>
-                📷 Ver en mi entorno (AR)
+            <button slot="ar-button" className="visor3d-ar-button">
+              📷 Ver en mi entorno (AR)
             </button>
           </model-viewer>
         ) : (
