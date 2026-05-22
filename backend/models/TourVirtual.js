@@ -16,6 +16,10 @@ const tourVirtualSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    cloudinaryPublicId: {
+      type: String,
+      default: null,
+    },
     activo: {
       type: Boolean,
       default: true,

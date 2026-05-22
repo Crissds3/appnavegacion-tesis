@@ -1,8 +1,5 @@
 import express from 'express';
-import path from 'path';
-import fs from 'fs';
 import multer from 'multer';
-import { fileURLToPath } from 'url';
 import { proteger, autorizarRoles } from '../middleware/auth.js';
 import {
   crearEdificio,
@@ -13,28 +10,14 @@ import {
 } from '../controllers/tourVirtualController.js';
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '..', 'uploads', 'tour-virtual');
 
-fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const safeName = file.originalname
-      .replace(/\s+/g, '-')
-      .replace(/[^a-zA-Z0-9._-]/g, '');
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}-${safeName}`;
-    cb(null, unique);
-  },
-});
+// Usar memoryStorage: el archivo queda en req.file.buffer
+// y se sube directo a Cloudinary sin tocar el disco local
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname).toLowerCase();
-  const isGlb = ext === '.glb' || file.mimetype === 'model/gltf-binary';
+  const ext = file.originalname.split('.').pop().toLowerCase();
+  const isGlb = ext === 'glb' || file.mimetype === 'model/gltf-binary';
   if (!isGlb) {
     return cb(new Error('Solo se permiten archivos .glb'));
   }
@@ -44,7 +27,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 100 * 1024 * 1024 },
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
 });
 
 const uploadModelo = (req, res, next) => {
