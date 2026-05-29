@@ -1,13 +1,49 @@
+import { v2 as cloudinary } from 'cloudinary';
 import Noticia from '../models/Noticia.js';
 import Ubicacion from '../models/Ubicacion.js';
 
-// Obtener todas las noticias activas (público)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const subirImagenACloudinary = (buffer, filename) => {
+  return new Promise((resolve, reject) => {
+    const publicId = `noticias/${filename
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^a-zA-Z0-9_-]/g, '_')}_${Date.now()}`;
+
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'image',
+        public_id: publicId,
+        overwrite: true,
+        transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve({ url: result.secure_url, publicId: result.public_id });
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+const eliminarImagenDeCloudinary = async (publicId) => {
+  if (!publicId) return;
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+  } catch (err) {
+    console.warn('No se pudo eliminar imagen de Cloudinary:', err.message);
+  }
+};
+
+// ── Obtener noticias públicas ────────────────────────────────
 export const obtenerNoticiasPublicas = async (req, res) => {
   try {
     const { tipo, categoria, destacado } = req.query;
-    
     const filtros = { activo: true };
-    
     if (tipo) filtros.tipo = tipo;
     if (categoria) filtros.categoria = categoria;
     if (destacado) filtros.destacado = destacado === 'true';
@@ -16,44 +52,30 @@ export const obtenerNoticiasPublicas = async (req, res) => {
       .populate('autor', 'nombre')
       .populate('ubicacionWayfinding', 'nombre')
       .sort({ destacado: -1, createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .select('-__v');
 
-    res.json({
-      success: true,
-      data: noticias
-    });
+    res.json({ success: true, data: noticias });
   } catch (error) {
     console.error('Error en obtenerNoticiasPublicas:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener las noticias',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error al obtener las noticias', error: error.message });
   }
 };
 
-// Obtener todas las noticias (admin)
+// ── Obtener todas (admin) ────────────────────────────────────
 export const obtenerTodasNoticias = async (req, res) => {
   try {
     const noticias = await Noticia.find()
       .populate('autor', 'nombre email')
       .sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      data: noticias
-    });
+    res.json({ success: true, data: noticias });
   } catch (error) {
     console.error('Error en obtenerTodasNoticias:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener las noticias',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error al obtener las noticias', error: error.message });
   }
 };
 
-// Obtener una noticia por ID
+// ── Obtener por ID ───────────────────────────────────────────
 export const obtenerNoticiaPorId = async (req, res) => {
   try {
     const noticia = await Noticia.findById(req.params.id)
@@ -61,37 +83,31 @@ export const obtenerNoticiaPorId = async (req, res) => {
       .populate('ubicacionWayfinding', 'nombre');
 
     if (!noticia) {
-      return res.status(404).json({
-        success: false,
-        message: 'Noticia no encontrada'
-      });
+      return res.status(404).json({ success: false, message: 'Noticia no encontrada' });
     }
-
-    res.json({
-      success: true,
-      data: noticia
-    });
+    res.json({ success: true, data: noticia });
   } catch (error) {
     console.error('Error en obtenerNoticiaPorId:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener la noticia',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error al obtener la noticia', error: error.message });
   }
 };
 
-// Crear noticia (admin)
+// ── Crear noticia ────────────────────────────────────────────
 export const crearNoticia = async (req, res) => {
   try {
-    const { titulo, descripcion, contenido, tipo, categoria, imagenUrl, imagenBase64, fechaEvento, ubicacionEvento, ubicacionWayfinding, destacado } = req.body;
-
-    // Validar que el usuario sea admin
     if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Solo los administradores pueden crear noticias'
-      });
+      return res.status(403).json({ success: false, message: 'Solo los administradores pueden crear noticias' });
+    }
+
+    const { titulo, descripcion, contenido, tipo, categoria, fechaEvento, ubicacionEvento, ubicacionWayfinding, destacado } = req.body;
+
+    let imagenUrl = '';
+    let cloudinaryPublicId = '';
+
+    if (req.file) {
+      const { url, publicId } = await subirImagenACloudinary(req.file.buffer, req.file.originalname);
+      imagenUrl = url;
+      cloudinaryPublicId = publicId;
     }
 
     const noticia = await Noticia.create({
@@ -101,112 +117,114 @@ export const crearNoticia = async (req, res) => {
       tipo,
       categoria,
       imagenUrl,
-      imagenBase64,
-      fechaEvento,
-      ubicacionEvento,
+      cloudinaryPublicId,
+      fechaEvento: fechaEvento || undefined,
+      ubicacionEvento: ubicacionEvento || '',
       ubicacionWayfinding: ubicacionWayfinding || null,
-      destacado: destacado || false,
-      autor: req.usuario.id
+      destacado: destacado === 'true' || destacado === true || false,
+      autor: req.usuario.id,
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Noticia creada exitosamente',
-      data: noticia
-    });
+    res.status(201).json({ success: true, message: 'Noticia creada exitosamente', data: noticia });
   } catch (error) {
     console.error('Error en crearNoticia:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al crear la noticia',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error al crear la noticia', error: error.message });
   }
 };
 
-// Actualizar noticia (admin)
+// ── Actualizar noticia ───────────────────────────────────────
 export const actualizarNoticia = async (req, res) => {
   try {
     if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Solo los administradores pueden actualizar noticias'
-      });
+      return res.status(403).json({ success: false, message: 'Solo los administradores pueden actualizar noticias' });
     }
 
-    if (req.body.ubicacionWayfinding === '') {
-      req.body.ubicacionWayfinding = null;
+    const noticia = await Noticia.findById(req.params.id);
+    if (!noticia) {
+      return res.status(404).json({ success: false, message: 'Noticia no encontrada' });
     }
 
-    const noticia = await Noticia.findByIdAndUpdate(
+    const campos = { ...req.body };
+    if (campos.ubicacionWayfinding === '' || campos.ubicacionWayfinding === 'null') {
+      campos.ubicacionWayfinding = null;
+    }
+    if (typeof campos.destacado === 'string') campos.destacado = campos.destacado === 'true';
+    if (typeof campos.activo === 'string') campos.activo = campos.activo === 'true';
+
+    // Si llega nueva imagen, reemplazar la anterior en Cloudinary
+    if (req.file) {
+      await eliminarImagenDeCloudinary(noticia.cloudinaryPublicId);
+      const { url, publicId } = await subirImagenACloudinary(req.file.buffer, req.file.originalname);
+      campos.imagenUrl = url;
+      campos.cloudinaryPublicId = publicId;
+    }
+
+    // Si se pidió borrar la imagen explícitamente
+    if (campos.eliminarImagen === 'true') {
+      await eliminarImagenDeCloudinary(noticia.cloudinaryPublicId);
+      campos.imagenUrl = '';
+      campos.cloudinaryPublicId = '';
+      delete campos.eliminarImagen;
+    }
+
+    const noticiaActualizada = await Noticia.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { ...campos, updatedAt: Date.now() },
       { new: true, runValidators: true }
     );
 
-    if (!noticia) {
-      return res.status(404).json({
-        success: false,
-        message: 'Noticia no encontrada'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Noticia actualizada exitosamente',
-      data: noticia
-    });
+    res.json({ success: true, message: 'Noticia actualizada exitosamente', data: noticiaActualizada });
   } catch (error) {
     console.error('Error en actualizarNoticia:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar la noticia',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error al actualizar la noticia', error: error.message });
   }
 };
 
-// Eliminar noticia (admin)
+// ── Eliminar noticia ─────────────────────────────────────────
 export const eliminarNoticia = async (req, res) => {
-    try {
-      if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Solo los administradores pueden eliminar noticias'
-        });
-      }
-  
-      const noticia = await Noticia.findById(req.params.id);
-  
-      if (!noticia) {
-        return res.status(404).json({
-          success: false,
-          message: 'Noticia no encontrada'
-        });
-      }
+  try {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
+      return res.status(403).json({ success: false, message: 'Solo los administradores pueden eliminar noticias' });
+    }
 
-      const ubicacionId = noticia.ubicacionWayfinding;
-      
-      await Noticia.findByIdAndDelete(req.params.id);
-      
-      // Si la noticia tenía una ubicación creada específicamente como evento, eliminarla también
-      if (ubicacionId) {
-        const ubicacion = await Ubicacion.findById(ubicacionId);
-        if (ubicacion && ubicacion.tipo === 'evento') {
-          await Ubicacion.findByIdAndDelete(ubicacionId);
-        }
+    const noticia = await Noticia.findById(req.params.id);
+    if (!noticia) {
+      return res.status(404).json({ success: false, message: 'Noticia no encontrada' });
+    }
+
+    await eliminarImagenDeCloudinary(noticia.cloudinaryPublicId);
+
+    const ubicacionId = noticia.ubicacionWayfinding;
+    await Noticia.findByIdAndDelete(req.params.id);
+
+    if (ubicacionId) {
+      const ubicacion = await Ubicacion.findById(ubicacionId);
+      if (ubicacion && ubicacion.tipo === 'evento') {
+        await Ubicacion.findByIdAndDelete(ubicacionId);
       }
-  
-      res.json({
-      success: true,
-      message: 'Noticia eliminada exitosamente'
-    });
+    }
+
+    res.json({ success: true, message: 'Noticia eliminada exitosamente' });
   } catch (error) {
     console.error('Error en eliminarNoticia:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al eliminar la noticia',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Error al eliminar la noticia', error: error.message });
+  }
+};
+
+// ── Limpiar todas las noticias (superadmin) ──────────────────
+export const limpiarTodasNoticias = async (req, res) => {
+  try {
+    if (req.usuario.rol !== 'superadmin') {
+      return res.status(403).json({ success: false, message: 'Solo el superadmin puede realizar esta acción' });
+    }
+
+    const noticias = await Noticia.find({ cloudinaryPublicId: { $ne: '' } });
+    await Promise.allSettled(noticias.map(n => eliminarImagenDeCloudinary(n.cloudinaryPublicId)));
+
+    const result = await Noticia.deleteMany({});
+    res.json({ success: true, message: `${result.deletedCount} noticias eliminadas correctamente` });
+  } catch (error) {
+    console.error('Error en limpiarTodasNoticias:', error);
+    res.status(500).json({ success: false, message: 'Error al limpiar noticias', error: error.message });
   }
 };

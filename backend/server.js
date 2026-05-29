@@ -10,6 +10,7 @@ import infoRoutes from './routes/infoRoutes.js';
 import carreraRoutes from './routes/carreraRoutes.js';
 import ubicacionRoutes from './routes/ubicacionRoutes.js';
 import tourVirtualRoutes from './routes/tourVirtualRoutes.js';
+import utalcaNoticiaRoutes from './routes/utalcaNoticiaRoutes.js';
 
 dotenv.config();
 
@@ -25,9 +26,8 @@ const __dirname = path.dirname(__filename);
 // Middlewares
 app.use(cors());
 
-// Aumentar límite para imágenes en Base64 (50MB)
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
 app.use('/uploads', cors(), express.static(path.join(__dirname, 'uploads'), {
     setHeaders: (res, path) => {
@@ -63,6 +63,7 @@ app.use('/api/carreras', carreraRoutes);
 // Rutas de ubicaciones/wayfinding
 app.use('/api/ubicaciones', ubicacionRoutes);
 app.use('/api/tour-virtual', tourVirtualRoutes);
+app.use('/api/noticias-utalca', utalcaNoticiaRoutes);
 
 // Manejador de rutas no encontradas
 app.use((req, res) => {

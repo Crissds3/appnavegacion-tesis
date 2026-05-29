@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "limpiar-noticias": "node scripts/limpiarNoticias.js"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +23,8 @@
     "leaflet-routing-machine": "^3.2.12",
     "mongoose": "^8.19.2",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.10",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

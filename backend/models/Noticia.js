@@ -30,7 +30,7 @@ const noticiaSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  imagenBase64: {
+  cloudinaryPublicId: {
     type: String,
     default: ''
   },

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
+  /* Variables originales */
   --primary-red: #E53935;
   --dark-red: #C62828;
   --light-red: #EF5350;
@@ -15,7 +16,34 @@
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Variables (landing) */
+  --rojo: #E53935;
+  --rojo-oscuro: #C62828;
+  --rojo-vivo: #FF4D49;
+  --rojo-claro: #FCE9E8;
+  --rojo-claro-2: #F7D6D4;
+  --ink: #181613;
+  --noche: #14110F;
+  --gris-texto: #6E6A66;
+  --linea: #ECE7E3;
+  --hueso: #F7F2EE;
+  --blanco: #FFFFFF;
+  --grad-rojo: linear-gradient(135deg, #FF5A56 0%, #E53935 48%, #C62828 100%);
+  --sombra-sm-v2: 0 1px 2px rgba(24,22,19,.04), 0 2px 8px rgba(24,22,19,.05);
+  --sombra-md-v2: 0 10px 30px -10px rgba(24,22,19,.12), 0 4px 10px -4px rgba(24,22,19,.08);
+  --sombra-lg-v2: 0 40px 90px -28px rgba(24,22,19,.30), 0 16px 40px -20px rgba(24,22,19,.18);
+  --sombra-roja: 0 18px 36px -10px rgba(229,57,53,.50), 0 6px 14px -4px rgba(229,57,53,.35);
+  --sombra-roja-h: 0 28px 54px -12px rgba(229,57,53,.62), 0 8px 18px -4px rgba(229,57,53,.42);
+  --r-sm: 14px;
+  --r-md: 20px;
+  --r-lg: 30px;
+  --r-pill: 999px;
+  --maxw: 1240px;
+  --pad-x: clamp(20px, 5vw, 56px);
 }
+
+::selection { background: var(--rojo); color: #fff; }
 
 * {
   margin: 0;

@@ -194,20 +194,24 @@ export const noticiasService = {
     }
   },
 
-  // Crear noticia (admin)
-  createNoticia: async (noticiaData) => {
+  // Crear noticia (admin) — envía FormData para soportar imagen
+  createNoticia: async (formData) => {
     try {
-      const response = await api.post('/noticias', noticiaData);
+      const response = await api.post('/noticias', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error al crear noticia' };
     }
   },
 
-  // Actualizar noticia (admin)
-  updateNoticia: async (id, noticiaData) => {
+  // Actualizar noticia (admin) — envía FormData para soportar imagen
+  updateNoticia: async (id, formData) => {
     try {
-      const response = await api.put(`/noticias/${id}`, noticiaData);
+      const response = await api.put(`/noticias/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error al actualizar noticia' };
@@ -221,6 +225,16 @@ export const noticiasService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error al eliminar noticia' };
+    }
+  },
+
+  // Limpiar todas las noticias (superadmin)
+  limpiarTodasNoticias: async () => {
+    try {
+      const response = await api.delete('/noticias/limpiar-todas');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al limpiar noticias' };
     }
   },
 };
@@ -349,6 +363,18 @@ export const ubicacionesService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { success: false, message: 'Error al crear ubicación' };
+    }
+  },
+};
+
+// Noticias oficiales UTalca (RSS proxy)
+export const utalcaNoticiasService = {
+  getNoticias: async () => {
+    try {
+      const response = await api.get('/noticias-utalca');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener noticias de UTalca' };
     }
   },
 };

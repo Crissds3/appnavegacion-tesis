@@ -44,6 +44,8 @@ const GestionNoticias = () => {
   const [noticiaOriginal, setNoticiaOriginal] = useState(null);
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
   const [imagenPreview, setImagenPreview] = useState(null);
+  const [imagenFile, setImagenFile] = useState(null);       // File object para subir
+  const [eliminarImagenFlag, setEliminarImagenFlag] = useState(false);
   const [modoUbicacion, setModoUbicacion] = useState('existente'); // 'existente' o 'mapa'
   const [coordsEvento, setCoordsEvento] = useState(null);
   const fileInputRef = useRef(null);
@@ -54,8 +56,6 @@ const GestionNoticias = () => {
     contenido: '',
     tipo: 'Noticia',
     categoria: 'Académico',
-    imagenUrl: '',
-    imagenBase64: '',
     fechaEvento: '',
     ubicacionEvento: '',
     ubicacionWayfinding: '',
@@ -116,113 +116,106 @@ const GestionNoticias = () => {
 
   const handleImagenChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showError('La imagen no debe superar 5MB');
-        return;
-      }
+    if (!file) return;
 
-      // Validar tipo
-      if (!file.type.startsWith('image/')) {
-        showError('Solo se permiten archivos de imagen');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        setFormData(prev => ({
-          ...prev,
-          imagenBase64: base64String,
-          imagenUrl: '' // Limpiar URL si existe
-        }));
-        setImagenPreview(base64String);
-      };
-      reader.readAsDataURL(file);
+    if (file.size > 10 * 1024 * 1024) {
+      showError('La imagen no debe superar 10 MB');
+      return;
     }
+    if (!file.type.startsWith('image/')) {
+      showError('Solo se permiten archivos de imagen');
+      return;
+    }
+
+    setImagenFile(file);
+    setEliminarImagenFlag(false);
+    setImagenPreview(URL.createObjectURL(file));
   };
 
   const eliminarImagen = () => {
-    setFormData(prev => ({
-      ...prev,
-      imagenBase64: '',
-      imagenUrl: ''
-    }));
+    setImagenFile(null);
     setImagenPreview(null);
+    setEliminarImagenFlag(true); // indica al backend que borre la imagen actual
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const hasChanges = () => {
-    if (!editingNoticia) return true; // Siempre habilitado para crear
+    if (!editingNoticia) return true;
     if (!noticiaOriginal) return false;
+    if (imagenFile || eliminarImagenFlag) return true;
 
-    // Comparar campos relevantes
     const current = {
       titulo: formData.titulo,
       descripcion: formData.descripcion,
       contenido: formData.contenido,
       tipo: formData.tipo,
       categoria: formData.categoria,
-      imagenUrl: formData.imagenUrl,
-      imagenBase64: formData.imagenBase64,
       fechaEvento: formData.fechaEvento,
       ubicacionEvento: formData.ubicacionEvento,
       ubicacionWayfinding: formData.ubicacionWayfinding,
       destacado: formData.destacado,
-      activo: formData.activo
+      activo: formData.activo,
     };
-
     const original = {
       titulo: noticiaOriginal.titulo,
       descripcion: noticiaOriginal.descripcion,
       contenido: noticiaOriginal.contenido,
       tipo: noticiaOriginal.tipo,
       categoria: noticiaOriginal.categoria,
-      imagenUrl: noticiaOriginal.imagenUrl || '',
-      imagenBase64: noticiaOriginal.imagenBase64 || '',
       fechaEvento: noticiaOriginal.fechaEvento ? noticiaOriginal.fechaEvento.split('T')[0] : '',
       ubicacionEvento: noticiaOriginal.ubicacionEvento || '',
-      ubicacionWayfinding: noticiaOriginal.ubicacionWayfinding ? (noticiaOriginal.ubicacionWayfinding._id || noticiaOriginal.ubicacionWayfinding) : '',
+      ubicacionWayfinding: noticiaOriginal.ubicacionWayfinding
+        ? (noticiaOriginal.ubicacionWayfinding._id || noticiaOriginal.ubicacionWayfinding)
+        : '',
       destacado: noticiaOriginal.destacado,
-      activo: noticiaOriginal.activo
+      activo: noticiaOriginal.activo,
     };
-
     return JSON.stringify(current) !== JSON.stringify(original);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
-      let finalFormData = { ...formData };
+      let ubicacionWayfindingId = formData.ubicacionWayfinding;
 
       // Crear ubicación temporal tipo evento si se eligió del mapa
       if (formData.tipo === 'Evento' && modoUbicacion === 'mapa' && coordsEvento) {
-        const ubicacionPayload = {
+        const respUbicacion = await ubicacionesService.createUbicacion({
           nombre: formData.titulo,
           tipo: 'evento',
           categoria: 'evento',
           latitud: coordsEvento[0],
           longitud: coordsEvento[1],
-          metadatos: {
-            fechaEvento: formData.fechaEvento
-          }
-        };
-        const respUbicacion = await ubicacionesService.createUbicacion(ubicacionPayload);
-        if (respUbicacion.success) {
-          finalFormData.ubicacionWayfinding = respUbicacion.data._id;
-        }
+          metadatos: { fechaEvento: formData.fechaEvento },
+        });
+        if (respUbicacion.success) ubicacionWayfindingId = respUbicacion.data._id;
       }
 
+      // Construir FormData para soportar la imagen como archivo
+      const fd = new FormData();
+      fd.append('titulo', formData.titulo);
+      fd.append('descripcion', formData.descripcion);
+      fd.append('contenido', formData.contenido);
+      fd.append('tipo', formData.tipo);
+      fd.append('categoria', formData.categoria);
+      fd.append('destacado', formData.destacado);
+      fd.append('activo', formData.activo);
+      if (formData.fechaEvento) fd.append('fechaEvento', formData.fechaEvento);
+      if (formData.ubicacionEvento) fd.append('ubicacionEvento', formData.ubicacionEvento);
+      fd.append('ubicacionWayfinding', ubicacionWayfindingId || '');
+      if (imagenFile) fd.append('imagen', imagenFile);
+      if (eliminarImagenFlag) fd.append('eliminarImagen', 'true');
+
       if (editingNoticia) {
-        const response = await noticiasService.updateNoticia(editingNoticia._id, finalFormData);
+        const response = await noticiasService.updateNoticia(editingNoticia._id, fd);
         if (response.success) {
           showSuccess('Noticia actualizada exitosamente');
           cargarNoticias();
           cerrarModal();
         }
       } else {
-        const response = await noticiasService.createNoticia(finalFormData);
+        const response = await noticiasService.createNoticia(fd);
         if (response.success) {
           showSuccess('Noticia creada exitosamente');
           cargarNoticias();
@@ -243,22 +236,17 @@ const GestionNoticias = () => {
       contenido: noticia.contenido,
       tipo: noticia.tipo,
       categoria: noticia.categoria,
-      imagenUrl: noticia.imagenUrl || '',
-      imagenBase64: noticia.imagenBase64 || '',
       fechaEvento: noticia.fechaEvento ? noticia.fechaEvento.split('T')[0] : '',
       ubicacionEvento: noticia.ubicacionEvento || '',
-      ubicacionWayfinding: noticia.ubicacionWayfinding ? (noticia.ubicacionWayfinding._id || noticia.ubicacionWayfinding) : '',
+      ubicacionWayfinding: noticia.ubicacionWayfinding
+        ? (noticia.ubicacionWayfinding._id || noticia.ubicacionWayfinding)
+        : '',
       destacado: noticia.destacado,
       activo: noticia.activo,
     });
-    // Establecer preview con la imagen existente
-    if (noticia.imagenBase64) {
-      setImagenPreview(noticia.imagenBase64);
-    } else if (noticia.imagenUrl) {
-      setImagenPreview(noticia.imagenUrl);
-    } else {
-      setImagenPreview(null);
-    }
+    setImagenFile(null);
+    setEliminarImagenFlag(false);
+    setImagenPreview(noticia.imagenUrl || null);
     setModoUbicacion('existente');
     setCoordsEvento(null);
     setShowModal(true);
@@ -312,13 +300,15 @@ const GestionNoticias = () => {
       contenido: '',
       tipo: 'Noticia',
       categoria: 'Académico',
-      imagenUrl: '',
-      imagenBase64: '',
       fechaEvento: '',
       ubicacionEvento: '',
+      ubicacionWayfinding: '',
       destacado: false,
       activo: true,
     });
+    setImagenFile(null);
+    setEliminarImagenFlag(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const noticiasFiltradas = noticias.filter(noticia => {

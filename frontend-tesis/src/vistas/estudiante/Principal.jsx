@@ -1,81 +1,67 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../componentes/compartidos/Navbar';
-import { noticiasService } from '../../servicios/api';
-import { 
-  Calendar, 
-  MapPin, 
-  User, 
-  Star, 
-  Building2, 
-  Map, 
-  Home,
-  X,
-  ArrowRight
-} from 'lucide-react';
+import { utalcaNoticiasService, noticiasService } from '../../servicios/api';
+import { Calendar, X, ArrowRight, ExternalLink, Globe, Building2 } from 'lucide-react';
 import './Principal.css';
 
 const Principal = () => {
   const navigate = useNavigate();
-  const [noticias, setNoticias] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
+
+  // Pestaña activa: 'utalca' | 'campus'
+  const [fuente, setFuente] = useState('campus');
+
+  const [noticiasUtalca, setNoticiasUtalca] = useState([]);
+  const [noticiasCampus, setNoticiasCampus]  = useState([]);
+  const [loadingUtalca, setLoadingUtalca]    = useState(false);
+  const [loadingCampus, setLoadingCampus]    = useState(false);
+  const [errorUtalca, setErrorUtalca]        = useState('');
+  const [errorCampus, setErrorCampus]        = useState('');
   const [noticiaSeleccionada, setNoticiaSeleccionada] = useState(null);
 
-  const categorias = [
-    'Académico',
-    'Cultural',
-    'Deportivo',
-    'Investigación',
-    'Extensión',
-    'Administrativo',
-    'Otro'
-  ];
+  // Filtros solo para noticias del campus
+  const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
 
-  useEffect(() => {
-    cargarNoticias();
-  }, [filtros]);
+  useEffect(() => { cargarUtalca(); }, []);
+  useEffect(() => { cargarCampus(); }, [filtros]);
 
-  const cargarNoticias = async () => {
+  const cargarUtalca = async () => {
     try {
-      setLoading(true);
-      const response = await noticiasService.getNoticias(filtros);
-      if (response.success) {
-        setNoticias(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar noticias:', error);
+      setLoadingUtalca(true);
+      setErrorUtalca('');
+      const res = await utalcaNoticiasService.getNoticias();
+      if (res.success) setNoticiasUtalca(res.data);
+    } catch {
+      setErrorUtalca('No se pudieron cargar las noticias de UTalca.');
     } finally {
-      setLoading(false);
+      setLoadingUtalca(false);
     }
   };
 
-  const abrirNoticia = async (id) => {
+  const cargarCampus = async () => {
     try {
-      const response = await noticiasService.getNoticiaById(id);
-      if (response.success) {
-        setNoticiaSeleccionada(response.data);
-      }
-    } catch (error) {
-      console.error('Error al cargar noticia:', error);
+      setLoadingCampus(true);
+      setErrorCampus('');
+      const res = await noticiasService.getNoticias(filtros);
+      if (res.success) setNoticiasCampus(res.data);
+    } catch {
+      setErrorCampus('No se pudieron cargar las noticias del campus.');
+    } finally {
+      setLoadingCampus(false);
     }
-  };
-
-  const cerrarNoticia = () => {
-    setNoticiaSeleccionada(null);
   };
 
   const formatearFecha = (fecha) => {
-    const date = new Date(fecha);
-    return date.toLocaleDateString('es-CL', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    if (!fecha) return '';
+    return new Date(fecha).toLocaleDateString('es-CL', {
+      year: 'numeric', month: 'long', day: 'numeric',
     });
   };
 
-  const noticiasDestacadas = noticias.filter(n => n.destacado);
-  const noticiasNormales = noticias.filter(n => !n.destacado);
+  const esUtalca = fuente === 'utalca';
+  const noticias = esUtalca ? noticiasUtalca : noticiasCampus;
+  const loading  = esUtalca ? loadingUtalca  : loadingCampus;
+  const error    = esUtalca ? errorUtalca    : errorCampus;
 
   return (
     <div className="principal-container">
@@ -83,239 +69,231 @@ const Principal = () => {
 
       <main className="main-content">
         <div className="feed-noticias">
+
+          {/* ── Header ── */}
           <div className="feed-noticias-header">
-            <h1>Noticias y eventos</h1>
+            <h1>Noticias y Eventos</h1>
             <p className="feed-subtitle">Mantente informado sobre las últimas novedades del campus</p>
           </div>
 
+          {/* ── Pestañas ── */}
+          <div className="feed-tabs">
+            <button
+              className={`feed-tab ${fuente === 'campus' ? 'feed-tab--active' : ''}`}
+              onClick={() => setFuente('campus')}
+            >
+              <Building2 size={16} />
+              Campus Curicó
+            </button>
+            <button
+              className={`feed-tab ${fuente === 'utalca' ? 'feed-tab--active' : ''}`}
+              onClick={() => setFuente('utalca')}
+            >
+              <Globe size={16} />
+              Noticias UTalca
+            </button>
+          </div>
+
           <div className="feed-noticias-content">
-            <div className="feed-controls">
-              <div className="filtros">
-                <select 
-                  value={filtros.tipo} 
-                  onChange={(e) => setFiltros(prev => ({ ...prev, tipo: e.target.value }))}
-                  className="filtro-select"
-                >
-                  <option value="">Todos</option>
-                  <option value="Noticia">Noticias</option>
-                  <option value="Evento">Eventos</option>
-                  <option value="Anuncio">Anuncios</option>
-                </select>
 
-                <select 
-                  value={filtros.categoria} 
-                  onChange={(e) => setFiltros(prev => ({ ...prev, categoria: e.target.value }))}
-                  className="filtro-select"
-                >
-                  <option value="">Todas las categorías</option>
-                  {categorias.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
+            {/* Filtros — solo para Campus */}
+            {fuente === 'campus' && (
+              <div className="feed-controls">
+                <div className="filtros">
+                  <select
+                    value={filtros.tipo}
+                    onChange={(e) => setFiltros(p => ({ ...p, tipo: e.target.value }))}
+                    className="filtro-select"
+                  >
+                    <option value="">Todos los tipos</option>
+                    <option value="Noticia">Noticias</option>
+                    <option value="Evento">Eventos</option>
+                    <option value="Anuncio">Anuncios</option>
+                  </select>
+                  <select
+                    value={filtros.categoria}
+                    onChange={(e) => setFiltros(p => ({ ...p, categoria: e.target.value }))}
+                    className="filtro-select"
+                  >
+                    <option value="">Todas las categorías</option>
+                    {['Académico','Cultural','Deportivo','Investigación','Extensión','Administrativo','Otro'].map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
 
-            {loading ? (
+            {/* ── Estado de carga / error ── */}
+            {loading && (
               <div className="loading-feed">
                 <div className="spinner"></div>
-                <p>Cargando contenido...</p>
+                <p>Cargando noticias…</p>
               </div>
-            ) : (
+            )}
+            {error && !loading && (
+              <div className="empty-state"><p>{error}</p></div>
+            )}
+
+            {/* ── Grid de cards ── */}
+            {!loading && !error && (
               <div className="feed-noticias-main">
-                {noticiasDestacadas.length > 0 && (
-                  <div className="destacadas-section">
-                    <h3 className="section-title">
-                      <Star className="icon-destacado" size={24} fill="#FFC107" color="#FFC107" /> 
-                      Destacadas
-                    </h3>
-                    <div className="destacadas-grid">
-                      {noticiasDestacadas.map(noticia => (
-                        <div 
-                          key={noticia._id} 
-                          className="card-destacada"
-                          onClick={() => abrirNoticia(noticia._id)}
-                        >
-                          {(noticia.imagenBase64 || noticia.imagenUrl) && (
-                            <div 
-                              className="card-imagen"
-                              style={{ backgroundImage: `url(${noticia.imagenBase64 || noticia.imagenUrl})` }}
-                            >
-                              <div className="card-overlay"></div>
-                            </div>
-                          )}
-                          <div className="card-content-destacada">
-                            <div className="card-badges">
-                              <span className={`badge-tipo ${noticia.tipo.toLowerCase()}`}>
-                                {noticia.tipo}
-                              </span>
-                              <span className="badge-categoria">
-                                {noticia.categoria}
-                              </span>
-                            </div>
-                            <h4>{noticia.titulo}</h4>
-                            <p className="descripcion">{noticia.descripcion}</p>
-                            {noticia.tipo === 'Evento' && noticia.fechaEvento && (
-                              <div className="info-evento">
-                                <span>
-                                  <Calendar size={14} />
-                                  {formatearFecha(noticia.fechaEvento)}
-                                </span>
-                                {noticia.ubicacionEvento && (
-                                  <span>
-                                    <MapPin size={14} />
-                                    {noticia.ubicacionEvento}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {noticiasNormales.length > 0 && (
-                  <div className="noticias-section">
-                    <h3 className="section-title">Recientes</h3>
-                    <div className="noticias-grid">
-                      {noticiasNormales.map(noticia => (
-                        <div 
-                          key={noticia._id} 
-                          className="card-noticia"
-                          onClick={() => abrirNoticia(noticia._id)}
-                        >
-                          {(noticia.imagenBase64 || noticia.imagenUrl) && (
-                            <div 
-                              className="card-imagen-small"
-                              style={{ backgroundImage: `url(${noticia.imagenBase64 || noticia.imagenUrl})` }}
-                            />
-                          )}
-                          <div className="card-content">
-                            <div className="card-badges">
-                              <span className={`badge-tipo ${noticia.tipo.toLowerCase()}`}>
-                                {noticia.tipo}
-                              </span>
-                              <span className="badge-categoria">
-                                {noticia.categoria}
-                              </span>
-                            </div>
-                            <h4>{noticia.titulo}</h4>
-                            <p className="descripcion">{noticia.descripcion}</p>
-                            <div className="card-footer">
-                              <span className="fecha">
-                                <Calendar size={14} />
-                                {formatearFecha(noticia.createdAt)}
-                              </span>
-                              <span className="ver-mas">
-                                Leer más <ArrowRight size={14} />
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {noticias.length === 0 && (
+                {noticias.length === 0 ? (
                   <div className="empty-state">
-                    <p>No hay noticias disponibles en este momento</p>
+                    <p>No hay noticias disponibles en este momento.</p>
+                  </div>
+                ) : (
+                  <div className="news-grid">
+                    {noticias.map((noticia, i) => {
+                      const imagen = esUtalca
+                        ? noticia.imagen
+                        : (noticia.imagenUrl || '');
+                      return (
+                        <article
+                          key={noticia.id || noticia._id || i}
+                          className="news-card"
+                          style={{ '--rd': `${i * 0.05}s` }}
+                          onClick={() => setNoticiaSeleccionada(noticia)}
+                        >
+                          <div
+                            className="news-card-viewport"
+                            style={imagen ? {
+                              backgroundImage: `url(${imagen})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                            } : {}}
+                          >
+                            <div className="news-card-badges-top">
+                              <span className={`news-badge-tipo ${esUtalca ? '' : `news-badge-tipo--${(noticia.tipo||'').toLowerCase()}`}`}>
+                                {esUtalca ? 'UTalca' : (noticia.tipo || 'Noticia')}
+                              </span>
+                              {!esUtalca && noticia.destacado && (
+                                <span className="news-badge-star">★ Destacada</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="news-card-body">
+                            {(esUtalca ? noticia.categorias?.[0] : noticia.categoria) && (
+                              <span className="news-badge-cat">
+                                {esUtalca ? noticia.categorias[0] : noticia.categoria}
+                              </span>
+                            )}
+                            <h3 className="news-card-title">{noticia.titulo}</h3>
+                            <p className="news-card-desc">{noticia.descripcion}</p>
+                            <div className="news-card-foot">
+                              <span className="news-fecha">
+                                <Calendar size={13} />
+                                {formatearFecha(esUtalca ? noticia.fecha : (noticia.createdAt))}
+                              </span>
+                              <span className="news-leer-mas">
+                                Leer más <ArrowRight size={13} />
+                              </span>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
                 )}
               </div>
             )}
           </div>
-          
+
+          {/* ── Modal ── */}
           {noticiaSeleccionada && (
-            <div className="modal-overlay">
+            <div className="modal-overlay" onClick={() => setNoticiaSeleccionada(null)}>
               <div className="modal-noticia" onClick={(e) => e.stopPropagation()}>
-                <button className="btn-cerrar-modal" onClick={cerrarNoticia}>
+                <button className="btn-cerrar-modal" onClick={() => setNoticiaSeleccionada(null)}>
                   <X size={24} />
                 </button>
-                
-                {(noticiaSeleccionada.imagenBase64 || noticiaSeleccionada.imagenUrl) && (
-                  <div 
+
+                {/* Imagen */}
+                {(esUtalca ? noticiaSeleccionada.imagen : noticiaSeleccionada.imagenUrl) && (
+                  <div
                     className="modal-imagen"
-                    style={{ backgroundImage: `url(${noticiaSeleccionada.imagenBase64 || noticiaSeleccionada.imagenUrl})` }}
+                    style={{
+                      backgroundImage: `url(${
+                        esUtalca ? noticiaSeleccionada.imagen : noticiaSeleccionada.imagenUrl
+                      })`,
+                    }}
                   />
                 )}
 
                 <div className="modal-body">
+                  {/* Badges */}
                   <div className="modal-badges">
-                    <span className={`badge-tipo ${noticiaSeleccionada.tipo.toLowerCase()}`}>
-                      {noticiaSeleccionada.tipo}
-                    </span>
-                    <span className="badge-categoria">
-                      {noticiaSeleccionada.categoria}
-                    </span>
-                  </div>
-
-                  <h2>{noticiaSeleccionada.titulo}</h2>
-                  
-                  <div className="modal-meta">
-                    <span className="meta-item">
-                      <Calendar size={16} />
-                      {formatearFecha(noticiaSeleccionada.createdAt)}
-                    </span>
-                    {noticiaSeleccionada.autor && (
-                      <span className="meta-item">
-                        <User size={16} />
-                        {noticiaSeleccionada.autor.nombre}
-                      </span>
+                    {esUtalca ? (
+                      noticiaSeleccionada.categorias?.map((c) => (
+                        <span key={c} className="badge-categoria">{c}</span>
+                      ))
+                    ) : (
+                      <>
+                        <span className={`badge-tipo ${(noticiaSeleccionada.tipo||'').toLowerCase()}`}>
+                          {noticiaSeleccionada.tipo}
+                        </span>
+                        {noticiaSeleccionada.categoria && (
+                          <span className="badge-categoria">{noticiaSeleccionada.categoria}</span>
+                        )}
+                      </>
                     )}
                   </div>
 
-                  {noticiaSeleccionada.tipo === 'Evento' && (
-                    <div className="evento-info">
-                      {noticiaSeleccionada.fechaEvento && (
-                        <div className="info-item">
-                          <strong>Fecha del evento:</strong>
-                          <span>
-                            <Calendar size={16} />
-                            {formatearFecha(noticiaSeleccionada.fechaEvento)}
-                          </span>
-                        </div>
-                      )}
-                      {noticiaSeleccionada.ubicacionEvento && (
-                        <div className="info-item">
-                          <strong>Ubicación:</strong>
-                          <span>
-                            <MapPin size={16} />
-                            {noticiaSeleccionada.ubicacionEvento}
-                          </span>
-                        </div>
-                      )}
-                      {noticiaSeleccionada.ubicacionWayfinding && (
-                        <div className="info-item wayfinding-action">
-                          <button 
-                            className="btn-como-llegar"
-                            onClick={() => {
-                              navigate('/wayfinding', { 
-                                state: { destinoId: noticiaSeleccionada.ubicacionWayfinding._id || noticiaSeleccionada.ubicacionWayfinding } 
-                              });
-                            }}
-                          >
-                            <Map size={16} />
-                            Cómo llegar (Ver en mapa)
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <h2>{noticiaSeleccionada.titulo}</h2>
+
+                  <div className="modal-meta">
+                    <span className="meta-item">
+                      <Calendar size={16} />
+                      {formatearFecha(esUtalca ? noticiaSeleccionada.fecha : noticiaSeleccionada.createdAt)}
+                    </span>
+                    {esUtalca && noticiaSeleccionada.autor && (
+                      <span className="meta-item">✍ {noticiaSeleccionada.autor}</span>
+                    )}
+                  </div>
 
                   <div className="modal-contenido">
                     <p className="descripcion-full">{noticiaSeleccionada.descripcion}</p>
-                    <div className="contenido-full">
-                      {noticiaSeleccionada.contenido.split('\n').map((parrafo, idx) => (
-                        <p key={idx}>{parrafo}</p>
-                      ))}
-                    </div>
+                    {!esUtalca && noticiaSeleccionada.contenido && (
+                      <div className="contenido-full">
+                        {noticiaSeleccionada.contenido.split('\n').map((p, idx) => (
+                          <p key={idx}>{p}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
+
+                  {/* Botón UTalca */}
+                  {esUtalca && noticiaSeleccionada.link && (
+                    <a
+                      href={noticiaSeleccionada.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-ver-utalca"
+                    >
+                      <ExternalLink size={16} />
+                      Ver noticia completa en utalca.cl
+                    </a>
+                  )}
+
+                  {/* Botón wayfinding para eventos del campus */}
+                  {!esUtalca && noticiaSeleccionada.ubicacionWayfinding && (
+                    <button
+                      className="btn-como-llegar"
+                      onClick={() => {
+                        setNoticiaSeleccionada(null);
+                        navigate('/wayfinding', {
+                          state: { destinoId: noticiaSeleccionada.ubicacionWayfinding._id || noticiaSeleccionada.ubicacionWayfinding },
+                        });
+                      }}
+                    >
+                      Cómo llegar (Ver en mapa)
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           )}
+
         </div>
       </main>
     </div>
