@@ -2,13 +2,16 @@ import { v2 as cloudinary } from 'cloudinary';
 import Noticia from '../models/Noticia.js';
 import Ubicacion from '../models/Ubicacion.js';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const configurarCloudinary = () => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+};
 
 const subirImagenACloudinary = (buffer, filename) => {
+  configurarCloudinary();
   return new Promise((resolve, reject) => {
     const publicId = `noticias/${filename
       .replace(/\.[^.]+$/, '')
@@ -32,6 +35,7 @@ const subirImagenACloudinary = (buffer, filename) => {
 
 const eliminarImagenDeCloudinary = async (publicId) => {
   if (!publicId) return;
+  configurarCloudinary();
   try {
     await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
   } catch (err) {

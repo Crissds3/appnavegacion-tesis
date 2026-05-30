@@ -1,18 +1,16 @@
 import { v2 as cloudinary } from 'cloudinary';
 import TourVirtual from '../models/TourVirtual.js';
 
-// Configurar Cloudinary con variables de entorno
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const configurarCloudinary = () => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+};
 
-/**
- * Sube un buffer de archivo GLB a Cloudinary.
- * Retorna { url, publicId }
- */
 const subirArchivoACloudinary = (buffer, filename) => {
+  configurarCloudinary();
   return new Promise((resolve, reject) => {
     // Limpiar nombre: quitar extensión y caracteres problemáticos
     const publicId = `tour-virtual/${filename.replace(/\.glb$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_')}`;
@@ -39,6 +37,7 @@ const subirArchivoACloudinary = (buffer, filename) => {
  */
 const eliminarDeCloudinary = async (publicId) => {
   if (!publicId) return;
+  configurarCloudinary();
   try {
     await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
   } catch (error) {

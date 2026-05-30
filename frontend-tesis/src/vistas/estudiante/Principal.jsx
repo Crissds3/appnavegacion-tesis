@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../componentes/compartidos/Navbar';
 import { utalcaNoticiasService, noticiasService } from '../../servicios/api';
-import { Calendar, X, ArrowRight, ExternalLink, Globe, Building2 } from 'lucide-react';
+import { Calendar, X, ArrowRight, ExternalLink, Globe, Building2, ZoomIn } from 'lucide-react';
 import './Principal.css';
 
 const Principal = () => {
@@ -18,6 +18,7 @@ const Principal = () => {
   const [errorUtalca, setErrorUtalca]        = useState('');
   const [errorCampus, setErrorCampus]        = useState('');
   const [noticiaSeleccionada, setNoticiaSeleccionada] = useState(null);
+  const [imagenAmpliada, setImagenAmpliada]           = useState(null);
 
   // Filtros solo para noticias del campus
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
@@ -209,16 +210,26 @@ const Principal = () => {
                 </button>
 
                 {/* Imagen */}
-                {(esUtalca ? noticiaSeleccionada.imagen : noticiaSeleccionada.imagenUrl) && (
-                  <div
-                    className="modal-imagen"
-                    style={{
-                      backgroundImage: `url(${
-                        esUtalca ? noticiaSeleccionada.imagen : noticiaSeleccionada.imagenUrl
-                      })`,
-                    }}
-                  />
-                )}
+                {(() => {
+                  const src = esUtalca ? noticiaSeleccionada.imagen : noticiaSeleccionada.imagenUrl;
+                  return src ? (
+                    <>
+                      <div
+                        className="modal-imagen modal-imagen--clickable"
+                        style={{ backgroundImage: `url(${src})` }}
+                        onClick={() => setImagenAmpliada(src)}
+                        title="Click para ver imagen completa"
+                      />
+                      <button
+                        className="btn-ampliar-imagen"
+                        onClick={() => setImagenAmpliada(src)}
+                      >
+                        <ZoomIn size={15} />
+                        Ver imagen completa
+                      </button>
+                    </>
+                  ) : null;
+                })()}
 
                 <div className="modal-body">
                   {/* Badges */}
@@ -296,6 +307,28 @@ const Principal = () => {
 
         </div>
       </main>
+
+      {/* ── Lightbox imagen completa ── */}
+      {imagenAmpliada && (
+        <div
+          className="lightbox-overlay"
+          onClick={() => setImagenAmpliada(null)}
+        >
+          <button
+            className="lightbox-close"
+            onClick={() => setImagenAmpliada(null)}
+            aria-label="Cerrar imagen"
+          >
+            <X size={22} />
+          </button>
+          <img
+            src={imagenAmpliada}
+            alt="Imagen ampliada"
+            className="lightbox-img"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };
