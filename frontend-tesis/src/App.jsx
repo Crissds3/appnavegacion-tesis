@@ -12,9 +12,10 @@ import Principal from './vistas/estudiante/Principal';
 import Wayfinding from './vistas/estudiante/Wayfinding';
 import SobreUniversidad from './vistas/estudiante/SobreUniversidad';
 import TourVirtual from './vistas/publicas/TourVirtual';
+import VistaAR from './vistas/estudiante/VistaAR';
 import './App.css';
 
-const RUTAS_SIN_FOOTER = ['/', '/wayfinding', '/dashboard', '/mapeador'];
+const RUTAS_SIN_FOOTER = ['/', '/wayfinding', '/dashboard', '/mapeador', '/ar-campus'];
 
 function AppConFooter({ children }) {
   const { pathname } = useLocation();
@@ -59,6 +60,7 @@ function App() {
             <Route path="/sobre-universidad" element={<SobreUniversidad />} />
             <Route path="/login" element={<Login />} />
             <Route path="/tour-virtual" element={<TourVirtual />} />
+            <Route path="/ar-campus" element={<VistaAR />} />
             <Route path="/solicitar-recuperacion" element={<SolicitarRecuperacion />} />
             <Route path="/restablecer-password/:token" element={<RestablecerPassword />} />
             <Route

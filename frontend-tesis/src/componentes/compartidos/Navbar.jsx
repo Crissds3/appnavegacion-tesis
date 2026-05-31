@@ -20,6 +20,7 @@ const Navbar = ({
     { name: 'Noticias', path: '/estudiante', icon: <Newspaper size={18} /> },
     { name: 'Mapa', path: '/wayfinding', icon: <Map size={18} /> },
     { name: 'Minitour 3D', path: '/tour-virtual', icon: <ScanLine size={18} /> },
+    { name: 'AR Campus', path: '/ar-campus', icon: <ScanLine size={18} /> },
     { name: 'Sobre Nosotros', path: '/sobre-universidad', icon: <Info size={18} /> },
   ];
 

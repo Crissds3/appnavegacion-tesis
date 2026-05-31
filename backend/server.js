@@ -11,6 +11,7 @@ import carreraRoutes from './routes/carreraRoutes.js';
 import ubicacionRoutes from './routes/ubicacionRoutes.js';
 import tourVirtualRoutes from './routes/tourVirtualRoutes.js';
 import utalcaNoticiaRoutes from './routes/utalcaNoticiaRoutes.js';
+import puntoARRoutes from './routes/puntoARRoutes.js';
 
 dotenv.config();
 
@@ -64,6 +65,7 @@ app.use('/api/carreras', carreraRoutes);
 app.use('/api/ubicaciones', ubicacionRoutes);
 app.use('/api/tour-virtual', tourVirtualRoutes);
 app.use('/api/noticias-utalca', utalcaNoticiaRoutes);
+app.use('/api/puntos-ar', puntoARRoutes);
 
 // Manejador de rutas no encontradas
 app.use((req, res) => {

@@ -1,0 +1,426 @@
+/* ============================================================
+   VistaAR — Realidad Aumentada Contextual
+   ============================================================ */
+
+/* ── Pantallas de estado ── */
+.ar-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+}
+
+.ar-screen--inicio {
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+}
+
+.ar-screen--loading {
+  background: #111;
+  color: rgba(255,255,255,.8);
+  gap: 20px;
+  font-size: 16px;
+}
+
+.ar-screen--error {
+  background: #111;
+  color: #fff;
+  gap: 16px;
+  text-align: center;
+}
+
+.ar-back-btn, .ar-close-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+/* ── Pantalla de inicio ── */
+.ar-intro-card {
+  background: rgba(255,255,255,.07);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 28px;
+  padding: 36px 28px;
+  max-width: 420px;
+  text-align: center;
+}
+
+.ar-intro-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 20px rgba(229,57,53,.6));
+}
+
+.ar-intro-card h1 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+
+.ar-intro-card p {
+  font-size: 14.5px;
+  color: rgba(255,255,255,.78);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.ar-intro-permisos {
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: rgba(0,0,0,.25);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.ar-intro-permisos li {
+  font-size: 13.5px;
+  color: rgba(255,255,255,.85);
+}
+
+.ar-btn-iniciar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #E53935, #C62828);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 8px 24px rgba(229,57,53,.45);
+  transition: transform .2s, box-shadow .2s;
+  margin-bottom: 12px;
+}
+.ar-btn-iniciar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(229,57,53,.55);
+}
+
+.ar-intro-nota {
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+}
+
+/* ── Loading ── */
+.ar-loader-spin {
+  animation: ar-spin 1s linear infinite;
+  color: #E53935;
+}
+@keyframes ar-spin { to { transform: rotate(360deg); } }
+
+/* ── Error ── */
+.ar-screen--error h2 { font-size: 20px; font-weight: 800; }
+.ar-screen--error p { color: rgba(255,255,255,.72); font-size: 14px; max-width: 320px; }
+.ar-error-hint { font-size: 13px; color: rgba(255,255,255,.5); }
+.ar-btn-reintentar {
+  margin-top: 8px;
+  padding: 12px 28px;
+  background: #E53935;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ============================================================ Vista principal AR */
+.ar-viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background: #000;
+}
+
+.ar-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── HUD superior ── */
+.ar-hud-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55), transparent);
+}
+
+.ar-hud-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.ar-gps-ok, .ar-gps-wait, .ar-compass {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+}
+
+.ar-gps-ok  { color: #69f0ae; }
+.ar-gps-wait { color: #ffcc02; }
+
+/* ── Etiquetas AR ── */
+.ar-label {
+  position: absolute;
+  top: 38%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  z-index: 15;
+  transition: transform .15s ease, opacity .15s ease;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,.5));
+}
+.ar-label:active { transform: translateX(-50%) scale(0.96) !important; }
+
+.ar-label-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  border: 2.5px solid rgba(255,255,255,.7);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.15), 0 8px 24px rgba(0,0,0,.4);
+}
+
+.ar-label-body {
+  margin-top: 6px;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  padding: 6px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 110px;
+  max-width: 180px;
+}
+
+.ar-label-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.ar-label-dist {
+  font-size: 11px;
+  color: rgba(255,255,255,.65);
+  margin-top: 2px;
+}
+
+.ar-label-arrow {
+  color: rgba(255,255,255,.6);
+  margin-top: 3px;
+}
+
+/* ── Sin puntos ── */
+.ar-no-puntos {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 999px;
+  padding: 10px 20px;
+  color: rgba(255,255,255,.8);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 15;
+}
+
+/* ── Panel de detalle ── */
+.ar-detalle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0,0,0,.4);
+  display: flex;
+  align-items: flex-end;
+}
+
+.ar-detalle {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border-radius: 28px 28px 0 0;
+  padding: 16px 24px 40px;
+  font-family: 'Inter', sans-serif;
+  animation: ar-slide-up .3s cubic-bezier(.2,.85,.25,1);
+  max-height: 75dvh;
+  overflow-y: auto;
+}
+@keyframes ar-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.ar-detalle-drag {
+  width: 40px;
+  height: 4px;
+  background: #E0E0E0;
+  border-radius: 2px;
+  margin: 0 auto 16px;
+}
+
+.ar-detalle-close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #F5F5F5;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #555;
+}
+
+.ar-detalle-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.ar-detalle-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.ar-detalle-nombre {
+  font-size: 20px;
+  font-weight: 800;
+  color: #1A1A1A;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.ar-detalle-cat {
+  font-size: 12px;
+  font-weight: 600;
+  color: #E53935;
+  background: #FFEBEE;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.ar-detalle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.ar-detalle-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.ar-abierto { background: #E8F5E9; color: #2E7D32; }
+.ar-cerrado { background: #FFEBEE; color: #C62828; }
+
+.ar-detalle-desc {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.ar-detalle-horarios {
+  background: #F8F8F8;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.ar-detalle-horarios-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.ar-horario-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #EEEEEE;
+  font-size: 13.5px;
+}
+.ar-horario-item:last-child { border-bottom: none; }
+.ar-horario-dia  { color: #444; font-weight: 500; }
+.ar-horario-horas { color: #E53935; font-weight: 700; font-variant-numeric: tabular-nums; }

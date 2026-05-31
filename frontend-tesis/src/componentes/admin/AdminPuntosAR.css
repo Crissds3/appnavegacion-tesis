@@ -1,0 +1,133 @@
+.par-container { font-family: 'Inter', sans-serif; }
+
+.par-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.par-title { font-size: 22px; font-weight: 800; color: #1A1A1A; margin-bottom: 4px; }
+.par-subtitle { font-size: 14px; color: #666; max-width: 560px; }
+
+.par-btn-add {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; background: #E53935; color: #fff;
+  border: none; border-radius: 10px; font-weight: 700; font-size: 14px;
+  cursor: pointer; white-space: nowrap; transition: background .2s;
+  font-family: 'Inter', sans-serif;
+}
+.par-btn-add:hover { background: #C62828; }
+
+/* Loading / empty */
+.par-loading { display: flex; justify-content: center; padding: 60px; }
+.par-spinner { width: 36px; height: 36px; border: 3px solid #f3f3f3; border-top-color: #E53935; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.par-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; color: #999; text-align: center; font-size: 14px; }
+
+/* Grid de cards */
+.par-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+.par-card {
+  background: #fff; border: 1px solid #E8E8E8; border-radius: 16px;
+  padding: 18px; transition: box-shadow .2s, border-color .2s;
+}
+.par-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); border-color: #ddd; }
+.par-card--inactivo { opacity: .55; }
+
+.par-card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.par-cat-icon { font-size: 26px; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+.par-card-info { flex: 1; }
+.par-card-info h3 { font-size: 15px; font-weight: 700; color: #1A1A1A; margin-bottom: 3px; }
+.par-cat-label { font-size: 11px; font-weight: 600; color: #E53935; text-transform: uppercase; letter-spacing: .06em; background: #FFEBEE; padding: 2px 7px; border-radius: 999px; }
+
+.par-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.par-card-actions button {
+  width: 30px; height: 30px; border: 1px solid #E8E8E8; background: #fff;
+  border-radius: 8px; display: grid; place-items: center; cursor: pointer;
+  color: #555; transition: all .2s;
+}
+.par-card-actions button:hover { border-color: #E53935; color: #E53935; background: #FFEBEE; }
+.par-btn-delete:hover { border-color: #f44336 !important; color: #f44336 !important; background: #FFEBEE !important; }
+
+.par-card-desc { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.5; }
+.par-card-meta { display: flex; gap: 14px; font-size: 12px; color: #999; flex-wrap: wrap; }
+.par-card-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* Modal */
+.par-modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.par-modal {
+  background: #fff; border-radius: 20px; width: 100%; max-width: 680px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+.par-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 24px 0;
+}
+.par-modal-header h3 { font-size: 18px; font-weight: 800; color: #1A1A1A; }
+.par-modal-header button { background: none; border: none; cursor: pointer; color: #666; padding: 4px; border-radius: 6px; }
+.par-modal-header button:hover { color: #E53935; background: #FFEBEE; }
+
+/* Form */
+.par-form { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+.par-form-row { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.par-field { display: flex; flex-direction: column; gap: 6px; }
+.par-field--sm { min-width: 160px; }
+.par-field label { font-size: 13px; font-weight: 600; color: #333; }
+.par-field input[type="text"],
+.par-field select,
+.par-field textarea {
+  padding: 10px 12px; border: 1.5px solid #E0E0E0; border-radius: 10px;
+  font-size: 14px; font-family: 'Inter', sans-serif; color: #1A1A1A;
+  transition: border-color .2s; outline: none;
+}
+.par-field input:focus, .par-field select:focus, .par-field textarea:focus { border-color: #E53935; }
+.par-field textarea { resize: vertical; }
+.par-field--check label { flex-direction: row; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.par-field--check input[type="checkbox"] { width: 16px; height: 16px; accent-color: #E53935; }
+
+.par-hint { font-size: 12px; color: #999; }
+.par-coords { font-size: 12px; color: #666; margin-top: 6px; }
+
+.par-map-wrap { border-radius: 12px; overflow: hidden; border: 1.5px solid #E0E0E0; }
+
+/* Horarios */
+.par-horarios-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.par-btn-add-horario {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border: 1.5px solid #E53935; color: #E53935;
+  background: transparent; border-radius: 8px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
+}
+.par-btn-add-horario:hover { background: #FFEBEE; }
+
+.par-horario-row {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  background: #F8F8F8; border-radius: 10px; margin-bottom: 6px;
+}
+.par-horario-row select, .par-horario-row input[type="time"] {
+  padding: 6px 8px; border: 1px solid #E0E0E0; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-size: 13px; background: #fff;
+}
+.par-horario-row select { flex: 1; }
+.par-horario-row button {
+  background: none; border: none; color: #999; cursor: pointer;
+  padding: 4px; border-radius: 6px; display: grid; place-items: center;
+}
+.par-horario-row button:hover { color: #E53935; background: #FFEBEE; }
+
+/* Form actions */
+.par-form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 8px; border-top: 1px solid #F0F0F0; margin-top: 4px; }
+.par-btn-cancel {
+  padding: 10px 20px; border: 1.5px solid #E0E0E0; background: #fff;
+  border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.par-btn-save {
+  padding: 10px 24px; background: #E53935; color: #fff; border: none;
+  border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: background .2s;
+}
+.par-btn-save:hover:not(:disabled) { background: #C62828; }
+.par-btn-save:disabled { opacity: .6; cursor: not-allowed; }

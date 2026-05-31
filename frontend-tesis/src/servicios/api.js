@@ -367,6 +367,50 @@ export const ubicacionesService = {
   },
 };
 
+// Puntos AR (realidad aumentada contextual)
+export const puntosARService = {
+  getPuntosPublicos: async () => {
+    try {
+      const response = await api.get('/puntos-ar/publicos');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener puntos AR' };
+    }
+  },
+  getTodosPuntos: async () => {
+    try {
+      const response = await api.get('/puntos-ar');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al obtener puntos AR' };
+    }
+  },
+  createPunto: async (data) => {
+    try {
+      const response = await api.post('/puntos-ar', data);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al crear punto AR' };
+    }
+  },
+  updatePunto: async (id, data) => {
+    try {
+      const response = await api.put(`/puntos-ar/${id}`, data);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al actualizar punto AR' };
+    }
+  },
+  deletePunto: async (id) => {
+    try {
+      const response = await api.delete(`/puntos-ar/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al eliminar punto AR' };
+    }
+  },
+};
+
 // Noticias oficiales UTalca (RSS proxy)
 export const utalcaNoticiasService = {
   getNoticias: async () => {
