@@ -111,7 +111,17 @@ const VistaAR = () => {
   const iniciarAR = useCallback(async () => {
     setEstado('permisos');
     try {
-      // 1. Cámara
+      // 1. iOS: pedir permiso de brújula PRIMERO, directo desde el gesto del usuario
+      //    (cualquier await antes de esto rompe la cadena de gesto en iOS)
+      if (necesitaPermiso) {
+        const perm = await DeviceOrientationEvent.requestPermission();
+        if (perm !== 'granted') {
+          throw new Error('Permiso de orientación denegado. Actívalo en Ajustes > Safari > Acceso al movimiento y orientación.');
+        }
+        setIosPermiso(true);
+      }
+
+      // 2. Cámara (puede ir después)
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
         audio: false,
@@ -119,13 +129,6 @@ const VistaAR = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
-      }
-
-      // 2. Permiso sensor iOS
-      if (necesitaPermiso && !iosPermiso) {
-        const perm = await DeviceOrientationEvent.requestPermission();
-        if (perm !== 'granted') throw new Error('Permiso de orientación denegado');
-        setIosPermiso(true);
       }
 
       setEstado('listo');
