@@ -4,7 +4,20 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { puntosARService } from '../../servicios/api';
 import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
-import { Plus, Edit2, Trash2, X, MapPin, Clock, Eye, EyeOff } from 'lucide-react';
+import {
+  Plus, Edit2, Trash2, X, MapPin, Clock, Eye, EyeOff,
+  BookOpen, UtensilsCrossed, FlaskConical, GraduationCap,
+  Building2, Activity,
+} from 'lucide-react';
+
+const CAT_ICONS = {
+  biblioteca: BookOpen, casino: UtensilsCrossed, laboratorio: FlaskConical,
+  aula: GraduationCap, administrativo: Building2, deportivo: Activity, otro: MapPin,
+};
+function CatIcon({ categoria, size = 18 }) {
+  const Icon = CAT_ICONS[categoria] || MapPin;
+  return <Icon size={size} />;
+}
 import './AdminPuntosAR.css';
 
 // Fix leaflet default icon
@@ -125,8 +138,6 @@ const AdminPuntosAR = () => {
     } catch { showError('Error al actualizar'); }
   };
 
-  const ICON_CAT = { biblioteca: '📚', casino: '🍽️', laboratorio: '🔬', aula: '🏫', administrativo: '🏛️', deportivo: '⚽', otro: '📍' };
-
   return (
     <div className="par-container">
       <div className="par-header">
@@ -153,7 +164,7 @@ const AdminPuntosAR = () => {
           {puntos.map((p) => (
             <div key={p._id} className={`par-card ${!p.activo ? 'par-card--inactivo' : ''}`}>
               <div className="par-card-top">
-                <span className="par-cat-icon">{ICON_CAT[p.categoria] || '📍'}</span>
+                <span className="par-cat-icon"><CatIcon categoria={p.categoria} /></span>
                 <div className="par-card-info">
                   <h3>{p.nombre}</h3>
                   <span className="par-cat-label">{p.categoria}</span>
@@ -198,7 +209,7 @@ const AdminPuntosAR = () => {
                 <div className="par-field par-field--sm">
                   <label>Categoría</label>
                   <select value={form.categoria} onChange={(e) => setForm(f => ({ ...f, categoria: e.target.value }))}>
-                    {CATEGORIAS.map(c => <option key={c} value={c}>{ICON_CAT[c]} {c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                    {CATEGORIAS.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
                   </select>
                 </div>
               </div>
