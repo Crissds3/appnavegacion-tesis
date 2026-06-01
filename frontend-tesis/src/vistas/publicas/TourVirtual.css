@@ -28,9 +28,9 @@
 /* ============================================================ HEADER (igual a Wayfinding) */
 .tv-header {
   text-align: center;
-  border-radius: 24px;
-  padding: 50px 30px;
-  max-width: 75%;
+  border-radius: 20px;
+  padding: 36px 28px;
+  max-width: 1200px;
   margin: 20px auto;
   background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #8B0000 100%);
   color: white;
@@ -46,7 +46,7 @@
   opacity: 0.3;
 }
 .tv-header h1 {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 800;
   margin: 0 0 12px;
   position: relative;
@@ -257,7 +257,7 @@
 /* ============================================================ RESPONSIVE */
 @media (max-width: 860px) {
   .tv-header {
-    max-width: 85%;
+    max-width: 1200px;
     padding: 30px 20px;
     border-radius: 16px;
   }
@@ -267,7 +267,7 @@
 }
 @media (max-width: 480px) {
   .tv-header {
-    max-width: 92%;
+    max-width: 1200px;
     padding: 25px 15px;
     border-radius: 12px;
   }

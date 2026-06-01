@@ -77,54 +77,52 @@ const Principal = () => {
             <p className="feed-subtitle">Mantente informado sobre las últimas novedades del campus</p>
           </div>
 
-          {/* ── Pestañas ── */}
-          <div className="feed-tabs">
-            <button
-              className={`feed-tab ${fuente === 'campus' ? 'feed-tab--active' : ''}`}
-              onClick={() => setFuente('campus')}
-            >
-              <Building2 size={16} />
-              Campus Curicó
-            </button>
-            <button
-              className={`feed-tab ${fuente === 'utalca' ? 'feed-tab--active' : ''}`}
-              onClick={() => setFuente('utalca')}
-            >
-              <Globe size={16} />
-              Noticias UTalca
-            </button>
-          </div>
+          {/* ── Pestañas + filtros en una sola barra ── */}
+          <div className="feed-tabs-bar">
+            <div className="feed-tabs">
+              <button
+                className={`feed-tab ${fuente === 'campus' ? 'feed-tab--active' : ''}`}
+                onClick={() => setFuente('campus')}
+              >
+                <Building2 size={16} />
+                Campus Curicó
+              </button>
+              <button
+                className={`feed-tab ${fuente === 'utalca' ? 'feed-tab--active' : ''}`}
+                onClick={() => setFuente('utalca')}
+              >
+                <Globe size={16} />
+                Noticias UTalca
+              </button>
+            </div>
 
-          <div className="feed-noticias-content">
-
-            {/* Filtros — solo para Campus */}
             {fuente === 'campus' && (
-              <div className="feed-controls">
-                <div className="filtros">
-                  <select
-                    value={filtros.tipo}
-                    onChange={(e) => setFiltros(p => ({ ...p, tipo: e.target.value }))}
-                    className="filtro-select"
-                  >
-                    <option value="">Todos los tipos</option>
-                    <option value="Noticia">Noticias</option>
-                    <option value="Evento">Eventos</option>
-                    <option value="Anuncio">Anuncios</option>
-                  </select>
-                  <select
-                    value={filtros.categoria}
-                    onChange={(e) => setFiltros(p => ({ ...p, categoria: e.target.value }))}
-                    className="filtro-select"
-                  >
-                    <option value="">Todas las categorías</option>
+              <div className="filtros-inline">
+                <select
+                  value={filtros.tipo}
+                  onChange={(e) => setFiltros(p => ({ ...p, tipo: e.target.value }))}
+                  className="filtro-select"
+                >
+                  <option value="">Todos los tipos</option>
+                  <option value="Noticia">Noticias</option>
+                  <option value="Evento">Eventos</option>
+                  <option value="Anuncio">Anuncios</option>
+                </select>
+                <select
+                  value={filtros.categoria}
+                  onChange={(e) => setFiltros(p => ({ ...p, categoria: e.target.value }))}
+                  className="filtro-select"
+                >
+                  <option value="">Todas las categorías</option>
                     {['Académico','Cultural','Deportivo','Investigación','Extensión','Administrativo','Otro'].map(c => (
                       <option key={c} value={c}>{c}</option>
                     ))}
-                  </select>
-                </div>
+                </select>
               </div>
             )}
+          </div>{/* fin feed-tabs-bar */}
 
+          <div className="feed-noticias-content">
             {/* ── Estado de carga / error ── */}
             {loading && (
               <div className="loading-feed">
@@ -199,7 +197,7 @@ const Principal = () => {
                 )}
               </div>
             )}
-          </div>
+          </div>{/* fin feed-noticias-content */}
 
           {/* ── Modal ── */}
           {noticiaSeleccionada && (

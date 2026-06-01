@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { puntosARService } from '../../servicios/api';
+import Navbar from '../../componentes/compartidos/Navbar';
+import { ubicacionesService, noticiasService } from '../../servicios/api';
 import {
-  X, MapPin, Clock, ChevronDown, AlertCircle, Camera,
-  BookOpen, UtensilsCrossed, FlaskConical, GraduationCap,
-  Building2, Activity, Navigation2,
+  X, MapPin, Clock, Camera, AlertCircle, Navigation2,
+  Building2, BookOpen, UtensilsCrossed, FlaskConical,
+  Activity, LogIn, Car, Settings, ScanLine, Calendar,
 } from 'lucide-react';
 import './VistaAR.css';
 
@@ -13,7 +14,7 @@ const AR_FOV   = 70;
 const MAX_DIST = 300;
 const SMOOTH   = 0.12;
 
-// ─── Utilidades geográficas ──────────────────────────────────
+// ─── Geo utils ───────────────────────────────────────────────
 function calcBearing(lat1, lon1, lat2, lon2) {
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const y = Math.sin(dLon) * Math.cos(lat2 * Math.PI / 180);
@@ -37,130 +38,114 @@ function diffAngulo(a, b) {
 function formatDist(m) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
 }
-
-// ─── Estado abierto/cerrado ──────────────────────────────────
-const DIA_MAP = { 0:'domingo',1:'lunes',2:'martes',3:'miercoles',4:'jueves',5:'viernes',6:'sabado' };
-function estaAbierto(horarios) {
-  if (!horarios?.length) return null;
-  const dia  = DIA_MAP[new Date().getDay()];
-  const mins = new Date().getHours() * 60 + new Date().getMinutes();
-  for (const h of horarios) {
-    const t = h.turno.toLowerCase()
-      .replace('lunes a viernes','lunes-viernes')
-      .replace('lunes a sábado','lunes-sabado')
-      .replace('lunes a sabado','lunes-sabado')
-      .replace('lunes a domingo','lunes-domingo');
-    const aplica = t.includes('lunes-domingo')
-      || (t.includes('lunes-sabado') && dia !== 'domingo')
-      || (t.includes('lunes-viernes') && !['sabado','domingo'].includes(dia))
-      || t === dia;
-    if (aplica) {
-      const [ah, am] = h.apertura.split(':').map(Number);
-      const [ch, cm] = h.cierre.split(':').map(Number);
-      return mins >= ah * 60 + am && mins <= ch * 60 + cm;
-    }
-  }
-  return null;
+function formatFecha(f) {
+  if (!f) return '';
+  return new Date(f).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
 }
 
-// ─── Íconos por categoría (Lucide) ──────────────────────────
-const CAT_ICONS = {
-  biblioteca:     BookOpen,
-  casino:         UtensilsCrossed,
-  laboratorio:    FlaskConical,
-  aula:           GraduationCap,
-  administrativo: Building2,
-  deportivo:      Activity,
-  otro:           MapPin,
+// ─── Íconos por tipo de ubicación ────────────────────────────
+const TIPO_ICON = {
+  edificio:        Building2,
+  biblioteca:      BookOpen,
+  casino:          UtensilsCrossed,
+  cancha:          Activity,
+  laboratorio:     FlaskConical,
+  entrada:         LogIn,
+  estacionamiento: Car,
+  servicio:        Settings,
+  otro:            MapPin,
 };
-function CatIcon({ categoria, size = 20, ...props }) {
-  const Icon = CAT_ICONS[categoria] || MapPin;
-  return <Icon size={size} {...props} />;
+const TIPO_LABEL = {
+  edificio:'Edificio', biblioteca:'Biblioteca', casino:'Casino / Comedor',
+  cancha:'Cancha', laboratorio:'Laboratorio', entrada:'Entrada',
+  estacionamiento:'Estacionamiento', servicio:'Servicio', otro:'Otro',
+};
+function UbiIcon({ tipo, size = 20 }) {
+  const Icon = TIPO_ICON[tipo] || MapPin;
+  return <Icon size={size} />;
 }
 
-// ─── Componente principal ─────────────────────────────────────
-const VistaAR = () => {
-  const navigate    = useRef(useNavigate()).current;
-  const videoRef    = useRef(null);
-  const streamRef   = useRef(null);   // guarda el stream para aplicarlo después del render
-  const headingRef  = useRef(null);
-  const rafRef      = useRef(null);
+// ─── Convertir coordenadas GeoJSON → { lat, lon } ────────────
+// Ubicacion almacena ubicacion.coordinates = [longitud, latitud]
+function toLatLon(u) {
+  const [lon, lat] = u.ubicacion?.coordinates ?? [0, 0];
+  return { lat, lon };
+}
 
-  const [estado, setEstado] = useState('inicio');
-  const [errorMsg, setErrorMsg]         = useState('');
-  const [posicion, setPosicion]         = useState(null);
-  const [heading, setHeading]           = useState(0);
-  const [puntos, setPuntos]             = useState([]);
-  const [visible, setVisible]           = useState([]);
-  const [detalle, setDetalle]           = useState(null);
+// ═══════════════════════════════════════════════════════════════
+// Overlay de cámara AR
+// ═══════════════════════════════════════════════════════════════
+const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
+  const videoRef   = useRef(null);
+  const streamRef  = useRef(null);
+  const headingRef = useRef(null);
+  const rafRef     = useRef(null);
+
+  const [fase, setFase]         = useState('permisos');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [posicion, setPosicion] = useState(null);
+  const [, setHeading]          = useState(0);
+  const [visible, setVisible]   = useState([]);
+  const [detalle, setDetalle]   = useState(null);
 
   const necesitaPermiso = typeof DeviceOrientationEvent !== 'undefined'
                        && typeof DeviceOrientationEvent.requestPermission === 'function';
 
-  // Cargar puntos AR
+  // Aplicar stream cuando el <video> está en el DOM
   useEffect(() => {
-    puntosARService.getPuntosPublicos()
-      .then(res => { if (res.success) setPuntos(res.data); })
-      .catch(() => {});
-  }, []);
-
-  // ── CORRECCIÓN CÁMARA: aplicar stream DESPUÉS del render ──
-  // El <video> solo existe en el DOM cuando estado === 'listo',
-  // por eso guardamos el stream en un ref y lo aplicamos en el effect.
-  useEffect(() => {
-    if (estado !== 'listo' || !streamRef.current || !videoRef.current) return;
+    if (fase !== 'listo' || !streamRef.current || !videoRef.current) return;
     videoRef.current.srcObject = streamRef.current;
     videoRef.current.play().catch(() => {});
-  }, [estado]);
+  }, [fase]);
 
-  // ── Iniciar AR ──
-  const iniciarAR = useCallback(async () => {
-    setEstado('permisos');
-    try {
-      // iOS: la brújula DEBE ser el primer await desde el gesto del usuario
-      if (necesitaPermiso) {
-        const perm = await DeviceOrientationEvent.requestPermission();
-        if (perm !== 'granted') throw new Error('Permiso de orientación denegado. Actívalo en Ajustes > Safari > Movimiento y orientación.');
+  // Arrancar todo al montar
+  useEffect(() => {
+    (async () => {
+      try {
+        if (necesitaPermiso) {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if (perm !== 'granted') throw new Error('Permiso de orientación denegado en iOS. Actívalo en Ajustes › Safari › Movimiento y orientación.');
+        }
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+          audio: false,
+        });
+        streamRef.current = stream;
+        setFase('listo');
+      } catch (err) {
+        setErrorMsg(err.message || 'No se pudo acceder a la cámara o sensores.');
+        setFase('error');
       }
-
-      // Cámara
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
-        audio: false,
-      });
-      streamRef.current = stream;  // guardar, se aplica en el useEffect de arriba
-      setEstado('listo');          // dispara el render con el <video>
-    } catch (err) {
-      setErrorMsg(err.message || 'No se pudo acceder a la cámara o sensores.');
-      setEstado('error');
-    }
+    })();
+    return () => {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      cancelAnimationFrame(rafRef.current);
+    };
   }, [necesitaPermiso]);
 
   // GPS
   useEffect(() => {
-    if (estado !== 'listo') return;
+    if (fase !== 'listo') return;
     const wid = navigator.geolocation.watchPosition(
       pos => setPosicion({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 3000 }
+      () => {}, { enableHighAccuracy: true, maximumAge: 3000 }
     );
     return () => navigator.geolocation.clearWatch(wid);
-  }, [estado]);
+  }, [fase]);
 
-  // Brújula con suavizado
+  // Brújula
   useEffect(() => {
-    if (estado !== 'listo') return;
+    if (fase !== 'listo') return;
     const onOri = (e) => {
       let raw = null;
       if (e.webkitCompassHeading != null)     raw = e.webkitCompassHeading;
       else if (e.absolute && e.alpha != null) raw = (360 - e.alpha) % 360;
       else if (e.alpha != null)               raw = (360 - e.alpha) % 360;
       if (raw === null) return;
-      if (headingRef.current === null) { headingRef.current = raw; }
+      if (headingRef.current === null) headingRef.current = raw;
       else {
         let d = raw - headingRef.current;
-        if (d > 180) d -= 360;
-        if (d < -180) d += 360;
+        if (d > 180) d -= 360; if (d < -180) d += 360;
         headingRef.current = ((headingRef.current + d * SMOOTH) % 360 + 360) % 360;
       }
       setHeading(headingRef.current);
@@ -171,206 +156,273 @@ const VistaAR = () => {
       window.removeEventListener('deviceorientationabsolute', onOri, true);
       window.removeEventListener('deviceorientation', onOri, true);
     };
-  }, [estado]);
+  }, [fase]);
 
-  // Calcular puntos visibles (rAF loop)
+  // Calcular puntos visibles
   useEffect(() => {
-    if (estado !== 'listo' || !posicion) return;
+    if (fase !== 'listo' || !posicion) return;
     const tick = () => {
       const h = headingRef.current ?? 0;
       setVisible(
-        puntos
-          .map(p => ({
-            ...p,
-            dist:    calcDistancia(posicion.lat, posicion.lon, p.latitud, p.longitud),
-            bearing: calcBearing(posicion.lat, posicion.lon, p.latitud, p.longitud),
-            diff:    diffAngulo(h, calcBearing(posicion.lat, posicion.lon, p.latitud, p.longitud)),
-          }))
-          .filter(p => p.dist <= MAX_DIST && Math.abs(p.diff) <= AR_FOV / 2)
+        ubicaciones
+          .map(u => {
+            const { lat, lon } = toLatLon(u);
+            return {
+              ...u,
+              _lat: lat, _lon: lon,
+              dist: calcDistancia(posicion.lat, posicion.lon, lat, lon),
+              diff: diffAngulo(h, calcBearing(posicion.lat, posicion.lon, lat, lon)),
+            };
+          })
+          .filter(u => u.dist <= MAX_DIST && Math.abs(u.diff) <= AR_FOV / 2)
           .sort((a, b) => a.dist - b.dist)
       );
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [estado, posicion, puntos]);
+  }, [fase, posicion, ubicaciones]);
 
-  // Detener stream al desmontar
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-  }, []);
-
-  // ── Pantalla inicio ──────────────────────────────────────────
-  if (estado === 'inicio') return (
-    <div className="ar-inicio">
-      <div className="ar-inicio-glow" aria-hidden="true" />
-      <div className="ar-inicio-topo" aria-hidden="true" />
-
-      <button className="ar-back" onClick={() => navigate(-1)}><X size={20} /></button>
-
-      <div className="ar-inicio-content">
-        <span className="ar-inicio-eyebrow">
-          <span className="ar-eyebrow-dot" />
-          Realidad Aumentada · Campus Curicó
-        </span>
-
-        <h1 className="ar-inicio-titulo">
-          Información contextual<br />en el campus
-        </h1>
-        <p className="ar-inicio-sub">
-          Apunta la cámara de tu celular hacia los edificios del campus y verás en pantalla su nombre, horarios y estado actual en tiempo real.
-        </p>
-
-        <div className="ar-permisos-lista">
-          <div className="ar-permiso-item">
-            <Camera size={16} />
-            <span>Acceso a la cámara trasera</span>
-          </div>
-          <div className="ar-permiso-item">
-            <MapPin size={16} />
-            <span>Ubicación GPS</span>
-          </div>
-          <div className="ar-permiso-item">
-            <Navigation2 size={16} />
-            <span>Brújula del dispositivo</span>
-          </div>
-        </div>
-
-        <button className="ar-btn-activar" onClick={iniciarAR}>
-          <Camera size={18} />
-          Activar realidad aumentada
-        </button>
-
-        <p className="ar-inicio-nota">Funciona mejor en exteriores del campus</p>
-      </div>
-    </div>
-  );
-
-  // ── Cargando permisos ──
-  if (estado === 'permisos') return (
-    <div className="ar-estado-pantalla">
-      <div className="ar-spinner-ring" />
-      <p>Solicitando permisos…</p>
-    </div>
-  );
-
-  // ── Error ──
-  if (estado === 'error') return (
-    <div className="ar-estado-pantalla ar-estado-pantalla--error">
-      <button className="ar-back" onClick={() => navigate(-1)}><X size={20} /></button>
-      <AlertCircle size={44} />
-      <h2>No se pudo activar</h2>
-      <p>{errorMsg}</p>
-      <p className="ar-error-hint">
-        En iOS: Ajustes → Safari → Acceso al movimiento y orientación → activar.<br />
-        Luego recarga la página e intenta de nuevo.
-      </p>
-      <button className="ar-btn-volver" onClick={() => setEstado('inicio')}>Volver</button>
-    </div>
-  );
-
-  // ── Vista AR principal ────────────────────────────────────────
-  const abiertoDetalle = detalle ? estaAbierto(detalle.horarios) : null;
+  // Eventos vinculados al lugar seleccionado
+  const eventosDelLugar = detalle
+    ? eventos.filter(ev => {
+        const id = ev.ubicacionWayfinding?._id || ev.ubicacionWayfinding;
+        return id && id.toString() === detalle._id.toString();
+      })
+    : [];
 
   return (
-    <div className="ar-viewport">
-      {/* Cámara */}
-      <video ref={videoRef} className="ar-video" autoPlay playsInline muted />
-
-      {/* HUD top */}
-      <div className="ar-hud">
-        <button className="ar-hud-back" onClick={() => navigate(-1)}>
-          <X size={18} />
-        </button>
-        <div className="ar-hud-badges">
-          <span className={`ar-hud-badge ${posicion ? 'ar-hud-badge--ok' : 'ar-hud-badge--wait'}`}>
-            <MapPin size={11} />
-            {posicion ? 'GPS activo' : 'Localizando…'}
-          </span>
-          <span className="ar-hud-badge">
-            <Navigation2 size={11} />
-            {Math.round(heading)}°
-          </span>
+    <div className="ar-camara-overlay">
+      {fase === 'permisos' && (
+        <div className="ar-camara-estado">
+          <div className="ar-spinner-ring" />
+          <p>Solicitando permisos…</p>
         </div>
-      </div>
-
-      {/* Etiquetas AR */}
-      {posicion && visible.map(p => {
-        const xPct   = ((p.diff / AR_FOV) + 0.5) * 100;
-        const escala = Math.max(0.65, 1 - p.dist / MAX_DIST * 0.5);
-        const op     = Math.max(0.75, 1 - p.dist / MAX_DIST * 0.35);
-        return (
-          <div
-            key={p._id}
-            className="ar-etiqueta"
-            style={{ left: `${xPct}%`, transform: `translateX(-50%) scale(${escala})`, opacity: op }}
-            onClick={() => setDetalle(p)}
-          >
-            <div className="ar-etiqueta-icono">
-              <CatIcon categoria={p.categoria} size={22} />
-            </div>
-            <div className="ar-etiqueta-cuerpo">
-              <span className="ar-etiqueta-nombre">{p.nombre}</span>
-              <span className="ar-etiqueta-dist">{formatDist(p.dist)}</span>
-            </div>
-            <ChevronDown size={12} className="ar-etiqueta-chevron" />
-          </div>
-        );
-      })}
-
-      {/* Sin puntos */}
-      {posicion && visible.length === 0 && (
-        <div className="ar-sin-puntos">Gira lentamente para ver los edificios</div>
       )}
 
-      {/* Panel de detalle */}
-      {detalle && (
-        <div className="ar-panel-overlay" onClick={() => setDetalle(null)}>
-          <div className="ar-panel" onClick={e => e.stopPropagation()}>
-            <div className="ar-panel-drag" />
-            <button className="ar-panel-close" onClick={() => setDetalle(null)}><X size={17} /></button>
-
-            <div className="ar-panel-header">
-              <div className="ar-panel-icono">
-                <CatIcon categoria={detalle.categoria} size={24} />
-              </div>
-              <div>
-                <h2 className="ar-panel-nombre">{detalle.nombre}</h2>
-                <span className="ar-panel-cat">{detalle.categoria.charAt(0).toUpperCase() + detalle.categoria.slice(1)}</span>
-              </div>
-            </div>
-
-            <div className="ar-panel-fila">
-              <MapPin size={15} />
-              <span>{formatDist(detalle.dist)} de distancia</span>
-            </div>
-
-            {abiertoDetalle !== null && (
-              <div className={`ar-panel-estado ${abiertoDetalle ? 'ar-panel-estado--abierto' : 'ar-panel-estado--cerrado'}`}>
-                <span className="ar-panel-estado-dot" />
-                {abiertoDetalle ? 'Abierto ahora' : 'Cerrado ahora'}
-              </div>
-            )}
-
-            {detalle.descripcion && (
-              <p className="ar-panel-desc">{detalle.descripcion}</p>
-            )}
-
-            {detalle.horarios?.length > 0 && (
-              <div className="ar-panel-horarios">
-                <div className="ar-panel-horarios-titulo">
-                  <Clock size={14} /> Horarios de atención
-                </div>
-                {detalle.horarios.map((h, i) => (
-                  <div key={i} className="ar-horario">
-                    <span className="ar-horario-dia">{h.turno}</span>
-                    <span className="ar-horario-horas">{h.apertura} – {h.cierre}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+      {fase === 'error' && (
+        <div className="ar-camara-estado ar-camara-estado--error">
+          <AlertCircle size={44} />
+          <h3>No se pudo activar</h3>
+          <p>{errorMsg}</p>
+          <button className="ar-btn-cerrar-error" onClick={onClose}>Volver</button>
         </div>
+      )}
+
+      {fase === 'listo' && (
+        <>
+          <video ref={videoRef} className="ar-video" autoPlay playsInline muted />
+
+          {/* HUD */}
+          <div className="ar-hud">
+            <button className="ar-hud-back" onClick={onClose}><X size={18} /></button>
+            <div className="ar-hud-badges">
+              <span className={`ar-hud-badge ${posicion ? 'ar-hud-badge--ok' : 'ar-hud-badge--wait'}`}>
+                <MapPin size={11} />{posicion ? 'GPS activo' : 'Localizando…'}
+              </span>
+              <span className="ar-hud-badge">
+                <Navigation2 size={11} />{Math.round(headingRef.current ?? 0)}°
+              </span>
+            </div>
+          </div>
+
+          {/* Etiquetas AR */}
+          {posicion && visible.map(u => {
+            const xPct   = ((u.diff / AR_FOV) + 0.5) * 100;
+            const escala = Math.max(0.65, 1 - u.dist / MAX_DIST * 0.5);
+            const op     = Math.max(0.75, 1 - u.dist / MAX_DIST * 0.35);
+            return (
+              <div
+                key={u._id}
+                className="ar-etiqueta"
+                style={{ left: `${xPct}%`, transform: `translateX(-50%) scale(${escala})`, opacity: op }}
+                onClick={() => setDetalle(u)}
+              >
+                <div className="ar-etiqueta-icono"><UbiIcon tipo={u.tipo} size={22} /></div>
+                <div className="ar-etiqueta-cuerpo">
+                  <span className="ar-etiqueta-nombre">{u.nombre}</span>
+                  <span className="ar-etiqueta-dist">{formatDist(u.dist)}</span>
+                </div>
+              </div>
+            );
+          })}
+
+          {posicion && visible.length === 0 && (
+            <div className="ar-sin-puntos">Gira lentamente para ver los edificios</div>
+          )}
+
+          {/* Panel detalle */}
+          {detalle && (
+            <div className="ar-panel-overlay" onClick={() => setDetalle(null)}>
+              <div className="ar-panel" onClick={e => e.stopPropagation()}>
+                <div className="ar-panel-drag" />
+                <button className="ar-panel-close" onClick={() => setDetalle(null)}><X size={17} /></button>
+
+                <div className="ar-panel-header">
+                  <div className="ar-panel-icono"><UbiIcon tipo={detalle.tipo} size={24} /></div>
+                  <div>
+                    <h2 className="ar-panel-nombre">{detalle.nombre}</h2>
+                    <span className="ar-panel-cat">{TIPO_LABEL[detalle.tipo] || detalle.tipo}</span>
+                  </div>
+                </div>
+
+                <div className="ar-panel-fila">
+                  <MapPin size={15} /><span>{formatDist(detalle.dist)} de distancia</span>
+                </div>
+
+                {detalle.descripcion && (
+                  <p className="ar-panel-desc">{detalle.descripcion}</p>
+                )}
+
+                {/* Horario (campo de texto del admin) */}
+                {detalle.metadatos?.horario && (
+                  <div className="ar-panel-horarios">
+                    <div className="ar-panel-horarios-titulo"><Clock size={14} />Horario de atención</div>
+                    <p className="ar-panel-horario-texto">{detalle.metadatos.horario}</p>
+                  </div>
+                )}
+
+                {/* Eventos vinculados */}
+                {eventosDelLugar.length > 0 && (
+                  <div className="ar-panel-eventos">
+                    <div className="ar-panel-eventos-titulo"><Calendar size={14} />Eventos</div>
+                    {eventosDelLugar.map(ev => (
+                      <div key={ev._id} className="ar-panel-evento-item">
+                        <span className="ar-panel-evento-nombre">{ev.titulo}</span>
+                        {ev.fechaEvento && (
+                          <span className="ar-panel-evento-fecha">{formatFecha(ev.fechaEvento)}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// Página principal
+// ═══════════════════════════════════════════════════════════════
+const VistaAR = () => {
+  useNavigate();
+  const [ubicaciones, setUbicaciones] = useState([]);
+  const [eventos, setEventos]         = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [camaraAbierta, setCamaraAbierta] = useState(false);
+
+  useEffect(() => {
+    Promise.all([
+      ubicacionesService.getUbicacionesPublicas(),
+      noticiasService.getNoticias({ tipo: 'Evento' }),
+    ])
+      .then(([ubRes, evRes]) => {
+        if (ubRes.success) {
+          // Excluir ubicaciones tipo 'evento' (temporales, creadas al asociar una noticia)
+          setUbicaciones(ubRes.data.filter(u => u.tipo !== 'evento' && u.visible !== false));
+        }
+        if (evRes.success) setEventos(evRes.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return (
+    <div className="ar-page">
+      <Navbar brandName="Módulo informativo" />
+
+      <main className="ar-main">
+        <header className="ar-page-header">
+          <h1>Información Contextual AR</h1>
+          <p className="ar-page-subtitle">
+            Apunta tu cámara hacia los edificios del campus y obtén información en tiempo real sobre cada lugar.
+          </p>
+        </header>
+
+        <div className="ar-page-content">
+          {/* Tarjeta de lanzamiento */}
+          <div className="ar-launch-card">
+            <div className="ar-launch-info">
+              <ScanLine size={32} className="ar-launch-icon" />
+              <div>
+                <h2>Vista de cámara AR</h2>
+                <p>Activa la cámara y apunta hacia cualquier edificio del campus para ver su nombre, horarios y eventos en pantalla.</p>
+              </div>
+            </div>
+            <button className="ar-launch-btn" onClick={() => setCamaraAbierta(true)}>
+              <Camera size={18} />
+              Activar cámara AR
+            </button>
+          </div>
+
+          {/* Lista de ubicaciones */}
+          <div className="ar-lista-header">
+            <h3>Lugares disponibles</h3>
+            <span className="ar-lista-count">{ubicaciones.length} lugar{ubicaciones.length !== 1 ? 'es' : ''}</span>
+          </div>
+
+          {loading && (
+            <div className="ar-lista-loading">
+              <div className="ar-spinner-sm" />
+              <span>Cargando ubicaciones…</span>
+            </div>
+          )}
+
+          {!loading && ubicaciones.length === 0 && (
+            <div className="ar-lista-empty">
+              <MapPin size={32} opacity={0.3} />
+              <p>Aún no hay ubicaciones configuradas en el campus.</p>
+            </div>
+          )}
+
+          {!loading && ubicaciones.length > 0 && (
+            <div className="ar-lista">
+              {ubicaciones.map(u => {
+                const evs = eventos.filter(ev => {
+                  const id = ev.ubicacionWayfinding?._id || ev.ubicacionWayfinding;
+                  return id && id.toString() === u._id.toString();
+                });
+                return (
+                  <div key={u._id} className="ar-lista-item">
+                    <div className="ar-lista-icono"><UbiIcon tipo={u.tipo} size={20} /></div>
+                    <div className="ar-lista-body">
+                      <div className="ar-lista-top">
+                        <span className="ar-lista-nombre">{u.nombre}</span>
+                        <span className="ar-lista-cat-badge">{TIPO_LABEL[u.tipo] || u.tipo}</span>
+                      </div>
+                      {u.descripcion && <p className="ar-lista-desc">{u.descripcion}</p>}
+                      {u.metadatos?.horario && (
+                        <div className="ar-lista-horario">
+                          <Clock size={12} /><span>{u.metadatos.horario}</span>
+                        </div>
+                      )}
+                      {evs.length > 0 && (
+                        <div className="ar-lista-eventos">
+                          <Calendar size={12} />
+                          {evs.map(ev => (
+                            <span key={ev._id} className="ar-lista-evento-chip">{ev.titulo}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {camaraAbierta && (
+        <CamaraAR
+          ubicaciones={ubicaciones}
+          eventos={eventos}
+          onClose={() => setCamaraAbierta(false)}
+        />
       )}
     </div>
   );

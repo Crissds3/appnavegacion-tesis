@@ -72,29 +72,38 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* ── Pestañas de fuente ──────────────────────────────── */
+/* ── Barra de pestañas + filtros ────────────────────── */
+.feed-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto 20px;
+  padding-inline: 28px;
+  flex-wrap: wrap;
+}
+
 .feed-tabs {
   display: flex;
   gap: 8px;
-  max-width: 75%;
-  margin: 0 auto 20px;
-  padding: 0 4px;
 }
 
 .feed-tab {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 22px;
-  border-radius: 12px;
-  border: 1.5px solid #E0E0E0;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(20,15,12,.1);
   background: #fff;
   color: #555;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(20,15,12,.06);
 }
 .feed-tab:hover {
   border-color: #E53935;
@@ -104,18 +113,43 @@
   background: #E53935;
   border-color: #E53935;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(229, 57, 53, 0.3);
+  box-shadow: 0 6px 16px rgba(229,57,53,.3);
 }
-.feed-tab--active:hover {
-  color: #fff;
+.feed-tab--active:hover { color: #fff; }
+
+.filtros-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
+.filtros-inline .filtro-select {
+  padding: 8px 14px;
+  border: 1.5px solid rgba(20,15,12,.1);
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 1px 3px rgba(20,15,12,.06);
+  transition: border-color .2s;
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23999' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.filtros-inline .filtro-select:focus { border-color: #E53935; }
 
 .feed-noticias-header {
   text-align: center;
-  border-radius: 24px;
-  padding: 50px 30px;
-  max-width: 75%;
-  margin: 0 auto 20px;
+  border-radius: 20px;
+  padding: 36px 28px;
+  max-width: 1200px;
+  margin: 0 auto 16px;
   background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #8B0000 100%);
   color: white;
   box-shadow: 0 8px 32px rgba(211, 47, 47, 0.3),
@@ -136,7 +170,7 @@
 }
 
 .feed-noticias-header h1 {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 800;
   margin: 0 0 12px 0;
   position: relative;
@@ -156,25 +190,14 @@
 
 /* Contenedor principal */
 .feed-noticias-content {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 28px 40px;
 }
 
-/* Contenedor de noticias */
+/* Contenedor de noticias — sin fondo, las cards van sobre el fondo de página */
 .feed-noticias-main {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-.feed-controls {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 30px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  padding: 4px 0;
 }
 
 .feed-header {
@@ -719,7 +742,7 @@
   }
 
   .feed-noticias-header {
-    max-width: 85%;
+    max-width: 1200px;
     padding: 30px 20px;
     border-radius: 16px;
     margin-bottom: 25px;
@@ -839,7 +862,7 @@
   }
 
   .feed-noticias-header {
-    max-width: 92%;
+    max-width: 1200px;
     padding: 25px 15px;
     border-radius: 12px;
     margin-bottom: 20px;
@@ -1042,7 +1065,7 @@
 
 @media (max-width: 360px) {
   .feed-noticias-header {
-    max-width: 95%;
+    max-width: 1200px;
     padding: 20px 15px;
     border-radius: 10px;
   }

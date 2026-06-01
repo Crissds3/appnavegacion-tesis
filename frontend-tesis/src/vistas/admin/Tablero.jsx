@@ -7,7 +7,6 @@ import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversid
 import GestionUsuarios from '../../componentes/admin/GestionUsuarios';
 import GestionUbicaciones from '../../componentes/admin/GestionUbicaciones';
 import AdminTourVirtual from '../../componentes/admin/AdminTourVirtual';
-import AdminPuntosAR from '../../componentes/admin/AdminPuntosAR';
 import './Tablero.css';
 
 const Tablero = () => {
@@ -128,8 +127,6 @@ const Tablero = () => {
           {activeTab === 'ar' && (
             <div className="tab-content">
               <AdminTourVirtual />
-              <div className="section-divider"></div>
-              <AdminPuntosAR />
             </div>
           )}
 
