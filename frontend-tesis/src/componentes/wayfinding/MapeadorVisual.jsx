@@ -174,9 +174,13 @@ const MapeadorVisual = () => {
   const [contadorAristas, setContadorAristas] = useState(1);
   const [log,             setLog]             = useState('Listo. Haz clic en el mapa.');
   // Estado para el modal de renombrado
-  const [nodoEditando,    setNodoEditando]    = useState(null);  // nodo completo
-  const [borrador,        setBorrador]        = useState('');    // texto del input
+  const [nodoEditando,    setNodoEditando]    = useState(null);
+  const [borrador,        setBorrador]        = useState('');
   const inputRenombreRef = useRef(null);
+
+  // Import JSON
+  const [showImport,  setShowImport]  = useState(false);
+  const [jsonBorrador,setJsonBorrador]= useState('');
 
   const mapRef = useRef(null); // instancia nativa de Leaflet
 
@@ -364,6 +368,69 @@ const MapeadorVisual = () => {
     alert('✅ JSON exportado a la consola del navegador.\nAbre DevTools (F12) → pestaña "Console" para copiarlo.');
   };
 
+  // ── Importar JSON ──────────────────────────────────────────────────────────
+  const importarJSON = () => {
+    try {
+      const data = JSON.parse(jsonBorrador);
+      if (!Array.isArray(data.nodos) || !Array.isArray(data.aristas)) {
+        setLog('⚠️ JSON inválido: debe tener campos "nodos" y "aristas".');
+        return;
+      }
+      const nuevosNodos = data.nodos.map(n => ({
+        id:     n.id,
+        nombre: n.nombre || n.id,
+        lat:    parseFloat(n.lat),
+        lng:    parseFloat(n.lng),
+      }));
+      const nuevasAristas = data.aristas.map((a, i) => ({
+        _key:      `arista_imp_${i}`,
+        desde:     a.desde,
+        hasta:     a.hasta,
+        distancia: a.distancia,
+      }));
+      // Calcular el próximo contador de nodos evitando colisiones
+      const nums = data.nodos
+        .map(n => { const m = String(n.id).match(/(\d+)$/); return m ? parseInt(m[1]) : 0; })
+        .filter(Boolean);
+      const maxNum = nums.length ? Math.max(...nums) : 0;
+
+      setNodos(nuevosNodos);
+      setAristas(nuevasAristas);
+      setNodoSeleccionado(null);
+      setContadorNodos(maxNum + 1);
+      setContadorAristas(nuevasAristas.length + 1);
+      setLog(`✅ Importado: ${nuevosNodos.length} nodos, ${nuevasAristas.length} aristas.`);
+      setShowImport(false);
+      setJsonBorrador('');
+    } catch (e) {
+      setLog(`❌ JSON inválido: ${e.message}`);
+    }
+  };
+
+  // ── Eliminar arista individual ─────────────────────────────────────────────
+  const eliminarArista = (key) => {
+    const a = aristas.find(x => x._key === key);
+    setAristas(prev => prev.filter(x => x._key !== key));
+    if (a) setLog(`🗑️ Arista eliminada: ${a.desde} ↔ ${a.hasta}`);
+  };
+
+  // ── Eliminar nodo individual (y sus aristas conectadas) ────────────────────
+  const eliminarNodo = (id) => {
+    setNodos(prev => prev.filter(n => n.id !== id));
+    setAristas(prev => prev.filter(a => a.desde !== id && a.hasta !== id));
+    if (nodoSeleccionado === id) setNodoSeleccionado(null);
+    setLog(`🗑️ Nodo eliminado: ${id} (y sus aristas conectadas)`);
+  };
+
+  // ── Exportar y copiar al portapapeles ──────────────────────────────────────
+  const copiarJSON = () => {
+    const exportAristas = aristas.map(({ _key, ...rest }) => rest);
+    const texto = JSON.stringify({ nodos, aristas: exportAristas }, null, 2);
+    navigator.clipboard.writeText(texto)
+      .then(() => setLog('📋 JSON copiado al portapapeles.'))
+      .catch(() => setLog('⚠️ No se pudo copiar. Usa "Exportar JSON" (consola F12).'));
+  };
+
   // ── Cambiar modo ───────────────────────────────────────────────────────────
   const cambiarModo = (nuevoModo) => {
     setModo(nuevoModo);
@@ -405,14 +472,20 @@ const MapeadorVisual = () => {
         </div>
 
         <div style={styles.toolbarGroup}>
+          <button style={{ ...styles.btn, ...styles.btnImport }} onClick={() => setShowImport(true)}>
+            📂 Importar JSON
+          </button>
           <button style={{ ...styles.btn, ...styles.btnUndo }} onClick={deshacer}>
             ↩ Deshacer
           </button>
           <button style={{ ...styles.btn, ...styles.btnDanger }} onClick={limpiarTodo}>
             🗑️ Limpiar
           </button>
+          <button style={{ ...styles.btn, ...styles.btnCopy }} onClick={copiarJSON}>
+            📋 Copiar JSON
+          </button>
           <button style={{ ...styles.btn, ...styles.btnExport }} onClick={imprimirJSON}>
-            📋 Exportar JSON
+            F12 Consola
           </button>
         </div>
       </div>
@@ -468,21 +541,12 @@ const MapeadorVisual = () => {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={styles.listId}>{n.nombre || n.id}</div>
                   {n.nombre !== n.id && (
-                    <div style={{ ...styles.listCoord, color: '#475569', fontSize: 9 }}>
-                      id: {n.id}
-                    </div>
+                    <div style={{ ...styles.listCoord, color: '#475569', fontSize: 9 }}>id: {n.id}</div>
                   )}
-                  <div style={styles.listCoord}>
-                    {n.lat.toFixed(6)}, {n.lng.toFixed(6)}
-                  </div>
+                  <div style={styles.listCoord}>{n.lat.toFixed(6)}, {n.lng.toFixed(6)}</div>
                 </div>
-                <button
-                  title="Renombrar nodo"
-                  style={styles.btnEdit}
-                  onClick={() => abrirRenombrado(n)}
-                >
-                  ✏️
-                </button>
+                <button title="Renombrar" style={styles.btnEdit} onClick={() => abrirRenombrado(n)}>✏️</button>
+                <button title="Eliminar nodo" style={{ ...styles.btnEdit, color: '#f87171' }} onClick={() => eliminarNodo(n.id)}>✕</button>
               </div>
             ))}
           </div>
@@ -496,8 +560,9 @@ const MapeadorVisual = () => {
             )}
             {aristas.map((a) => (
               <div key={a._key} style={styles.listItem}>
-                <span style={styles.listId}>{a.desde} ↔ {a.hasta}</span>
+                <span style={{ ...styles.listId, flex: 1, fontSize: 10 }}>{a.desde} ↔ {a.hasta}</span>
                 <span style={styles.listDist}>{a.distancia} m</span>
+                <button title="Eliminar arista" style={{ ...styles.btnEdit, color: '#f87171', marginLeft: 4 }} onClick={() => eliminarArista(a._key)}>✕</button>
               </div>
             ))}
           </div>
@@ -541,6 +606,39 @@ const MapeadorVisual = () => {
               <button style={{ ...styles.btn, ...styles.btnUndo }} onClick={cancelarRenombre}>
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Modal importar JSON ─────────────────────────────────────────── */}
+      {showImport && (
+        <div style={styles.modalOverlay} onClick={() => setShowImport(false)}>
+          <div style={{ ...styles.modal, minWidth: 520, maxWidth: 680 }} onClick={e => e.stopPropagation()}>
+            <p style={styles.modalTitle}>📂 Importar grafoCampus.json</p>
+            <p style={styles.modalSubtitle}>
+              Pega el contenido completo de tu JSON aquí y haz clic en "Cargar".
+              <br />Esto reemplazará el grafo actual.
+            </p>
+            <textarea
+              style={styles.importTextarea}
+              value={jsonBorrador}
+              onChange={e => setJsonBorrador(e.target.value)}
+              placeholder={'{\n  "nodos": [...],\n  "aristas": [...]\n}'}
+              spellCheck={false}
+            />
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop: 8 }}>
+              <span style={{ fontSize: 11, color: '#64748b' }}>
+                {jsonBorrador.length > 0 ? `${jsonBorrador.length} caracteres` : ''}
+              </span>
+              <div style={styles.modalBtns}>
+                <button style={{ ...styles.btn, ...styles.btnUndo }} onClick={() => { setShowImport(false); setJsonBorrador(''); }}>
+                  Cancelar
+                </button>
+                <button style={{ ...styles.btn, ...styles.btnExport }} onClick={importarJSON} disabled={!jsonBorrador.trim()}>
+                  ✅ Cargar grafo
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -626,6 +724,33 @@ const styles = {
     borderColor: '#2563eb',
     color: '#fff',
     fontWeight: 700,
+  },
+  btnImport: {
+    background: '#065f46',
+    borderColor: '#047857',
+    color: '#6ee7b7',
+    fontWeight: 700,
+  },
+  btnCopy: {
+    background: '#4338ca',
+    borderColor: '#4f46e5',
+    color: '#c7d2fe',
+    fontWeight: 700,
+  },
+  importTextarea: {
+    width: '100%',
+    height: 300,
+    padding: '10px 12px',
+    borderRadius: 8,
+    border: '1px solid #475569',
+    background: '#0f172a',
+    color: '#e2e8f0',
+    fontSize: 12,
+    fontFamily: 'monospace',
+    outline: 'none',
+    resize: 'vertical',
+    boxSizing: 'border-box',
+    lineHeight: 1.5,
   },
   logBar: {
     gridArea: 'log',

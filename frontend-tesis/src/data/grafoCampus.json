@@ -769,6 +769,24 @@
       "nombre": "nodo_128",
       "lat": -35.00197517,
       "lng": -71.23037204
+    },
+    {
+      "id": "entrada2",
+      "nombre": "entrada2",
+      "lat": -35.00146215,
+      "lng": -71.22973904
+    },
+    {
+      "id": "nodo_130",
+      "nombre": "nodo_130",
+      "lat": -35.00271558,
+      "lng": -71.22881033
+    },
+    {
+      "id": "CTA",
+      "nombre": "CTA",
+      "lat": -35.00196473,
+      "lng": -71.23085886
     }
   ],
   "aristas": [
@@ -1183,11 +1201,6 @@
       "distancia": 36
     },
     {
-      "desde": "nodo_76",
-      "hasta": "nodo_86",
-      "distancia": 31
-    },
-    {
       "desde": "nodo_86",
       "hasta": "nodo_87",
       "distancia": 30
@@ -1481,6 +1494,36 @@
       "desde": "nodo_128",
       "hasta": "servicios",
       "distancia": 11
+    },
+    {
+      "desde": "nodo_9",
+      "hasta": "entrada2",
+      "distancia": 22
+    },
+    {
+      "desde": "multicanchas",
+      "hasta": "nodo_45",
+      "distancia": 29
+    },
+    {
+      "desde": "nodo_87",
+      "hasta": "casino",
+      "distancia": 10
+    },
+    {
+      "desde": "nodo_130",
+      "hasta": "nodo_68",
+      "distancia": 9
+    },
+    {
+      "desde": "nodo_113",
+      "hasta": "CTA",
+      "distancia": 10
+    },
+    {
+      "desde": "CTA",
+      "hasta": "nodo_115",
+      "distancia": 18
     }
   ]
 }
