@@ -6,15 +6,17 @@ import {
   X, MapPin, Clock, Camera, AlertCircle, Navigation2,
   Building2, BookOpen, UtensilsCrossed, FlaskConical,
   Activity, LogIn, Car, Settings, ScanLine, Calendar,
+  Search, ChevronLeft, ChevronRight, Wifi, Zap,
 } from 'lucide-react';
 import './VistaAR.css';
 
 // ─── Constantes ───────────────────────────────────────────────
-const AR_FOV    = 60;   // campo visual horizontal (°)
-const MAX_DIST  = 100;  // metros máximos — mantiene 2-3 edificios visibles
+const AR_FOV    = 60;
+const MAX_DIST  = 100;
 const SMOOTH    = 0.12;
-const MAX_FULL  = 1;    // máximo 1 etiqueta completa (la más cercana)
-const MAX_SMALL = 2;    // máximo 2 íconos secundarios sin texto
+const MAX_FULL  = 1;
+const MAX_SMALL = 2;
+const PAGE_SIZE = 6;
 
 // ─── Geo utils ───────────────────────────────────────────────
 function calcBearing(lat1, lon1, lat2, lon2) {
@@ -45,7 +47,7 @@ function formatFecha(f) {
   return new Date(f).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' });
 }
 
-// ─── Íconos por tipo de ubicación ────────────────────────────
+// ─── Íconos por tipo ─────────────────────────────────────────
 const TIPO_ICON = {
   edificio:        Building2,
   biblioteca:      BookOpen,
@@ -66,9 +68,6 @@ function UbiIcon({ tipo, size = 20 }) {
   const Icon = TIPO_ICON[tipo] || MapPin;
   return <Icon size={size} />;
 }
-
-// ─── Convertir coordenadas GeoJSON → { lat, lon } ────────────
-// Ubicacion almacena ubicacion.coordinates = [longitud, latitud]
 function toLatLon(u) {
   const [lon, lat] = u.ubicacion?.coordinates ?? [0, 0];
   return { lat, lon };
@@ -93,14 +92,12 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
   const necesitaPermiso = typeof DeviceOrientationEvent !== 'undefined'
                        && typeof DeviceOrientationEvent.requestPermission === 'function';
 
-  // Aplicar stream cuando el <video> está en el DOM
   useEffect(() => {
     if (fase !== 'listo' || !streamRef.current || !videoRef.current) return;
     videoRef.current.srcObject = streamRef.current;
     videoRef.current.play().catch(() => {});
   }, [fase]);
 
-  // Arrancar todo al montar
   useEffect(() => {
     (async () => {
       try {
@@ -125,7 +122,6 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
     };
   }, [necesitaPermiso]);
 
-  // GPS
   useEffect(() => {
     if (fase !== 'listo') return;
     const wid = navigator.geolocation.watchPosition(
@@ -135,7 +131,6 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
     return () => navigator.geolocation.clearWatch(wid);
   }, [fase]);
 
-  // Brújula
   useEffect(() => {
     if (fase !== 'listo') return;
     const onOri = (e) => {
@@ -160,7 +155,6 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
     };
   }, [fase]);
 
-  // Calcular puntos visibles
   useEffect(() => {
     if (fase !== 'listo' || !posicion) return;
     const tick = () => {
@@ -185,7 +179,6 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
     return () => cancelAnimationFrame(rafRef.current);
   }, [fase, posicion, ubicaciones]);
 
-  // Eventos vinculados al lugar seleccionado
   const eventosDelLugar = detalle
     ? eventos.filter(ev => {
         const id = ev.ubicacionWayfinding?._id || ev.ubicacionWayfinding;
@@ -197,17 +190,29 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
     <div className="ar-camara-overlay">
       {fase === 'permisos' && (
         <div className="ar-camara-estado">
-          <div className="ar-spinner-ring" />
-          <p>Solicitando permisos…</p>
+          {/* Fondo decorativo */}
+          <div className="ar-camara-estado-bg" />
+          <div className="ar-camara-estado-content">
+            <div className="ar-spinner-ring" />
+            <h3>Iniciando AR</h3>
+            <p>Solicitando acceso a cámara y sensores…</p>
+          </div>
         </div>
       )}
 
       {fase === 'error' && (
         <div className="ar-camara-estado ar-camara-estado--error">
-          <AlertCircle size={44} />
-          <h3>No se pudo activar</h3>
-          <p>{errorMsg}</p>
-          <button className="ar-btn-cerrar-error" onClick={onClose}>Volver</button>
+          <div className="ar-camara-estado-bg" />
+          <div className="ar-camara-estado-content">
+            <div className="ar-camara-error-icon">
+              <AlertCircle size={36} />
+            </div>
+            <h3>No se pudo activar</h3>
+            <p>{errorMsg}</p>
+            <button className="ar-btn-cerrar-error" onClick={onClose}>
+              <X size={16} /> Volver
+            </button>
+          </div>
         </div>
       )}
 
@@ -215,9 +220,25 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
         <>
           <video ref={videoRef} className="ar-video" autoPlay playsInline muted />
 
-          {/* HUD */}
+          {/* Viñeta decorativa */}
+          <div className="ar-vignette" />
+
+          {/* Retícula central */}
+          <div className="ar-reticula">
+            <div className="ar-reticula-h" />
+            <div className="ar-reticula-v" />
+            <div className="ar-reticula-corner ar-rc-tl" />
+            <div className="ar-reticula-corner ar-rc-tr" />
+            <div className="ar-reticula-corner ar-rc-bl" />
+            <div className="ar-reticula-corner ar-rc-br" />
+          </div>
+
+          {/* HUD superior */}
           <div className="ar-hud">
-            <button className="ar-hud-back" onClick={onClose}><X size={18} /></button>
+            <button className="ar-hud-back" onClick={onClose}>
+              <X size={18} />
+            </button>
+            <div className="ar-hud-titulo">AR Campus</div>
             <div className="ar-hud-badges">
               <span className={`ar-hud-badge ${posicion ? 'ar-hud-badge--ok' : 'ar-hud-badge--wait'}`}>
                 <MapPin size={11} />{posicion ? 'GPS activo' : 'Localizando…'}
@@ -228,7 +249,15 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
             </div>
           </div>
 
-          {/* ── Etiqueta principal (edificio más cercano) ── */}
+          {/* Barra inferior de info */}
+          <div className="ar-hud-bottom">
+            <div className="ar-hud-bottom-pill">
+              <Wifi size={12} />
+              <span>{visible.length} edificio{visible.length !== 1 ? 's' : ''} en rango</span>
+            </div>
+          </div>
+
+          {/* Etiqueta principal */}
           {posicion && visible.slice(0, MAX_FULL).map(u => {
             const xPct = ((u.diff / AR_FOV) + 0.5) * 100;
             return (
@@ -238,6 +267,7 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
                 style={{ left: `${xPct}%`, top: '42%' }}
                 onClick={() => setDetalle(u)}
               >
+                <div className="ar-etiqueta-pulse" />
                 <div className="ar-etiqueta-icono ar-etiqueta-icono--lg">
                   <UbiIcon tipo={u.tipo} size={26} />
                 </div>
@@ -249,10 +279,10 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
             );
           })}
 
-          {/* ── Íconos secundarios (sin texto, toca para ver detalle) ── */}
+          {/* Íconos secundarios */}
           {posicion && visible.slice(MAX_FULL, MAX_FULL + MAX_SMALL).map((u, i) => {
             const xPct = ((u.diff / AR_FOV) + 0.5) * 100;
-            const top  = 30 - i * 6; // escalonados: 30%, 24%
+            const top  = 30 - i * 6;
             return (
               <div
                 key={u._id}
@@ -269,7 +299,10 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
           })}
 
           {posicion && visible.length === 0 && (
-            <div className="ar-sin-puntos">Gira lentamente para ver los edificios</div>
+            <div className="ar-sin-puntos">
+              <Navigation2 size={14} />
+              Gira lentamente para ver los edificios
+            </div>
           )}
 
           {/* Panel detalle */}
@@ -295,7 +328,6 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
                   <p className="ar-panel-desc">{detalle.descripcion}</p>
                 )}
 
-                {/* Horario (campo de texto del admin) */}
                 {detalle.metadatos?.horario && (
                   <div className="ar-panel-horarios">
                     <div className="ar-panel-horarios-titulo"><Clock size={14} />Horario de atención</div>
@@ -303,7 +335,6 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
                   </div>
                 )}
 
-                {/* Eventos vinculados */}
                 {eventosDelLugar.length > 0 && (
                   <div className="ar-panel-eventos">
                     <div className="ar-panel-eventos-titulo"><Calendar size={14} />Eventos</div>
@@ -336,6 +367,10 @@ const VistaAR = () => {
   const [loading, setLoading]         = useState(true);
   const [camaraAbierta, setCamaraAbierta] = useState(false);
 
+  // Buscador y paginador
+  const [busqueda, setBusqueda] = useState('');
+  const [pagina, setPagina]     = useState(1);
+
   useEffect(() => {
     Promise.all([
       ubicacionesService.getUbicacionesPublicas(),
@@ -343,7 +378,6 @@ const VistaAR = () => {
     ])
       .then(([ubRes, evRes]) => {
         if (ubRes.success) {
-          // Excluir ubicaciones tipo 'evento' (temporales, creadas al asociar una noticia)
           setUbicaciones(ubRes.data.filter(u => u.tipo !== 'evento' && u.visible !== false));
         }
         if (evRes.success) setEventos(evRes.data);
@@ -352,11 +386,32 @@ const VistaAR = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Filtrar por búsqueda
+  const filtradas = ubicaciones.filter(u => {
+    const q = busqueda.toLowerCase();
+    return (
+      u.nombre?.toLowerCase().includes(q) ||
+      (TIPO_LABEL[u.tipo] || u.tipo)?.toLowerCase().includes(q) ||
+      u.descripcion?.toLowerCase().includes(q)
+    );
+  });
+
+  // Paginación
+  const totalPaginas = Math.max(1, Math.ceil(filtradas.length / PAGE_SIZE));
+  const paginaSegura = Math.min(pagina, totalPaginas);
+  const paginadas = filtradas.slice((paginaSegura - 1) * PAGE_SIZE, paginaSegura * PAGE_SIZE);
+
+  const handleBusqueda = (val) => {
+    setBusqueda(val);
+    setPagina(1);
+  };
+
   return (
     <div className="ar-page">
       <Navbar brandName="Módulo informativo" />
 
       <main className="ar-main">
+        {/* ── Header — mismo estilo y ancho que Noticias ── */}
         <header className="ar-page-header">
           <h1>Información Contextual AR</h1>
           <p className="ar-page-subtitle">
@@ -365,27 +420,67 @@ const VistaAR = () => {
         </header>
 
         <div className="ar-page-content">
-          {/* Tarjeta de lanzamiento */}
+
+          {/* ── Tarjeta de lanzamiento rediseñada ── */}
           <div className="ar-launch-card">
-            <div className="ar-launch-info">
-              <ScanLine size={32} className="ar-launch-icon" />
-              <div>
+            <div className="ar-launch-bg-glow" />
+
+            <div className="ar-launch-left">
+              <div className="ar-launch-icon-wrap">
+                <ScanLine size={28} />
+                <div className="ar-launch-icon-ring" />
+              </div>
+              <div className="ar-launch-text">
+                <div className="ar-launch-badge">
+                  <Zap size={11} /> Tecnología AR
+                </div>
                 <h2>Vista de cámara AR</h2>
-                <p>Activa la cámara y apunta hacia los edificios del campus. El más cercano (hasta 100 m) aparece destacado con nombre y horario. Los demás se muestran como íconos — tócalos para ver el detalle.</p>
+                <p>
+                  Activa la cámara y apunta hacia los edificios del campus. El más cercano
+                  (hasta 100&nbsp;m) aparece destacado con nombre y horario. Los demás se
+                  muestran como íconos — tócalos para ver el detalle.
+                </p>
+                <div className="ar-launch-features">
+                  <span><MapPin size={12} /> GPS en tiempo real</span>
+                  <span><Navigation2 size={12} /> Brújula integrada</span>
+                  <span><Clock size={12} /> Horarios</span>
+                </div>
               </div>
             </div>
+
             <button className="ar-launch-btn" onClick={() => setCamaraAbierta(true)}>
-              <Camera size={18} />
+              <Camera size={20} />
               Activar cámara AR
             </button>
           </div>
 
-          {/* Lista de ubicaciones */}
-          <div className="ar-lista-header">
-            <h3>Lugares disponibles</h3>
-            <span className="ar-lista-count">{ubicaciones.length} lugar{ubicaciones.length !== 1 ? 'es' : ''}</span>
+          {/* ── Barra: título + contador + buscador ── */}
+          <div className="ar-lista-toolbar">
+            <div className="ar-lista-toolbar-left">
+              <h3>Lugares disponibles</h3>
+              <span className="ar-lista-count">
+                {filtradas.length} lugar{filtradas.length !== 1 ? 'es' : ''}
+              </span>
+            </div>
+            <div className="ar-buscador-wrap">
+              <Search size={15} className="ar-buscador-icon" />
+              <input
+                id="ar-buscador"
+                type="text"
+                className="ar-buscador"
+                placeholder="Buscar lugar…"
+                value={busqueda}
+                onChange={e => handleBusqueda(e.target.value)}
+              />
+              {busqueda && (
+                <button className="ar-buscador-clear" onClick={() => handleBusqueda('')}>
+                  <X size={13} />
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* ── Loading ── */}
           {loading && (
             <div className="ar-lista-loading">
               <div className="ar-spinner-sm" />
@@ -393,36 +488,45 @@ const VistaAR = () => {
             </div>
           )}
 
-          {!loading && ubicaciones.length === 0 && (
+          {/* ── Vacío ── */}
+          {!loading && filtradas.length === 0 && (
             <div className="ar-lista-empty">
               <MapPin size={32} opacity={0.3} />
-              <p>Aún no hay ubicaciones configuradas en el campus.</p>
+              <p>{busqueda ? `Sin resultados para "${busqueda}"` : 'Aún no hay ubicaciones configuradas en el campus.'}</p>
             </div>
           )}
 
-          {!loading && ubicaciones.length > 0 && (
-            <div className="ar-lista">
-              {ubicaciones.map(u => {
+          {/* ── Grid de cards ── */}
+          {!loading && paginadas.length > 0 && (
+            <div className="ar-grid">
+              {paginadas.map(u => {
                 const evs = eventos.filter(ev => {
                   const id = ev.ubicacionWayfinding?._id || ev.ubicacionWayfinding;
                   return id && id.toString() === u._id.toString();
                 });
                 return (
-                  <div key={u._id} className="ar-lista-item">
-                    <div className="ar-lista-icono"><UbiIcon tipo={u.tipo} size={20} /></div>
-                    <div className="ar-lista-body">
-                      <div className="ar-lista-top">
-                        <span className="ar-lista-nombre">{u.nombre}</span>
-                        <span className="ar-lista-cat-badge">{TIPO_LABEL[u.tipo] || u.tipo}</span>
+                  <div key={u._id} className="ar-card">
+                    <div className="ar-card-header">
+                      <div className="ar-card-icono">
+                        <UbiIcon tipo={u.tipo} size={22} />
                       </div>
-                      {u.descripcion && <p className="ar-lista-desc">{u.descripcion}</p>}
+                      <span className="ar-card-cat">{TIPO_LABEL[u.tipo] || u.tipo}</span>
+                    </div>
+                    <div className="ar-card-body">
+                      <h4 className="ar-card-nombre">{u.nombre}</h4>
+                      {u.descripcion && (
+                        <p className="ar-card-desc">{u.descripcion}</p>
+                      )}
+                    </div>
+                    <div className="ar-card-footer">
                       {u.metadatos?.horario && (
-                        <div className="ar-lista-horario">
-                          <Clock size={12} /><span>{u.metadatos.horario}</span>
+                        <div className="ar-card-horario">
+                          <Clock size={12} />
+                          <span>{u.metadatos.horario}</span>
                         </div>
                       )}
                       {evs.length > 0 && (
-                        <div className="ar-lista-eventos">
+                        <div className="ar-card-eventos">
                           <Calendar size={12} />
                           {evs.map(ev => (
                             <span key={ev._id} className="ar-lista-evento-chip">{ev.titulo}</span>
@@ -435,6 +539,40 @@ const VistaAR = () => {
               })}
             </div>
           )}
+
+          {/* ── Paginador ── */}
+          {!loading && totalPaginas > 1 && (
+            <div className="ar-paginador">
+              <button
+                className="ar-pag-btn"
+                onClick={() => setPagina(p => Math.max(1, p - 1))}
+                disabled={paginaSegura === 1}
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              <div className="ar-pag-pages">
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
+                  <button
+                    key={n}
+                    className={`ar-pag-num ${n === paginaSegura ? 'ar-pag-num--active' : ''}`}
+                    onClick={() => setPagina(n)}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                className="ar-pag-btn"
+                onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+                disabled={paginaSegura === totalPaginas}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+
         </div>
       </main>
 
