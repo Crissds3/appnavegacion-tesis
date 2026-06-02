@@ -10,9 +10,11 @@ import {
 import './VistaAR.css';
 
 // ─── Constantes ───────────────────────────────────────────────
-const AR_FOV   = 70;
-const MAX_DIST = 300;
-const SMOOTH   = 0.12;
+const AR_FOV    = 60;   // campo visual horizontal (°)
+const MAX_DIST  = 100;  // metros máximos — mantiene 2-3 edificios visibles
+const SMOOTH    = 0.12;
+const MAX_FULL  = 1;    // máximo 1 etiqueta completa (la más cercana)
+const MAX_SMALL = 2;    // máximo 2 íconos secundarios sin texto
 
 // ─── Geo utils ───────────────────────────────────────────────
 function calcBearing(lat1, lon1, lat2, lon2) {
@@ -226,23 +228,42 @@ const CamaraAR = ({ ubicaciones, eventos, onClose }) => {
             </div>
           </div>
 
-          {/* Etiquetas AR */}
-          {posicion && visible.map(u => {
-            const xPct   = ((u.diff / AR_FOV) + 0.5) * 100;
-            const escala = Math.max(0.65, 1 - u.dist / MAX_DIST * 0.5);
-            const op     = Math.max(0.75, 1 - u.dist / MAX_DIST * 0.35);
+          {/* ── Etiqueta principal (edificio más cercano) ── */}
+          {posicion && visible.slice(0, MAX_FULL).map(u => {
+            const xPct = ((u.diff / AR_FOV) + 0.5) * 100;
             return (
               <div
                 key={u._id}
-                className="ar-etiqueta"
-                style={{ left: `${xPct}%`, transform: `translateX(-50%) scale(${escala})`, opacity: op }}
+                className="ar-etiqueta ar-etiqueta--principal"
+                style={{ left: `${xPct}%`, top: '42%' }}
                 onClick={() => setDetalle(u)}
               >
-                <div className="ar-etiqueta-icono"><UbiIcon tipo={u.tipo} size={22} /></div>
+                <div className="ar-etiqueta-icono ar-etiqueta-icono--lg">
+                  <UbiIcon tipo={u.tipo} size={26} />
+                </div>
                 <div className="ar-etiqueta-cuerpo">
                   <span className="ar-etiqueta-nombre">{u.nombre}</span>
                   <span className="ar-etiqueta-dist">{formatDist(u.dist)}</span>
                 </div>
+              </div>
+            );
+          })}
+
+          {/* ── Íconos secundarios (sin texto, toca para ver detalle) ── */}
+          {posicion && visible.slice(MAX_FULL, MAX_FULL + MAX_SMALL).map((u, i) => {
+            const xPct = ((u.diff / AR_FOV) + 0.5) * 100;
+            const top  = 30 - i * 6; // escalonados: 30%, 24%
+            return (
+              <div
+                key={u._id}
+                className="ar-etiqueta ar-etiqueta--secundaria"
+                style={{ left: `${xPct}%`, top: `${top}%` }}
+                onClick={() => setDetalle(u)}
+              >
+                <div className="ar-etiqueta-icono ar-etiqueta-icono--sm">
+                  <UbiIcon tipo={u.tipo} size={16} />
+                </div>
+                <span className="ar-etiqueta-dist-sm">{formatDist(u.dist)}</span>
               </div>
             );
           })}
@@ -350,7 +371,7 @@ const VistaAR = () => {
               <ScanLine size={32} className="ar-launch-icon" />
               <div>
                 <h2>Vista de cámara AR</h2>
-                <p>Activa la cámara y apunta hacia cualquier edificio del campus para ver su nombre, horarios y eventos en pantalla.</p>
+                <p>Activa la cámara y apunta hacia los edificios del campus. El más cercano (hasta 100 m) aparece destacado con nombre y horario. Los demás se muestran como íconos — tócalos para ver el detalle.</p>
               </div>
             </div>
             <button className="ar-launch-btn" onClick={() => setCamaraAbierta(true)}>
