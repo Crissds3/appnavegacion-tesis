@@ -80,7 +80,7 @@
   gap: 16px;
   max-width: 1200px;
   margin: 0 auto 20px;
-  padding-inline: 28px;
+  padding-inline: 32px;
   flex-wrap: wrap;
 }
 
@@ -147,7 +147,7 @@
 .feed-noticias-header {
   text-align: center;
   border-radius: 20px;
-  padding: 36px 28px;
+  padding: 36px 32px;
   max-width: 1200px;
   margin: 0 auto 16px;
   background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #8B0000 100%);
@@ -192,7 +192,7 @@
 .feed-noticias-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 28px 40px;
+  padding: 0 32px 40px;
 }
 
 /* Contenedor de noticias — sin fondo, las cards van sobre el fondo de página */
@@ -1258,10 +1258,9 @@
    ============================================================ */
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 340px));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 22px;
-  padding: 8px 4px;
-  justify-content: center;
+  padding: 8px 0;
 }
 
 .news-card {
@@ -1283,7 +1282,7 @@
 /* Viewport con imagen */
 .news-card-viewport {
   position: relative;
-  height: 200px;
+  height: 220px;
   background:
     radial-gradient(ellipse 65% 55% at 50% 45%, rgba(196,42,38,.55), rgba(196,42,38,0) 68%),
     radial-gradient(120% 90% at 50% 18%, #2c2420 0%, #1b1512 55%, #120d0b 100%);
@@ -1341,7 +1340,7 @@
 }
 
 /* Card body */
-.news-card-body { padding: 18px 20px 20px; }
+.news-card-body { padding: 20px 22px 22px; }
 
 .news-badge-cat {
   display: inline-block;
@@ -1356,7 +1355,7 @@
 }
 
 .news-card-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #17120F;
   letter-spacing: -.01em;
@@ -1372,13 +1371,13 @@
 .news-card-desc {
   color: #6E675F;
   font-size: 13.5px;
-  line-height: 1.55;
+  line-height: 1.6;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .news-card-foot {
@@ -1416,6 +1415,6 @@
 }
 @media (max-width: 560px) {
   .news-grid { grid-template-columns: 1fr; gap: 14px; }
-  .news-card-viewport { height: 170px; }
+  .news-card-viewport { height: 190px; }
 }
 
