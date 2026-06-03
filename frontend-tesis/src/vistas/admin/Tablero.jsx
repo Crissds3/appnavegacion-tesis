@@ -92,10 +92,32 @@ const Tablero = () => {
       </Navbar>
 
       <main className="main-content">
-        {/* Header estilo estudiante */}
+        {/* Header dinámico estilo estudiante (1200px) */}
         <div className="dashboard-header">
-          <h1>Panel de administración</h1>
-          <p className="dashboard-subtitle">Gestiona el contenido y configuración de la plataforma</p>
+          {activeTab === 'contenidos' && (
+            <>
+              <h1>Gestión de noticias e información</h1>
+              <p className="dashboard-subtitle">Administra noticias, eventos, información general y carreras</p>
+            </>
+          )}
+          {activeTab === 'ubicaciones' && (
+            <>
+              <h1>Gestión de ubicaciones</h1>
+              <p className="dashboard-subtitle">Administra los lugares, edificios y puntos de interés del campus</p>
+            </>
+          )}
+          {activeTab === 'ar' && (
+            <>
+              <h1>Gestión de AR Campus</h1>
+              <p className="dashboard-subtitle">Configura los puntos de realidad aumentada y minitour</p>
+            </>
+          )}
+          {activeTab === 'admin' && user?.rol === 'superadmin' && (
+            <>
+              <h1>Gestión de usuarios</h1>
+              <p className="dashboard-subtitle">Administra los accesos y roles de la plataforma</p>
+            </>
+          )}
         </div>
 
         <div className="dashboard-content">

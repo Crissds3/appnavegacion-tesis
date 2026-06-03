@@ -60,6 +60,7 @@ const GestionInfoUniversidad = () => {
   const [carreraFormOriginal, setCarreraFormOriginal] = useState(null);
 
   const [ubicaciones, setUbicaciones] = useState([]);
+  const [busqueda, setBusqueda] = useState('');
 
   const seccionesDisponibles = ['Historia', 'Misión', 'Visión', 'Valores', 'Contacto'];
   
@@ -93,14 +94,18 @@ const GestionInfoUniversidad = () => {
   const modalidadesDisponibles = ['Presencial', 'Semi-presencial', 'Online'];
 
   useEffect(() => {
-    if (activeTab === 'info') {
-      cargarSecciones();
-    } else {
-      cargarCarreras();
-      cargarUbicaciones();
-    }
+    const cargarTodo = async () => {
+      setLoading(true);
+      await Promise.all([
+        cargarSecciones(),
+        cargarCarreras(),
+        cargarUbicaciones()
+      ]);
+      setLoading(false);
+    };
+    cargarTodo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab]);
+  }, []);
 
   const cargarUbicaciones = async () => {
     try {
@@ -130,7 +135,6 @@ const GestionInfoUniversidad = () => {
   // ============ FUNCIONES INFORMACIÓN GENERAL ============
   const cargarSecciones = async () => {
     try {
-      setLoading(true);
       const response = await infoService.getAllSecciones();
       if (response.success) {
         setSecciones(response.data);
@@ -138,8 +142,6 @@ const GestionInfoUniversidad = () => {
     } catch (err) {
       showError('Error al cargar secciones');
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -203,7 +205,6 @@ const GestionInfoUniversidad = () => {
   // ============ FUNCIONES CARRERAS ============
   const cargarCarreras = async () => {
     try {
-      setLoading(true);
       const response = await carrerasService.getAllCarreras();
       if (response.success) {
         setCarreras(response.data);
@@ -211,8 +212,6 @@ const GestionInfoUniversidad = () => {
     } catch (err) {
       showError('Error al cargar carreras');
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -319,39 +318,41 @@ const GestionInfoUniversidad = () => {
 
   return (
     <div className="gestion-info-container">
-      <div className="gestion-main-card">
-        <div className="gestion-info-header">
-          <h2>Gestión de información universitaria</h2>
-          <p>Administra la información general y las carreras de la universidad</p>
-        </div>
 
-        <div className="tabs-container">
+        <div className="tabs-navigation">
           <button
-            className={`tab-button ${activeTab === 'info' ? 'active' : ''}`}
+            className={`tab-nav-button ${activeTab === 'info' ? 'active' : ''}`}
             onClick={() => setActiveTab('info')}
           >
             <BookOpen size={18} />
             Información General
           </button>
           <button
-            className={`tab-button ${activeTab === 'carreras' ? 'active' : ''}`}
+            className={`tab-nav-button ${activeTab === 'carreras' ? 'active' : ''}`}
             onClick={() => setActiveTab('carreras')}
           >
             <GraduationCap size={18} />
             Carreras
           </button>
+          
+          <div style={{ marginLeft: 'auto' }}>
+            {activeTab === 'info' ? (
+              <button className="btn-crear-nuevo" onClick={() => abrirInfoModal()}>
+                <Plus size={18} />
+                Nueva Sección
+              </button>
+            ) : (
+              <button className="btn-crear-nuevo" onClick={() => abrirCarreraModal()}>
+                <Plus size={18} />
+                Nueva Carrera
+              </button>
+            )}
+          </div>
         </div>
 
         {/* TAB INFORMACIÓN GENERAL */}
         {activeTab === 'info' && (
           <div className="tab-content fade-in">
-            <div className="acciones-header">
-              <button className="btn-primary" onClick={() => abrirInfoModal()}>
-                <Plus size={18} />
-                Nueva Sección
-              </button>
-            </div>
-
             {loading ? (
               <div className="loading-spinner">
                 <div className="spinner"></div>
@@ -360,16 +361,12 @@ const GestionInfoUniversidad = () => {
             ) : (
               <div className="secciones-grid">
                 {secciones.map((seccion) => (
-                  <div key={seccion._id} className="seccion-card">
-                    <div className="seccion-header">
-                      <div className="seccion-icono-wrapper">
+                  <div key={seccion._id} className="info-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', paddingRight: '22px' }}>
+                      <div className="info-card-icon">
                         {renderIcon(seccion.icono)}
                       </div>
-                      <div className="seccion-header-text">
-                        <h3>{seccion.titulo}</h3>
-                        <span className="seccion-tipo">{seccion.seccion}</span>
-                      </div>
-                      <div className="seccion-actions-top">
+                      <div className="seccion-actions-top" style={{ marginTop: '22px' }}>
                         <button
                           className="btn-icon-action edit"
                           onClick={() => abrirInfoModal(seccion)}
@@ -380,19 +377,20 @@ const GestionInfoUniversidad = () => {
                       </div>
                     </div>
                     
-                    <div className="seccion-body">
-                      <p className="seccion-contenido">
+                    <div className="info-card-content">
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '17px', fontWeight: 700, color: '#17120F' }}>{seccion.titulo}</h3>
+                      <p style={{ margin: '0 0 16px 0', fontSize: '13.5px', color: '#6E675F', lineHeight: 1.6 }}>
                         {seccion.contenido.length > 120 
                           ? seccion.contenido.substring(0, 120) + '...' 
                           : seccion.contenido}
                       </p>
-                    </div>
 
-                    <div className="seccion-footer">
-                      <span className={`status-badge ${seccion.activo ? 'active' : 'inactive'}`}>
-                        {seccion.activo ? 'Activo' : 'Inactivo'}
-                      </span>
-                      <span className="orden-badge">Orden: {seccion.orden}</span>
+                      <div className="seccion-footer" style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid rgba(20,15,12,.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span className={`status-badge ${seccion.activo ? 'active' : 'inactive'}`}>
+                          {seccion.activo ? 'Activo' : 'Inactivo'}
+                        </span>
+                        <span className="orden-badge">Orden: {seccion.orden}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -404,16 +402,25 @@ const GestionInfoUniversidad = () => {
         {/* TAB CARRERAS */}
         {activeTab === 'carreras' && (
           <div className="tab-content fade-in">
-            <div className="acciones-header">
-              <button className="btn-primary" onClick={() => abrirCarreraModal()}>
-                <Plus size={18} />
-                Nueva Carrera
-              </button>
-              <div className="search-wrapper">
-                <Search size={18} className="search-icon" />
-                <input type="text" placeholder="Buscar carrera..." className="search-input" />
+            <div className="acciones-header" style={{ justifyContent: 'flex-start', marginBottom: '0' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="ar-buscador-wrap" style={{ marginBottom: 0 }}>
+                  <Search size={15} className="ar-buscador-icon" />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar carrera..." 
+                    className="ar-buscador" 
+                    value={busqueda || ''}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                  />
+                  {busqueda && (
+                    <button className="ar-buscador-clear" onClick={() => setBusqueda('')}>
+                      <X size={13} />
+                    </button>
+                  )}
+                </div>
+                <span className="contador-badge">{carreras.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase())).length} carreras</span>
               </div>
-              <span className="contador-badge">{carreras.length} carreras</span>
             </div>
 
             {loading ? (
@@ -422,60 +429,63 @@ const GestionInfoUniversidad = () => {
                 <p>Cargando carreras...</p>
               </div>
             ) : (
-              <div className="carreras-lista">
-                {carreras.map((carrera) => (
-                  <div key={carrera._id} className="carrera-card-row">
-                    <div className="carrera-icon-col">
-                      <div className="carrera-icon-circle">
+              <div className="carreras-grid">
+                {carreras.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase())).map((carrera) => (
+                  <div key={carrera._id} className="carrera-card-estudiante">
+                    <div className="carrera-card-header">
+                      <div className="carrera-icon-wrapper">
                         <GraduationCap size={24} />
                       </div>
-                    </div>
-                    
-                    <div className="carrera-info-col">
-                      <div className="carrera-header-row">
-                        <h3>{carrera.nombre}</h3>
-                        <span className={`status-dot ${carrera.activo ? 'active' : 'inactive'}`} title={carrera.activo ? 'Activo' : 'Inactivo'}></span>
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <h4 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#17120F', lineHeight: 1.3 }}>{carrera.nombre}</h4>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className={`status-dot ${carrera.activo ? 'active' : 'inactive'}`} title={carrera.activo ? 'Activo' : 'Inactivo'}></span>
+                          <span style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>{carrera.activo ? 'Activa' : 'Inactiva'}</span>
+                        </div>
                       </div>
-                      
-                      <div className="carrera-meta-row">
-                        <span className="meta-tag">
-                          <Clock size={14} /> {carrera.duracion}
-                        </span>
-                        <span className="meta-tag">
-                          <MapPin size={14} /> {carrera.modalidad}
-                        </span>
+                      <div className="carrera-actions-col">
+                        <a 
+                          href={carrera.enlaceOficial} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="btn-icon-action link"
+                          title="Ver enlace oficial"
+                        >
+                          <Link size={18} />
+                        </a>
+                        <button
+                          className="btn-icon-action edit"
+                          onClick={() => abrirCarreraModal(carrera)}
+                          title="Editar"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          className="btn-icon-action delete"
+                          onClick={() => handleEliminarCarrera(carrera._id)}
+                          title="Eliminar"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="carrera-card-body">
+                      <div className="carrera-meta">
+                        <div className="meta-item">
+                          <Clock size={16} />
+                          <span>{carrera.duracion}</span>
+                        </div>
+                        <div className="meta-item">
+                          <MapPin size={16} />
+                          <span>{carrera.modalidad}</span>
+                        </div>
                         {carrera.ubicacion && (
-                          <span className="meta-tag">
-                            <Building2 size={14} /> {carrera.ubicacion.nombre || 'Ubicación asignada'}
-                          </span>
+                          <div className="meta-item">
+                            <Building2 size={16} />
+                            <span>{carrera.ubicacion.nombre || 'Ubicación asignada'}</span>
+                          </div>
                         )}
                       </div>
-                    </div>
-
-                    <div className="carrera-actions-col">
-                      <a 
-                        href={carrera.enlaceOficial} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="btn-icon-action link"
-                        title="Ver enlace oficial"
-                      >
-                        <Link size={18} />
-                      </a>
-                      <button
-                        className="btn-icon-action edit"
-                        onClick={() => abrirCarreraModal(carrera)}
-                        title="Editar"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        className="btn-icon-action delete"
-                        onClick={() => handleEliminarCarrera(carrera._id)}
-                        title="Eliminar"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -483,7 +493,6 @@ const GestionInfoUniversidad = () => {
             )}
           </div>
         )}
-      </div>
 
       {/* MODAL INFORMACIÓN GENERAL */}
       {showInfoModal && (

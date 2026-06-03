@@ -556,6 +556,15 @@
   pointer-events: auto;
 }
 
+/* Anillo de selecciÃ³n de marcador â€” pulsa suavemente */
+.leaflet-overlay-pane .leaflet-interactive[stroke-dasharray] {
+  animation: ring-pulse 2s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%, 100% { opacity: 1; stroke-width: 2.5px; }
+  50%       { opacity: 0.55; stroke-width: 1.5px; }
+}
+
 /* Forzar visibilidad de todas las rutas */
 path[stroke] {
   display: block !important;
@@ -592,7 +601,7 @@ path[stroke] {
 }
 
 /* ---------------------------------------------------------------
-   BOTÓN COMPARTIR — Tarjeta flotante de ubicación
+   BOTï¿½N COMPARTIR ï¿½ Tarjeta flotante de ubicaciï¿½n
 --------------------------------------------------------------- */
 .info-card-actions {
   display: flex;
@@ -630,7 +639,7 @@ path[stroke] {
 }
 
 /* ---------------------------------------------------------------
-   BOTÓN CENTRAR EN MÍ (GPS)
+   BOTï¿½N CENTRAR EN Mï¿½ (GPS)
 --------------------------------------------------------------- */
 .btn-centrar-gps-wrapper {
   position: absolute;
@@ -667,7 +676,7 @@ path[stroke] {
 
 @media (max-width: 768px) {
   .btn-centrar-gps-wrapper {
-    bottom: 140px; /* Un poco más alto en móviles por si hay tarjetas abajo */
+    bottom: 140px; /* Un poco mï¿½s alto en mï¿½viles por si hay tarjetas abajo */
     right: 16px;
   }
 }

@@ -13,9 +13,9 @@
 
 .dashboard-header {
   text-align: center;
-  border-radius: 24px;
-  padding: 50px 30px;
-  max-width: 75%;
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 1200px;
   margin: 0 auto 20px;
   background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 50%, #8B0000 100%);
   color: white;
@@ -37,7 +37,7 @@
 }
 
 .dashboard-header h1 {
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 800;
   margin: 0 0 12px 0;
   position: relative;
@@ -56,8 +56,8 @@
 }
 
 .dashboard-content {
-  padding: 0 30px 30px;
-  max-width: 1400px;
+  padding: 0 32px 30px;
+  max-width: 1200px;
   margin: 0 auto;
   animation: fadeIn 0.6s ease-out;
   font-family: 'Inter', sans-serif;

@@ -1,551 +1,559 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import L from 'leaflet';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  MapPin, 
-  Navigation, 
-  Smartphone, 
-  Compass, 
-  Square, 
-  Route, 
-  Ruler, 
-  Clock, 
-  Search, 
-  CheckCircle, 
-  AlertTriangle, 
-  Loader, 
-  RefreshCw, 
-  X, 
-  Target,
-  Building,
-  Coffee,
-  Car
+import {
+  MapPin, Navigation, Compass, Route, Ruler, Clock,
+  Search, CheckCircle, RefreshCw, X, Target, Share2,
+  Building2, BookOpen, UtensilsCrossed, Activity,
+  FlaskConical, LogIn, Settings, LayoutGrid,
 } from 'lucide-react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import MapaWayfinding from '../../componentes/wayfinding/MapaWayfinding';
 import useGeolocation from '../../hooks/useGeolocation';
 import useCompass from '../../hooks/useCompass';
 import api from '../../servicios/api';
+import { CATEGORIA_CONFIG } from '../../utils/iconosMapa';
 import './Wayfinding.css';
 
+// ─── Chips de filtro ──────────────────────────────────────────────────────
+const CHIPS = [
+  { tipo: 'todos',       label: 'Todos',      Icon: LayoutGrid },
+  { tipo: 'edificio',    label: 'Edificio',   Icon: Building2 },
+  { tipo: 'biblioteca',  label: 'Biblioteca', Icon: BookOpen },
+  { tipo: 'casino',      label: 'Casino',     Icon: UtensilsCrossed },
+  { tipo: 'cancha',      label: 'Cancha',     Icon: Activity },
+  { tipo: 'laboratorio', label: 'Laboratorio',Icon: FlaskConical },
+  { tipo: 'servicio',    label: 'Servicio',   Icon: Settings },
+  { tipo: 'entrada',     label: 'Entrada',    Icon: LogIn },
+];
+
 const Wayfinding = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [ubicaciones, setUbicaciones] = useState([]);
-  const [busqueda, setBusqueda] = useState('');
-  const [resultadosBusqueda, setResultadosBusqueda] = useState([]);
-  const [origen, setOrigen] = useState(null);
-  const [destino, setDestino] = useState(null);
-  const [cargando, setCargando] = useState(false);
-  const [modoSeleccion, setModoSeleccion] = useState(null); // 'origen' o 'destino'
-  const [infoRuta,        setInfoRuta]        = useState(null);
-  const [isNavigating,    setIsNavigating]    = useState(false);
-  const [usarUbicacionSimulada, setUsarUbicacionSimulada] = useState(false);
-  const [haLlegado, setHaLlegado] = useState(false);
+  const navigate   = useNavigate();
+  const routerLoc  = useLocation();
 
-  // Custom Hook para geolocalización reactiva
-  const { ubicacion: ubicacionUsuario, error: errorGeo, cargando: cargandoGeo, permisosConcedidos } = useGeolocation({
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 5000
-  });
+  const [ubicaciones,          setUbicaciones]          = useState([]);
+  const [busqueda,             setBusqueda]             = useState('');
+  const [resultadosBusqueda,   setResultadosBusqueda]   = useState([]);
+  const [origen,               setOrigen]               = useState(null);
+  const [destino,              setDestino]              = useState(null);
+  const [modoSeleccion,        setModoSeleccion]        = useState(null);
+  const [infoRuta,             setInfoRuta]             = useState(null);
+  const [isNavigating,         setIsNavigating]         = useState(false);
+  const [usarUbicacionSimulada,setUsarUbicacionSimulada]= useState(false);
+  const [haLlegado,            setHaLlegado]            = useState(false);
+  const [locationCard,         setLocationCard]         = useState(null); // preview card
+  const [filtroTipo,           setFiltroTipo]           = useState('todos');
 
-  // Custom Hook para el rumbo del dispositivo (brújula)
+  const { ubicacion: ubicacionUsuario, error: errorGeo, cargando: cargandoGeo } =
+    useGeolocation({ enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
+
   const { heading, requestCompassPermission } = useCompass();
 
-  // Ubicación simulada dentro del campus (entrada principal)
-  const ubicacionSimulada = {
-    lat: -35.002607,
-    lng: -71.230519,
-    accuracy: 10
-  };
+  const ubicacionSimulada = { lat: -35.002607, lng: -71.230519, accuracy: 10 };
+  const ubicacionActual   = usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
 
-  // Usar ubicación simulada si está activada, sino la real
-  const ubicacionActual = usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
+  // ── Carga inicial ──────────────────────────────────────────────────────────
+  useEffect(() => { cargarUbicaciones(); }, []);
 
+  // ── Destino desde otra vista ───────────────────────────────────────────────
   useEffect(() => {
-    cargarUbicaciones();
-  }, []);
+    if (ubicaciones.length > 0 && routerLoc.state?.destinoId) {
+      const found = ubicaciones.find(u => u._id === routerLoc.state.destinoId);
+      if (found) { setDestino(found); window.history.replaceState({}, document.title); }
+    }
+  }, [ubicaciones, routerLoc.state]);
 
-  // ── Detección de llegada al destino ──────────────────────────────────────
+  // ── Detección de llegada ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isNavigating || !ubicacionActual || !destino) return;
-
-    // Obtener coordenadas del destino
-    const coordsDestino = destino.ubicacion?.coordinates;
-    if (!coordsDestino || coordsDestino.length < 2) return;
-
-    // GeoJSON almacena [lng, lat], Leaflet usa [lat, lng]
-    const puntoDestino = L.latLng(coordsDestino[1], coordsDestino[0]);
-    const puntoUsuario = L.latLng(ubicacionActual.lat, ubicacionActual.lng);
-    const distancia = puntoUsuario.distanceTo(puntoDestino); // metros
-
-    if (distancia < 15) {
-      console.log('🎉 ¡Has llegado a tu destino! Distancia:', distancia.toFixed(1), 'm');
-      setIsNavigating(false);
-      setHaLlegado(true);
-    }
+    const coords = destino.ubicacion?.coordinates;
+    if (!coords || coords.length < 2) return;
+    const dist = L.latLng(ubicacionActual.lat, ubicacionActual.lng)
+      .distanceTo(L.latLng(coords[1], coords[0]));
+    if (dist < 15) { setIsNavigating(false); setHaLlegado(true); }
   }, [isNavigating, ubicacionActual, destino]);
-
-  // Efecto para manejar navegación desde otras vistas (ej: Carreras)
-  useEffect(() => {
-    if (ubicaciones.length > 0 && location.state?.destinoId) {
-      const destinoEncontrado = ubicaciones.find(u => u._id === location.state.destinoId);
-      if (destinoEncontrado) {
-        setDestino(destinoEncontrado);
-        // Limpiar el estado para evitar re-selección si se navega internamente
-        window.history.replaceState({}, document.title);
-      }
-    }
-  }, [ubicaciones, location.state]);
 
   const cargarUbicaciones = async () => {
     try {
-      const response = await api.get('/ubicaciones/publicas?visible=true');
-      const allUbicaciones = response.data.data || [];
-      
-      // Filtrar eventos vencidos (mantenerlos activos hasta que termine su día)
-      const fechaActual = new Date();
-      fechaActual.setHours(0, 0, 0, 0);
-
-      const ubicacionesFiltradas = allUbicaciones.filter(ub => {
+      const res  = await api.get('/ubicaciones/publicas?visible=true');
+      const all  = res.data.data || [];
+      const hoy  = new Date(); hoy.setHours(0, 0, 0, 0);
+      setUbicaciones(all.filter(ub => {
         if (ub.tipo === 'evento' && ub.metadatos?.fechaEvento) {
-          // Asegurarnos de tratar la fecha en el formato correcto (ej: '2023-10-25')
-          // Al parsearla se crea en la zona horaria UTC, por lo que sumamos el timezone offset
-          // O simplemente evitamos que desaparezca prematuramente
-          const partesFecha = ub.metadatos.fechaEvento.split('-');
-          if (partesFecha.length === 3) {
-            const fechaEvento = new Date(partesFecha[0], partesFecha[1] - 1, partesFecha[2]);
-            if (fechaEvento < fechaActual) {
-              return false; // El evento ya pasó
-            }
-          }
+          const [y, m, d] = ub.metadatos.fechaEvento.split('-');
+          return new Date(y, m - 1, d) >= hoy;
         }
         return true;
-      });
-
-      setUbicaciones(ubicacionesFiltradas);
-    } catch (error) {
-      console.error('Error al cargar ubicaciones:', error);
-    }
+      }));
+    } catch (e) { console.error('Error al cargar ubicaciones:', e); }
   };
 
   const buscarUbicaciones = (texto) => {
     setBusqueda(texto);
-    if (texto.trim().length > 2) {
-      const resultados = ubicaciones.filter(ub =>
-        ub.nombre.toLowerCase().includes(texto.toLowerCase()) ||
-        ub.descripcion?.toLowerCase().includes(texto.toLowerCase())
-      );
-      setResultadosBusqueda(resultados);
-    } else {
-      setResultadosBusqueda([]);
-    }
+    setResultadosBusqueda(
+      texto.trim().length > 1
+        ? ubicaciones.filter(ub =>
+            ub.nombre.toLowerCase().includes(texto.toLowerCase()) ||
+            ub.descripcion?.toLowerCase().includes(texto.toLowerCase())
+          )
+        : []
+    );
   };
 
-  const seleccionarUbicacion = (ubicacion) => {
-    if (modoSeleccion === 'origen') {
-      setOrigen(ubicacion);
-      setModoSeleccion(null);
-    } else if (modoSeleccion === 'destino') {
-      setDestino(ubicacion);
-      setModoSeleccion(null);
-    }
-    setBusqueda('');
-    setResultadosBusqueda([]);
-  };
-
-  const limpiarRuta = () => {
-    setOrigen(null);
-    setDestino(null);
-    setModoSeleccion(null);
-    setInfoRuta(null);
-    setIsNavigating(false);
-    setHaLlegado(false);
-  };
-
-  // Cerrar la celebración y limpiar la ruta para una nueva búsqueda
-  const cerrarCelebracion = () => {
-    setHaLlegado(false);
-    limpiarRuta();
+  const seleccionarDesdeResultado = (ub) => {
+    if (modoSeleccion === 'origen')  { setOrigen(ub);  setModoSeleccion(null); }
+    else if (modoSeleccion === 'destino') { setDestino(ub); setModoSeleccion(null); }
+    else { setLocationCard(ub); }
+    setBusqueda(''); setResultadosBusqueda([]);
   };
 
   const usarMiUbicacion = () => {
-    const ubicacion = ubicacionActual;
-    if (ubicacion) {
-      setOrigen({
-        _id: 'mi-ubicacion',
-        nombre: usarUbicacionSimulada ? 'Mi Ubicación (Simulada - Campus)' : 'Mi Ubicación',
-        ubicacion: {
-          coordinates: [ubicacion.lng, ubicacion.lat]
-        }
-      });
-    } else if (errorGeo) {
-      alert(`No se pudo obtener tu ubicación: ${errorGeo}`);
-    } else if (cargandoGeo) {
-      alert('Esperando permisos de geolocalización...');
-    }
+    const ub = ubicacionActual;
+    if (!ub) return;
+    setOrigen({
+      _id: 'mi-ubicacion',
+      nombre: usarUbicacionSimulada ? 'Mi Ubicación (Simulada)' : 'Mi Ubicación',
+      ubicacion: { coordinates: [ub.lng, ub.lat] },
+    });
   };
 
-  const toggleUbicacionSimulada = () => {
-    setUsarUbicacionSimulada(!usarUbicacionSimulada);
-    // Si ya hay un origen seleccionado, actualizarlo
-    if (origen && origen._id === 'mi-ubicacion') {
-      const ubicacion = !usarUbicacionSimulada ? ubicacionSimulada : ubicacionUsuario;
-      if (ubicacion) {
-        setOrigen({
-          _id: 'mi-ubicacion',
-          nombre: !usarUbicacionSimulada ? 'Mi Ubicación (Simulada - Campus)' : 'Mi Ubicación',
-          ubicacion: {
-            coordinates: [ubicacion.lng, ubicacion.lat]
-          }
-        });
-      }
-    }
-  };
-
-  const handleRutaCalculada = (ruta) => {
-    setInfoRuta(ruta);
+  const limpiarRuta = () => {
+    setOrigen(null); setDestino(null); setModoSeleccion(null);
+    setInfoRuta(null); setIsNavigating(false); setHaLlegado(false);
   };
 
   const iniciarViaje = () => {
-    if (!ubicacionActual) {
-      alert('No se puede iniciar el viaje sin tu ubicación');
-      return;
-    }
-    if (!destino) {
-      alert('Selecciona un destino primero');
-      return;
-    }
-    if (!origen) {
-      alert('Por favor, selecciona un punto de origen primero');
-      return;
-    }
-    // ✨ Pedir permiso de brújula AQUÍ (dentro de un gesto del usuario — iOS 13+ lo exige)
+    if (!ubicacionActual || !destino || !origen) return;
     requestCompassPermission();
-    console.log('🚀 Iniciando navegación en tiempo real...');
     setIsNavigating(true);
   };
 
-  const detenerViaje = () => {
-    setIsNavigating(false);
-  };
-
-  const getIconoPorTipo = (tipo) => {
-    switch(tipo?.toLowerCase()) {
-      case 'edificio': return <Building size={18} />;
-      case 'servicio': return <Coffee size={18} />;
-      case 'estacionamiento': return <Car size={18} />;
-      default: return <MapPin size={18} />;
+  const compartirUbicacion = async (ub) => {
+    const texto = `Mira esta ubicación en el campus: ${ub.nombre}`;
+    const base  = window.location.origin.includes('localhost')
+      ? 'https://appnavegacion-tesis.vercel.app' : window.location.origin;
+    const url   = `${base}${window.location.pathname}`;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Campus U. de Talca', text: texto, url }); }
+      catch (e) { if (e.name !== 'AbortError') console.error(e); }
+    } else {
+      await navigator.clipboard.writeText(`${texto}\n${url}`).catch(() => {});
+      alert('Enlace copiado al portapapeles');
     }
   };
 
-  const metrosRestantes = infoRuta?.distancia
-    ? (parseFloat(infoRuta.distancia) * 1000).toFixed(0)
-    : null;
+  const toggleSimulada = () => {
+    const next = !usarUbicacionSimulada;
+    setUsarUbicacionSimulada(next);
+    if (origen?._id === 'mi-ubicacion') {
+      const ub = next ? ubicacionSimulada : ubicacionUsuario;
+      if (ub) setOrigen({ _id: 'mi-ubicacion', nombre: next ? 'Mi Ubicación (Simulada)' : 'Mi Ubicación', ubicacion: { coordinates: [ub.lng, ub.lat] } });
+    }
+  };
 
+  // Distancia desde ubicación actual hasta la location card
+  const distanciaCard = (() => {
+    if (!locationCard || !ubicacionActual) return null;
+    const c = locationCard.ubicacion?.coordinates;
+    if (!c) return null;
+    const d = L.latLng(ubicacionActual.lat, ubicacionActual.lng).distanceTo(L.latLng(c[1], c[0]));
+    return d < 1000 ? `${Math.round(d)} m` : `${(d / 1000).toFixed(1)} km`;
+  })();
+
+  // Ubicaciones filtradas para los chips (se pasan al mapa)
+  const ubicacionesFiltradas = filtroTipo === 'todos'
+    ? ubicaciones
+    : ubicaciones.filter(u => u.tipo === filtroTipo || u.categoria === filtroTipo);
+
+  const metrosRestantes = infoRuta?.distancia
+    ? (parseFloat(infoRuta.distancia) * 1000).toFixed(0) : null;
+
+  const getColor = (ub) =>
+    CATEGORIA_CONFIG[ub?.tipo]?.color || CATEGORIA_CONFIG[ub?.categoria]?.color || '#E53935';
+
+  // ── MODO NAVEGACIÓN FULLSCREEN ────────────────────────────────────────────
+  if (isNavigating) {
+    return (
+      <div className="nav-screen">
+        <div className="nav-map-inner">
+          <MapaWayfinding
+            origen={origen} destino={destino}
+            ubicacionUsuario={ubicacionActual}
+            onRutaCalculada={setInfoRuta}
+            isNavigating={isNavigating} heading={heading}
+          />
+        </div>
+
+        <div className="nav-top">
+          <div className="nav-banner">
+            <div className="nav-turn-ic"><Navigation size={24} /></div>
+            <div className="nav-banner-txt">
+              <div className="l1">Navegando hacia</div>
+              <div className="l2">{destino?.nombre}</div>
+            </div>
+          </div>
+        </div>
+
+        <button className="nav-exit" onClick={() => setIsNavigating(false)}>
+          <X size={17} /> Salir
+        </button>
+
+        {infoRuta && (
+          <div className="nav-sheet">
+            <div className="nav-handle" />
+            <div className="nav-progress">
+              <i style={{ width: '55%' }} />
+            </div>
+            <div className="nav-stats">
+              <div className="nav-eta">
+                <div className="big">{infoRuta.tiempo}</div>
+                <div className="sub">min restantes</div>
+              </div>
+              <div className="nav-vsep" />
+              <div className="nav-stat">
+                <span className="v">{metrosRestantes}</span>
+                <span className="u">m</span>
+              </div>
+              <div className="nav-dest">
+                <div className="l">Destino</div>
+                <div className="n"><MapPin size={13} />{destino?.nombre}</div>
+              </div>
+            </div>
+            <div className="nav-bottom-actions">
+              <div className="nav-live"><RefreshCw size={13} className="spin-slow" /> Tiempo real</div>
+              <button className="btn-finish" onClick={() => setIsNavigating(false)}>
+                <CheckCircle size={17} /> Finalizar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── MODO NORMAL ────────────────────────────────────────────────────────────
   return (
-    <div className="wayfinding-container">
+    <div style={{ background: '#eaeaee', minHeight: '100vh', paddingTop: '70px' }}>
       <Navbar brandName="Módulo de navegación" />
 
-      {/* ──────── MODO NAVEGACIÓN FULLSCREEN (Google Maps style) ──────── */}
-      {isNavigating && (
-        <div className="nav-fullscreen-wrapper">
-          <div className="nav-fullscreen-map">
+      {/* Header */}
+      <div className="wf-header">
+        <h1>Sistema de Navegación Wayfinding</h1>
+        <p>Encuentra tu camino en el Campus Curicó - Universidad de Talca</p>
+      </div>
+
+      {/* Barra de filtros — en flujo normal, siempre visible */}
+      <div className="wf-chips-bar">
+        {CHIPS.map(({ tipo, label, Icon }) => {
+          const cnt = tipo === 'todos'
+            ? ubicaciones.length
+            : ubicaciones.filter(u =>
+                (u.tipo?.toLowerCase() === tipo) ||
+                (u.categoria?.toLowerCase() === tipo)
+              ).length;
+          return (
+            <button
+              key={tipo}
+              className={`wf-chip ${filtroTipo === tipo ? 'wf-chip--active' : ''}`}
+              onClick={() => setFiltroTipo(tipo)}
+            >
+              <Icon size={14} />
+              {label}
+              {cnt > 0 && <span className="wf-chip-cnt">{cnt}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Body: mapa + sidebar */}
+      <div className="wf-body">
+
+        {/* ── Mapa ── */}
+        <div className="map-panel">
+          {/* Mapa real */}
+          <div className="map-inner">
             <MapaWayfinding
-              origen={origen}
-              destino={destino}
+              origen={origen} destino={destino}
               ubicacionUsuario={ubicacionActual}
-              onRutaCalculada={handleRutaCalculada}
-              isNavigating={isNavigating}
-              heading={heading}
+              onRutaCalculada={setInfoRuta}
+              isNavigating={false} heading={heading}
+              filtroExterno={filtroTipo}
+              hideControls={true}
+              onUbicacionClick={(ub) => {
+                setBusqueda(''); setResultadosBusqueda([]);
+                setLocationCard(ub);
+              }}
             />
           </div>
 
-          {/* Botón salir — top-right */}
-          <button className="nav-btn-salir" onClick={detenerViaje} aria-label="Salir de la navegación">
-            <X size={18} /> Salir
-          </button>
+          {/* Overlay buscador */}
+          <div className="map-overlay-top">
+            <div className={`searchbar${modoSeleccion ? ' modo-seleccion' : ''}`}>
+              <Search size={18} />
+              <input
+                type="text"
+                placeholder={
+                  modoSeleccion === 'origen'  ? 'Buscar punto de origen...' :
+                  modoSeleccion === 'destino' ? 'Buscar destino...' :
+                  '¿A dónde quieres ir?'
+                }
+                value={busqueda}
+                onChange={e => buscarUbicaciones(e.target.value)}
+                autoComplete="off"
+              />
+              {busqueda && (
+                <button className="clear" onClick={() => { setBusqueda(''); setResultadosBusqueda([]); }}>
+                  <X size={13} />
+                </button>
+              )}
+            </div>
 
-          {/* Tarjeta inferior con distancia y tiempo */}
-          {infoRuta && (
-            <div className="nav-info-card">
-              <div className="nav-info-card-handle" />
-              <div className="nav-info-card-body">
-                <div className="nav-info-stat">
-                  <span className="nav-info-value">{infoRuta.tiempo}</span>
-                  <span className="nav-info-unit">min</span>
-                </div>
-                <div className="nav-info-divider" />
-                <div className="nav-info-stat">
-                  <span className="nav-info-value">{metrosRestantes}</span>
-                  <span className="nav-info-unit">m</span>
-                </div>
-                <div className="nav-info-destino">
-                  <MapPin size={14} />
-                  <span>{destino?.nombre}</span>
-                </div>
+            {resultadosBusqueda.length > 0 && (
+              <div className="search-results">
+                {resultadosBusqueda.slice(0, 8).map(ub => (
+                  <div key={ub._id} className="sr-item" onClick={() => seleccionarDesdeResultado(ub)}>
+                    <div className="sr-ic" style={{ background: getColor(ub) }}>
+                      <MapPin size={17} />
+                    </div>
+                    <div className="sr-info">
+                      <div className="sr-name">{ub.nombre}</div>
+                      <div className="sr-type">{CATEGORIA_CONFIG[ub.tipo]?.label || ub.tipo}</div>
+                    </div>
+                    <Navigation size={15} className="sr-arrow" />
+                  </div>
+                ))}
               </div>
-              <div className="nav-info-recalc">
-                <RefreshCw size={13} className="spin" />
-                <span>Ruta en tiempo real</span>
+            )}
+            {busqueda.length > 1 && resultadosBusqueda.length === 0 && (
+              <div className="search-results">
+                <div className="sr-empty">No encontramos "{busqueda}"</div>
+              </div>
+            )}
+          </div>
+
+
+          {/* FAB: mi ubicación */}
+          <div className="map-fabs">
+            <button
+              className={`fab ${ubicacionActual ? 'locate-on' : ''}`}
+              title="Usar mi ubicación"
+              onClick={usarMiUbicacion}
+            >
+              <Target size={20} />
+            </button>
+          </div>
+
+          {/* Indicador modo selección — sobre el buscador */}
+
+          {/* Contador visible */}
+          {!locationCard && !modoSeleccion && (
+            <div className="visible-count">
+              <MapPin size={13} /> <b>{ubicacionesFiltradas.length}</b> lugares
+            </div>
+          )}
+
+          {/* Location Card */}
+          {locationCard && (
+            <div className="loc-card">
+              <div className="loc-head">
+                <div className="loc-ic" style={{ background: getColor(locationCard) }}>
+                  <MapPin size={20} />
+                </div>
+                <div className="loc-meta">
+                  <div className="loc-name">{locationCard.nombre}</div>
+                  <div className="loc-badge" style={{ background: getColor(locationCard) + '18', color: getColor(locationCard) }}>
+                    <span className="dot" style={{ background: getColor(locationCard) }} />
+                    {CATEGORIA_CONFIG[locationCard.tipo]?.label || locationCard.tipo}
+                  </div>
+                </div>
+                <button className="loc-close" onClick={() => setLocationCard(null)}>
+                  <X size={15} />
+                </button>
+              </div>
+
+              {locationCard.descripcion && (
+                <p className="loc-desc">{locationCard.descripcion}</p>
+              )}
+              {locationCard.metadatos?.horario && (
+                <p className="loc-desc" style={{ marginTop: 2 }}>
+                  <strong>Horario:</strong> {locationCard.metadatos.horario}
+                </p>
+              )}
+              {distanciaCard && (
+                <div className="loc-dist">
+                  <Navigation size={13} /> {distanciaCard} · ~ {Math.round(parseFloat(distanciaCard) / 1.3 / 60)} min a pie
+                </div>
+              )}
+
+              <div className="loc-actions">
+                <button
+                  className="btn btn-primary loc-btn-navegar"
+                  onClick={() => { setDestino(locationCard); setLocationCard(null); }}
+                >
+                  <Navigation size={15} /> Navegar
+                </button>
+                <button
+                  className="btn btn-ghost loc-btn-icon"
+                  title="Como origen"
+                  onClick={() => { setOrigen(locationCard); setLocationCard(null); }}
+                >
+                  <Target size={16} />
+                </button>
+                <button
+                  className="btn btn-ghost loc-btn-icon"
+                  title="Compartir"
+                  onClick={() => compartirUbicacion(locationCard)}
+                >
+                  <Share2 size={16} />
+                </button>
               </div>
             </div>
           )}
         </div>
-      )}
 
-      {/* ──────── MODO NORMAL ──────── */}
-      {!isNavigating && (
-        <main className="wayfinding-main">
-          <div className="wayfinding-header">
-            <h1>Sistema de Navegación Wayfinding</h1>
-            <p className="subtitle">Encuentra tu camino en el Campus Curicó - Universidad de Talca</p>
-          </div>
+        {/* ── Sidebar ── */}
+        <div className="side">
 
-        <div className="wayfinding-content">
-          <div className="wayfinding-map">
-            <MapaWayfinding 
-              origen={origen}
-              destino={destino}
-              ubicacionUsuario={ubicacionActual}
-              onRutaCalculada={handleRutaCalculada}
-              isNavigating={isNavigating}
-              heading={heading}
-            />
-          </div>
-
-          <div className="wayfinding-sidebar">
-            {/* Selector de Ruta */}
-            <div className="ruta-section">
-              <h3>Planificar Ruta</h3>
-              
-              <div className="ruta-selector">
-                <div className="punto-ruta">
-                  <label><MapPin size={18} /> Origen:</label>
-                  {origen ? (
-                    <div className="ubicacion-seleccionada">
-                      <span>{origen.nombre}</span>
-                      <button onClick={() => setOrigen(null)} className="btn-limpiar"><X size={16} /></button>
-                    </div>
-                  ) : (
-                    <div className="btn-group">
-                      <button 
-                        onClick={() => setModoSeleccion('origen')}
-                        className={`btn-seleccionar ${modoSeleccion === 'origen' ? 'activo' : ''}`}
-                      >
-                        Seleccionar origen
-                      </button>
-                      <button onClick={usarMiUbicacion} className="btn-mi-ubicacion">
-                        <Smartphone size={16} /> {usarUbicacionSimulada ? 'Ubicación Simulada' : 'Mi ubicación'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className="punto-ruta">
-                  <label><Navigation size={18} /> Destino:</label>
-                  {destino ? (
-                    <div className="ubicacion-seleccionada">
-                      <span>{destino.nombre}</span>
-                      <button onClick={() => setDestino(null)} className="btn-limpiar"><X size={16} /></button>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={() => setModoSeleccion('destino')}
-                      className={`btn-seleccionar ${modoSeleccion === 'destino' ? 'activo' : ''}`}
-                    >
-                      Seleccionar destino
-                    </button>
-                  )}
-                </div>
-
-                {(origen || destino) && (
-                  <div className="ruta-acciones">
-                    <button onClick={iniciarViaje} className="btn-iniciar-viaje">
-                      <Compass size={20} /> Navegar
-                    </button>
-                    <button onClick={limpiarRuta} className="btn-limpiar-ruta">
-                      Limpiar
-                    </button>
-                  </div>
-                )}
-
-                {/* Información de la Ruta Calculada */}
-                {infoRuta && (
-                  <div className="info-ruta-calculada">
-                    <h4><Route size={18} /> Detalles del Recorrido</h4>
-                    <div className="info-ruta-detalle">
-                      <div className="info-item">
-                        <div className="info-item-label"><Ruler size={14} /> Distancia</div>
-                        <div className="info-item-value">{infoRuta.distancia} <span style={{fontSize: '18px'}}>km</span></div>
-                      </div>
-                      <div className="info-item">
-                        <div className="info-item-label"><Clock size={14} /> Tiempo</div>
-                        <div className="info-item-value">{infoRuta.tiempo} <span style={{fontSize: '18px'}}>min</span></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+          {/* Planificador de ruta */}
+          <div className="card">
+            <div className="route-header">
+              <Route size={20} />
+              <span className="rh-title">Planificar ruta</span>
+              {infoRuta && <span className="rh-badge"><CheckCircle size={13} /> Lista</span>}
             </div>
 
-            {/* Buscador */}
-            {modoSeleccion && (
-              <div className="search-section-modern">
-                <div className="search-header-modern">
-                  <h3>{modoSeleccion === 'origen' ? '¿Desde dónde partes?' : '¿A dónde quieres ir?'}</h3>
-                  <button onClick={() => setModoSeleccion(null)} className="btn-close-search">
-                    <X size={20} />
+            {/* Origen */}
+            <div className="route-row">
+              <div className="route-label">
+                <div className="pindot pin-origen"><Navigation size={11} /></div>
+                Origen
+              </div>
+              {origen ? (
+                <div className="chosen origen">
+                  <span className="cdot" style={{ background: '#1E6FE0' }} />
+                  <span>{origen.nombre}</span>
+                  <button className="x" onClick={() => setOrigen(null)}><X size={13} /></button>
+                </div>
+              ) : (
+                <div className="btngrid">
+                  <button
+                    className={`input-btn ${modoSeleccion === 'origen' ? 'active' : ''}`}
+                    onClick={() => setModoSeleccion('origen')}
+                  >
+                    <Search size={14} /> Seleccionar
+                  </button>
+                  <button className="input-btn" onClick={usarMiUbicacion}>
+                    <Target size={14} /> Mi ubicación
                   </button>
                 </div>
+              )}
+            </div>
 
-                <div className="busqueda-container-modern">
-                  <div className="input-wrapper-modern">
-                    <Search className="search-icon-modern" size={20} />
-                    <input 
-                      type="text" 
-                      placeholder={modoSeleccion === 'origen' ? "Buscar punto de partida..." : "Buscar destino..."}
-                      value={busqueda}
-                      onChange={(e) => buscarUbicaciones(e.target.value)}
-                      autoFocus
-                      className="search-input-modern"
-                    />
-                    {busqueda && (
-                      <button onClick={() => {setBusqueda(''); setResultadosBusqueda([]);}} className="btn-clear-search">
-                        <X size={16} />
-                      </button>
-                    )}
-                  </div>
+            <div className="route-track" />
+
+            {/* Destino */}
+            <div className="route-row">
+              <div className="route-label">
+                <div className="pindot pin-destino"><MapPin size={11} /></div>
+                Destino
+              </div>
+              {destino ? (
+                <div className="chosen">
+                  <span className="cdot" style={{ background: '#D32F2F' }} />
+                  <span>{destino.nombre}</span>
+                  <button className="x" onClick={() => setDestino(null)}><X size={13} /></button>
                 </div>
-                
-                <div className="resultados-scroll-area">
-                  {resultadosBusqueda.length > 0 ? (
-                    <div className="resultados-busqueda-modern">
-                      {resultadosBusqueda.map(ub => (
-                        <div 
-                          key={ub._id}
-                          className="resultado-item-modern"
-                          onClick={() => seleccionarUbicacion(ub)}
-                        >
-                          <div className={`resultado-icon-wrapper type-${ub.tipo?.toLowerCase() || 'default'}`}>
-                            {getIconoPorTipo(ub.tipo)}
-                          </div>
-                          <div className="resultado-info">
-                            <span className="resultado-nombre">{ub.nombre}</span>
-                            <span className="resultado-tipo">{ub.tipo}</span>
-                          </div>
-                          <div className="resultado-arrow">
-                            <Navigation size={16} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : busqueda.length > 0 ? (
-                    <div className="sin-resultados-modern">
-                      <Search size={48} strokeWidth={1.5} />
-                      <p>No encontramos "{busqueda}"</p>
-                      <span>Intenta buscar por nombre de edificio o servicio</span>
-                    </div>
-                  ) : (
-                    <div className="sugerencias-busqueda">
-                      <p className="sugerencias-titulo">Lugares sugeridos</p>
-                      {ubicaciones.slice(0, 4).map(ub => (
-                        <div 
-                          key={ub._id}
-                          className="resultado-item-modern sugerencia"
-                          onClick={() => seleccionarUbicacion(ub)}
-                        >
-                          <div className={`resultado-icon-wrapper type-${ub.tipo?.toLowerCase() || 'default'}`}>
-                            {getIconoPorTipo(ub.tipo)}
-                          </div>
-                          <div className="resultado-info">
-                            <span className="resultado-nombre">{ub.nombre}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              ) : (
+                <button
+                  className={`input-btn ${modoSeleccion === 'destino' ? 'active' : ''}`}
+                  style={{ width: '100%' }}
+                  onClick={() => setModoSeleccion('destino')}
+                >
+                  <Search size={14} /> Buscar destino
+                </button>
+              )}
+            </div>
+
+            {/* Acciones */}
+            <div className="route-actions">
+              <button
+                className="btn btn-go"
+                onClick={iniciarViaje}
+                disabled={!origen || !destino}
+              >
+                <Compass size={17} /> Iniciar navegación
+              </button>
+              {(origen || destino) && (
+                <button className="btn-clear-route" onClick={limpiarRuta}>Limpiar</button>
+              )}
+            </div>
+
+            {/* Resumen de ruta */}
+            {infoRuta && (
+              <div className="route-summary">
+                <h4><Route size={14} /> Detalles del recorrido</h4>
+                <div className="summary-grid">
+                  <div className="summary-stat">
+                    <div className="lab"><Clock size={11} /> Tiempo</div>
+                    <div className="val">{infoRuta.tiempo}<small> min</small></div>
+                  </div>
+                  <div className="summary-stat">
+                    <div className="lab"><Ruler size={11} /> Distancia</div>
+                    <div className="val">{infoRuta.distancia}<small> km</small></div>
+                  </div>
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Información */}
-            <div className="info-section">
-              <h3>Información</h3>
-              
-              {/* Toggle para ubicación simulada */}
-              <div className="info-card simulation">
-                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={usarUbicacionSimulada}
-                    onChange={toggleUbicacionSimulada}
-                    style={{ marginRight: '10px', width: '20px', height: '20px', cursor: 'pointer' }}
-                  />
-                  <div>
-                    <strong><Target size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Simular ubicación en campus</strong><br />
-                    <small>Útil para pruebas cuando no estás en el campus</small>
-                  </div>
-                </label>
+          {/* Info / GPS */}
+          <div className="card info-card">
+            <div className="info-strip">
+              <div
+                className={`sim-row ${usarUbicacionSimulada ? 'on' : ''}`}
+                onClick={toggleSimulada}
+              >
+                <div className={`switch-sm ${usarUbicacionSimulada ? 'on' : ''}`} />
+                Simular ubicación en campus
               </div>
 
               {ubicacionActual && (
-                <div className="info-card success">
-                  <p>
-                    <strong><CheckCircle size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {usarUbicacionSimulada ? 'Ubicación simulada activa' : 'Geolocalización activa'}</strong><br />
-                    {usarUbicacionSimulada 
-                      ? 'Ubicación de prueba dentro del campus'
-                      : 'Tu ubicación está siendo rastreada en tiempo real'}
-                  </p>
+                <div className={`geo-badge ${usarUbicacionSimulada ? 'sim' : 'ok'}`}>
+                  <span className="gdot" />
+                  {usarUbicacionSimulada ? 'Simulada activa' : 'GPS activo'}
                 </div>
               )}
               {errorGeo && !usarUbicacionSimulada && (
-                <div className="info-card error">
-                  <p>
-                    <strong><AlertTriangle size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Error de geolocalización</strong><br />
-                    {errorGeo}
-                  </p>
+                <div className="geo-badge err">
+                  <span className="gdot" />
+                  Error de GPS
                 </div>
               )}
               {cargandoGeo && !ubicacionUsuario && !usarUbicacionSimulada && (
-                <div className="info-card">
-                  <p>
-                    <strong><Loader size={16} className="spin" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Obteniendo ubicación...</strong><br />
-                    Esperando permisos del dispositivo
-                  </p>
-                </div>
-              )}
-              
-              {/* Notificación de navegación activa */}
-              {isNavigating && (
-                <div className="info-card recalculo">
-                  <p>
-                    <strong><RefreshCw size={16} className="spin" style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> Navegación activa</strong><br />
-                    La ruta se recalcula si te devías del camino
-                  </p>
+                <div className="geo-badge" style={{ background: '#f0f1f3', borderColor: '#dfe1e5', color: '#6b7280' }}>
+                  <span className="gdot" style={{ background: '#9aa1ab' }} />
+                  Obteniendo ubicación…
                 </div>
               )}
             </div>
           </div>
-        </div>
-      </main>
-      )}
 
-      {/* ──────── MODAL CELEBRACIÓN DE LLEGADA ──────── */}
+        </div>
+      </div>
+
+      {/* ── Modal de llegada ── */}
       {haLlegado && (
-        <div className="modal-llegada-overlay">
-          <div className="modal-llegada-content">
-            <div className="modal-llegada-icon">🎉</div>
-            <h2 className="modal-llegada-titulo">¡Has llegado a tu destino!</h2>
-            {destino && (
-              <p className="modal-llegada-destino">
-                <MapPin size={18} /> {destino.nombre}
-              </p>
-            )}
-            <p className="modal-llegada-mensaje">Tu recorrido ha finalizado exitosamente.</p>
-            <button className="modal-llegada-btn" onClick={cerrarCelebracion}>
-              <CheckCircle size={18} /> Aceptar
+        <div className="modal-bg">
+          <div className="modal">
+            <div className="modal-ic"><CheckCircle size={38} /></div>
+            <h2>¡Has llegado!</h2>
+            {destino && <div className="dest"><MapPin size={15} /> {destino.nombre}</div>}
+            <p>Tu recorrido ha finalizado exitosamente.</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => { setHaLlegado(false); limpiarRuta(); }}
+            >
+              <CheckCircle size={16} /> Aceptar
             </button>
           </div>
         </div>

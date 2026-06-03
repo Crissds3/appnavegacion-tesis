@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap } from 'react-leaflet';
 import { Target } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -35,6 +35,16 @@ const MapBounds = () => {
     map.setMaxBounds(CAMPUS_BOUNDS);
     map.fitBounds(CAMPUS_BOUNDS);
   }, [map]);
+  return null;
+};
+
+// ─── Volar a una coordenada con animación ────────────────────────────────────
+const MapFlyTo = ({ target }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (!target) return;
+    map.flyTo(target, 18, { animate: true, duration: 0.75 });
+  }, [target, map]);
   return null;
 };
 
@@ -153,13 +163,26 @@ const NavigationController = ({
 };
 
 // ─── prop isNavigating reemplaza modoViaje ────────────────────────────────
-const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, isNavigating = false, heading = null }) => {
+const MapaWayfinding = ({
+  origen, destino, ubicacionUsuario, onRutaCalculada,
+  isNavigating = false, heading = null,
+  // Nuevas props para integración con Wayfinding.jsx
+  filtroExterno = null,        // si se pasa, usa este en vez del interno
+  onUbicacionClick = null,     // callback(ubicacion) al hacer clic en un marcador
+  hideControls = false,        // oculta los controles internos del mapa
+}) => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-  const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [filtroTipoInterno, setFiltroTipoInterno] = useState('todos');
   const [coordenadasRuta, setCoordenadasRuta] = useState([]);
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(null);
+  const [flyTarget, setFlyTarget]   = useState(null);  // [lat, lng] para animar cámara
+  const [selectedId, setSelectedId] = useState(null);  // _id del marcador activo
+
+  // Usar filtro externo si se provee
+  const filtroTipo = filtroExterno ?? filtroTipoInterno;
+  const setFiltroTipo = filtroExterno !== null ? () => {} : setFiltroTipoInterno;
 
   // ── Callback que NavigationController usa para actualizar la ruta en vivo ─
   const handleRutaActualizada = ({ coordenadas, distancia, tiempo }) => {
@@ -281,11 +304,12 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
   ].filter(Boolean));
 
   const ubicacionesFiltradas = ubicaciones.filter(ub => {
-    if (idsEspeciales.has(ub._id)) return false; // ya tienen marcador especial
-    if (filtroTipo === 'todos') {
-      return (ub.categoria || ub.tipo) !== 'evento';
-    }
-    return (ub.categoria || ub.tipo) === filtroTipo;
+    if (idsEspeciales.has(ub._id)) return false;
+    const t = (ub.tipo       || '').toLowerCase();
+    const c = (ub.categoria  || '').toLowerCase();
+    if (filtroTipo === 'todos') return t !== 'evento' && c !== 'evento';
+    const f = filtroTipo.toLowerCase();
+    return t === f || c === f;
   });
 
   // Construir botones de filtro desde CATEGORIAS (siempre completo)
@@ -424,7 +448,7 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
 
   return (
     <div className="mapa-wayfinding-container">
-      {!isNavigating && (
+      {!isNavigating && !hideControls && (
         <div className="mapa-controles">
           <h3>Filtrar por tipo:</h3>
           <div className="filtro-tipos">
@@ -497,10 +521,33 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
           zoom={16}
           minZoom={14}
           maxZoom={18}
+          zoomControl={false}
           style={{ height: '100%', width: '100%' }}
         >
           <MapBounds />
-          
+          <MapFlyTo target={flyTarget} />
+
+          {/* Glow de selección — círculo suave bajo el marcador activo */}
+          {selectedId && (() => {
+            const sel = ubicacionesFiltradas.find(u => u._id === selectedId)
+              || (origen?._id === selectedId ? origen : null)
+              || (destino?._id === selectedId ? destino : null);
+            if (!sel) return null;
+            const cfg = CATEGORIA_CONFIG[sel.tipo] || CATEGORIA_CONFIG[sel.categoria] || CATEGORIA_CONFIG.otro;
+            return (
+              <CircleMarker
+                center={[sel.ubicacion.coordinates[1], sel.ubicacion.coordinates[0]]}
+                radius={26}
+                pathOptions={{
+                  color: 'transparent',
+                  fillColor: cfg.color,
+                  fillOpacity: 0.22,
+                  weight: 0,
+                }}
+              />
+            );
+          })()}
+
           {/* Botón flotante para centrar la cámara */}
           <BotonCentrar ubicacionActual={ubicacionUsuario} />
           {/* Controlador de navegación en tiempo real */}
@@ -561,7 +608,14 @@ const MapaWayfinding = ({ origen, destino, ubicacionUsuario, onRutaCalculada, is
                 position={position}
                 icon={obtenerIcono(ubicacion.categoria || ubicacion.tipo)}
                 eventHandlers={{
-                  click: () => setUbicacionSeleccionada(ubicacion),
+                  click: () => {
+                    const lat = ubicacion.ubicacion.coordinates[1];
+                    const lng = ubicacion.ubicacion.coordinates[0];
+                    setFlyTarget([lat, lng]);
+                    setSelectedId(ubicacion._id);
+                    if (onUbicacionClick) onUbicacionClick(ubicacion);
+                    else setUbicacionSeleccionada(ubicacion);
+                  },
                 }}
               />
             );

@@ -319,48 +319,41 @@ const GestionNoticias = () => {
 
   return (
     <div className="gestion-noticias">
-      <div className="gestion-main-card">
-        <div className="gestion-header">
-          <div className="header-title">
-            <h2>Gestión de noticias y eventos</h2>
-            <p className="header-subtitle">Administra las noticias, eventos y anuncios de la universidad</p>
-          </div>
-          <button 
-            className="btn-crear-nuevo"
-            onClick={() => setShowModal(true)}
+      <div className="feed-tabs-bar">
+        <div className="filtros-inline">
+          <select 
+            value={filtros.tipo} 
+            onChange={(e) => setFiltros(prev => ({ ...prev, tipo: e.target.value }))}
+            className="filtro-select"
           >
-            <Plus size={20} />
-            Nueva Noticia
-          </button>
+            <option value="">Todos los tipos</option>
+            {tiposNoticia.map(tipo => (
+              <option key={tipo} value={tipo}>{tipo}</option>
+            ))}
+          </select>
+
+          <select 
+            value={filtros.categoria} 
+            onChange={(e) => setFiltros(prev => ({ ...prev, categoria: e.target.value }))}
+            className="filtro-select"
+          >
+            <option value="">Todas las categorías</option>
+            {categorias.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="filtros-container">
-          <div className="filtros-group">
-            <select 
-              value={filtros.tipo} 
-              onChange={(e) => setFiltros(prev => ({ ...prev, tipo: e.target.value }))}
-              className="filtro-select"
-            >
-              <option value="">Todos los tipos</option>
-              {tiposNoticia.map(tipo => (
-                <option key={tipo} value={tipo}>{tipo}</option>
-              ))}
-            </select>
+        <button 
+          className="btn-crear-nuevo"
+          onClick={() => setShowModal(true)}
+        >
+          <Plus size={20} />
+          Nueva Noticia
+        </button>
+      </div>
 
-            <select 
-              value={filtros.categoria} 
-              onChange={(e) => setFiltros(prev => ({ ...prev, categoria: e.target.value }))}
-              className="filtro-select"
-            >
-              <option value="">Todas las categorías</option>
-              {categorias.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {loading ? (
+      {loading ? (
           <div className="loading-state">
             <div className="spinner"></div>
             <p>Cargando noticias...</p>
@@ -455,7 +448,6 @@ const GestionNoticias = () => {
             </table>
           </div>
         )}
-      </div>
 
       {showModal && (
         <div className="modal-overlay">
@@ -614,15 +606,15 @@ const GestionNoticias = () => {
 
                     <div className="form-group">
                       <label><MapPin size={16} /> Ubicación Wayfinding (Mapa)</label>
-                      <div style={{ display: 'flex', gap: '15px', marginBottom: '10px' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                      <div className="ubicacion-radio-group">
+                        <label className="ubicacion-radio-label">
                           <input 
                             type="radio" 
                             checked={modoUbicacion === 'existente'} 
                             onChange={() => setModoUbicacion('existente')} 
                           /> Ubicación Existente
                         </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                        <label className="ubicacion-radio-label">
                           <input 
                             type="radio" 
                             checked={modoUbicacion === 'mapa'} 
@@ -644,8 +636,8 @@ const GestionNoticias = () => {
                           ))}
                         </select>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                          <div style={{ height: '300px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd' }}>
+                        <div className="mapa-picker-wrap">
+                          <div className="mapa-picker-container">
                             <MapContainer
                               center={CAMPUS_CENTER}
                               zoom={16}
@@ -667,9 +659,9 @@ const GestionNoticias = () => {
                             </MapContainer>
                           </div>
                           {!coordsEvento ? (
-                            <small style={{ color: '#666' }}>Haz clic en el mapa para fijar la ubicación del evento.</small>
+                            <small className="mapa-hint">Haz clic en el mapa para fijar la ubicación del evento.</small>
                           ) : (
-                            <small style={{ color: '#28a745' }}>Ubicación fijada correctamente.</small>
+                            <small className="mapa-hint mapa-hint--ok">Ubicación fijada correctamente.</small>
                           )}
                         </div>
                       )}
@@ -718,9 +710,8 @@ const GestionNoticias = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="btn-modal-submit"
+                  className={`btn-modal-submit ${!hasChanges() ? 'btn-modal-submit--disabled' : ''}`}
                   disabled={!hasChanges()}
-                  style={{ opacity: !hasChanges() ? 0.5 : 1, cursor: !hasChanges() ? 'not-allowed' : 'pointer' }}
                 >
                   {editingNoticia ? 'Actualizar' : 'Crear'}
                 </button>
