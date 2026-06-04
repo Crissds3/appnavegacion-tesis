@@ -438,6 +438,44 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* ── Responsive global para todas las vistas admin ── */
+@media (max-width: 860px) {
+  .dashboard-header { margin: 14px 12px 0; padding: 26px 18px; border-radius: 16px; }
+  .dashboard-header h1 { font-size: 22px; }
+  .dashboard-content { padding: 12px 12px 32px; }
+  /* GestionUbicaciones */
+  .gu-grid { grid-template-columns: 1fr !important; height: auto !important; }
+  .gu-map-panel { height: 360px !important; }
+  .gu-list-panel { height: 360px !important; }
+  .gu-header { flex-direction: column; align-items: flex-start; }
+  .gu-header-right { width: 100%; }
+  /* AdminTourVirtual */
+  .atv-form-layout { grid-template-columns: 1fr !important; }
+  .atv-preview-panel { height: 200px !important; }
+  .atv-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important; }
+  /* GestionUsuarios */
+  .guu-grid { grid-template-columns: 1fr 1fr !important; }
+  /* GestionNoticias */
+  .gn-header-right { width: 100%; }
+  /* Modales full-width */
+  .gu-modal-overlay { padding: 0 !important; align-items: flex-end; }
+  .gu-modal { border-radius: 22px 22px 0 0 !important; max-height: 92vh !important; max-width: 100% !important; }
+}
+
+@media (max-width: 560px) {
+  .dashboard-header h1 { font-size: 19px; }
+  .guu-grid { grid-template-columns: 1fr !important; }
+  .guu-header { flex-direction: column; align-items: flex-start; }
+  .guu-header-right { width: 100%; flex-direction: column; }
+  .guu-btn-add { width: 100%; justify-content: center; }
+  .atv-btn-add { width: 100%; justify-content: center; }
+  .atv-row { grid-template-columns: 1fr !important; }
+  .gu-modal { border-radius: 18px 18px 0 0 !important; }
+  .gu-row { grid-template-columns: 1fr !important; }
+  .gu-coords { flex-direction: column; }
+  .gn-card-thumb { width: 52px !important; height: 52px !important; }
+}
+
 .table-container {
   overflow-x: auto;
 }

@@ -378,7 +378,7 @@
 
 /* ── Overrides globales de Leaflet popup ──────────────────────────────────── */
 .leaflet-popup-content-wrapper {
-  border-radius: 14px !important;
+  border-radius: 12px !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.13) !important;
   padding: 0 !important;
   overflow: hidden;

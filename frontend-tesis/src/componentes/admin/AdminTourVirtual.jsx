@@ -1,248 +1,230 @@
 import { useEffect, useRef, useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, Trash2, Box, CheckCircle, XCircle, Plus, X } from 'lucide-react';
 import { showConfirm, showError, showSuccess } from '../../utils/sweetAlert';
 import { tourVirtualService } from '../../servicios/api';
 import './AdminTourVirtual.css';
 
-const initialForm = {
-  nombre: '',
-  descripcion: '',
-  archivo: null,
-};
+const initialForm = { nombre: '', descripcion: '', archivo: null };
 
 const AdminTourVirtual = () => {
-  const [formData, setFormData] = useState(initialForm);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [modelos, setModelos] = useState([]);
-  const [isLoadingModelos, setIsLoadingModelos] = useState(false);
-  const [listError, setListError] = useState('');
+  const [formData,         setFormData]         = useState(initialForm);
+  const [previewUrl,       setPreviewUrl]        = useState(null);   // blob URL para preview
+  const [isSubmitting,     setIsSubmitting]      = useState(false);
+  const [modelos,          setModelos]           = useState([]);
+  const [isLoadingModelos, setIsLoadingModelos]  = useState(false);
+  const [listError,        setListError]         = useState('');
+  const [showForm,         setShowForm]          = useState(false);
   const fileInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(p => ({ ...p, [name]: value }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0] ?? null;
-    if (!file) {
-      setFormData((prev) => ({ ...prev, archivo: null }));
-      return;
-    }
 
-    const isGlb =
-      file.name.toLowerCase().endsWith('.glb') ||
-      file.type === 'model/gltf-binary';
+    // Revocar URL anterior si existe
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
 
+    if (!file) { setFormData(p => ({ ...p, archivo: null })); return; }
+
+    const isGlb = file.name.toLowerCase().endsWith('.glb') || file.type === 'model/gltf-binary';
     if (!isGlb) {
       showError('Solo se permiten archivos .glb');
       e.target.value = '';
-      setFormData((prev) => ({ ...prev, archivo: null }));
+      setFormData(p => ({ ...p, archivo: null }));
       return;
     }
 
-    setFormData((prev) => ({ ...prev, archivo: file }));
+    // Crear URL temporal para previsualización
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    setFormData(p => ({ ...p, archivo: file }));
   };
+
+  // Limpiar URL al desmontar
+  useEffect(() => {
+    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
+  }, [previewUrl]);
 
   const cargarModelos = async () => {
     try {
-      setIsLoadingModelos(true);
-      setListError('');
-      const response = await tourVirtualService.getEdificiosAdmin();
-      if (response.success) {
-        setModelos(response.data);
-      } else {
-        setListError(response.message || 'No se pudieron cargar los modelos');
-      }
-    } catch (error) {
-      setListError(error.message || 'Error al cargar los modelos');
-    } finally {
-      setIsLoadingModelos(false);
-    }
+      setIsLoadingModelos(true); setListError('');
+      const res = await tourVirtualService.getEdificiosAdmin();
+      if (res.success) setModelos(res.data);
+      else setListError(res.message || 'No se pudieron cargar los modelos');
+    } catch (e) { setListError(e.message || 'Error al cargar los modelos'); }
+    finally { setIsLoadingModelos(false); }
   };
 
-  useEffect(() => {
-    cargarModelos();
-  }, []);
+  useEffect(() => { cargarModelos(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.nombre.trim() || !formData.descripcion.trim()) {
-      showError('Completa el nombre y la descripción');
-      return;
-    }
-
-    if (!formData.archivo) {
-      showError('Selecciona un archivo .glb');
-      return;
-    }
-
+    if (!formData.nombre.trim() || !formData.descripcion.trim()) { showError('Completa nombre y descripción'); return; }
+    if (!formData.archivo) { showError('Selecciona un archivo .glb'); return; }
     try {
       setIsSubmitting(true);
       const payload = new FormData();
-      payload.append('nombre', formData.nombre.trim());
+      payload.append('nombre',      formData.nombre.trim());
       payload.append('descripcion', formData.descripcion.trim());
-      payload.append('modelo', formData.archivo);
-
-      const response = await tourVirtualService.createEdificio(payload);
-      if (response.success) {
+      payload.append('modelo',      formData.archivo);
+      const res = await tourVirtualService.createEdificio(payload);
+      if (res.success) {
         showSuccess('Edificio agregado al Minitour');
+        if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
         setFormData(initialForm);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        setShowForm(false);
         cargarModelos();
-      } else {
-        showError(response.message || 'No se pudo guardar el edificio');
-      }
-    } catch (error) {
-      showError(error.message || 'Error al subir el modelo');
-    } finally {
-      setIsSubmitting(false);
-    }
+      } else { showError(res.message || 'No se pudo guardar el edificio'); }
+    } catch (e) { showError(e.message || 'Error al subir el modelo'); }
+    finally { setIsSubmitting(false); }
+  };
+
+  const cancelarForm = () => {
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); setPreviewUrl(null); }
+    setFormData(initialForm);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setShowForm(false);
   };
 
   const handleDelete = async (id) => {
-    const confirmed = await showConfirm({
-      title: 'Eliminar modelo',
-      text: 'Esta accion eliminara el modelo del Minitour.',
-      confirmText: 'Si, eliminar',
-      cancelText: 'Cancelar',
-    });
-
-    if (!confirmed) return;
-
+    const ok = await showConfirm({ title: 'Eliminar modelo', text: 'Esta acción eliminará el modelo del Minitour.', confirmText: 'Sí, eliminar', cancelText: 'Cancelar' });
+    if (!ok) return;
     try {
-      const response = await tourVirtualService.deleteEdificio(id);
-      if (response.success) {
-        showSuccess('Modelo eliminado');
-        cargarModelos();
-      } else {
-        showError(response.message || 'No se pudo eliminar');
-      }
-    } catch (error) {
-      showError(error.message || 'Error al eliminar el modelo');
-    }
+      const res = await tourVirtualService.deleteEdificio(id);
+      if (res.success) { showSuccess('Modelo eliminado'); cargarModelos(); }
+      else showError(res.message || 'No se pudo eliminar');
+    } catch (e) { showError(e.message || 'Error al eliminar el modelo'); }
   };
 
   return (
-    <div className="admin-tour-virtual">
-      <div className="admin-tour-main-card">
-        <div className="admin-tour-main-header">
-          <div className="admin-tour-main-title">
-            <h2>Contenido de Minitour Virtual</h2>
-            <p className="admin-tour-main-subtitle">
-              Gestiona los modelos 3D que se muestran en la galeria publica.
-            </p>
-          </div>
-        </div>
+    <div className="atv-wrap">
 
-        <div className="admin-tour-body">
-          <div className="admin-tour-form-card">
-            <div className="admin-tour-form-header">
-              <h3>Minitour Virtual</h3>
-              <p>Sube modelos 3D (.glb) para la galeria publica</p>
+      {/* Cabecera */}
+      <div className="atv-header">
+        <p className="atv-subtitle">{modelos.length} modelos 3D disponibles en la galería pública</p>
+        <button className="atv-btn-add" onClick={() => setShowForm(p => !p)}>
+          <Plus size={17} /> {showForm ? 'Cancelar' : 'Agregar edificio'}
+        </button>
+      </div>
+
+      {/* Formulario + preview */}
+      {showForm && (
+        <div className="atv-form-card">
+          <h3 className="atv-form-title">Nuevo edificio 3D</h3>
+          <div className="atv-form-layout">
+
+            {/* Preview model-viewer */}
+            <div className="atv-preview-panel">
+              {previewUrl ? (
+                <model-viewer
+                  class="atv-model-viewer"
+                  src={previewUrl}
+                  auto-rotate
+                  camera-controls
+                  shadow-intensity="0.6"
+                  exposure="0.9"
+                  camera-orbit="0deg 75deg 105%"
+                  style={{ width: '100%', height: '100%', background: 'transparent' }}
+                />
+              ) : (
+                <div className="atv-preview-empty">
+                  <Box size={36} />
+                  <span>La vista previa aparecerá aquí al seleccionar el .glb</span>
+                </div>
+              )}
             </div>
 
-            <form className="admin-tour-form" onSubmit={handleSubmit}>
-              <div className="admin-tour-grid">
-                <div className="admin-tour-field">
-                  <label htmlFor="nombre">Nombre del edificio</label>
-                  <input
-                    id="nombre"
-                    name="nombre"
-                    type="text"
-                    value={formData.nombre}
-                    onChange={handleInputChange}
-                    placeholder="Ej. Biblioteca Central"
-                  />
-                </div>
-
-                <div className="admin-tour-field full-width">
-                  <label htmlFor="descripcion">Descripcion breve</label>
-                  <textarea
-                    id="descripcion"
-                    name="descripcion"
-                    rows={3}
-                    value={formData.descripcion}
-                    onChange={handleInputChange}
-                    placeholder="Describe el edificio en una o dos lineas."
-                  />
-                </div>
-
-                <div className="admin-tour-field full-width">
-                  <label htmlFor="archivo">Modelo 3D (.glb)</label>
-                  <div className="admin-tour-file-control">
-                    <input
-                      id="archivo"
-                      name="archivo"
-                      type="file"
-                      accept=".glb,model/gltf-binary"
-                      onChange={handleFileChange}
-                      ref={fileInputRef}
-                      className="admin-tour-file-input"
-                    />
-                    <label htmlFor="archivo" className="admin-tour-file-button">
-                      <Upload size={16} />
-                      Seleccionar archivo .glb
-                    </label>
-                    <span className="admin-tour-file-name">
-                      {formData.archivo ? formData.archivo.name : 'Sin archivo seleccionado'}
-                    </span>
-                  </div>
-                  <p className="admin-tour-hint">
-                    Solo archivos .glb. El backend guardara el archivo y devolvera la URL.
-                  </p>
+            {/* Formulario */}
+            <form className="atv-form" onSubmit={handleSubmit}>
+              <div className="atv-field">
+                <label>Nombre del edificio *</label>
+                <input type="text" name="nombre" value={formData.nombre}
+                  onChange={handleInputChange} placeholder="Ej. Biblioteca Central" />
+              </div>
+              <div className="atv-field">
+                <label>Descripción *</label>
+                <textarea name="descripcion" rows={3} value={formData.descripcion}
+                  onChange={handleInputChange} placeholder="Breve descripción del edificio." />
+              </div>
+              <div className="atv-field">
+                <label>Modelo 3D (.glb) *</label>
+                <div className="atv-file-zone">
+                  <input type="file" id="atv-file" accept=".glb,model/gltf-binary"
+                    onChange={handleFileChange} ref={fileInputRef} className="atv-file-input" />
+                  <label htmlFor="atv-file" className="atv-file-label">
+                    <Upload size={20} />
+                    <span>{formData.archivo ? formData.archivo.name : 'Seleccionar archivo .glb'}</span>
+                    {!formData.archivo && <small>Solo .glb · Máx. 100 MB</small>}
+                  </label>
                 </div>
               </div>
-
-              <div className="admin-tour-actions">
-                <button type="submit" className="admin-tour-submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Subiendo...' : 'Guardar edificio'}
+              <div className="atv-form-actions">
+                <button type="button" className="atv-btn-cancel" onClick={cancelarForm}>Cancelar</button>
+                <button type="submit" className="atv-btn-save" disabled={isSubmitting}>
+                  {isSubmitting ? 'Subiendo…' : <><Upload size={15} /> Guardar edificio</>}
                 </button>
               </div>
             </form>
           </div>
+        </div>
+      )}
 
-          <div className="admin-tour-list">
-            <div className="admin-tour-list-header">
-              <span>Edificio</span>
-              <span>Estado</span>
-              <span>Acciones</span>
-            </div>
-            {isLoadingModelos && (
-              <div className="admin-tour-list-row empty">Cargando modelos...</div>
-            )}
-            {!isLoadingModelos && listError && (
-              <div className="admin-tour-list-row empty error">{listError}</div>
-            )}
-            {!isLoadingModelos && !listError && modelos.length === 0 && (
-              <div className="admin-tour-list-row empty">Aun no hay modelos cargados.</div>
-            )}
-            {!isLoadingModelos && !listError && modelos.map((edificio) => (
-              <div key={edificio._id} className="admin-tour-list-row">
-                <div>
-                  <strong>{edificio.nombre}</strong>
-                  {edificio.descripcion && <p>{edificio.descripcion}</p>}
-                </div>
-                <span className={`admin-tour-status ${edificio.activo ? 'activo' : 'inactivo'}`}>
-                  {edificio.activo ? 'Activo' : 'Inactivo'}
+      {/* Grid de modelos — mismo estilo que TourVirtual público */}
+      {isLoadingModelos ? (
+        <div className="atv-state"><div className="atv-spinner" /><p>Cargando modelos…</p></div>
+      ) : listError ? (
+        <div className="atv-state atv-state--error"><p>{listError}</p></div>
+      ) : modelos.length === 0 ? (
+        <div className="atv-state">
+          <Box size={36} opacity={.25} />
+          <p>Aún no hay modelos cargados.<br/>Agrega el primero con el botón de arriba.</p>
+        </div>
+      ) : (
+        <div className="atv-grid">
+          {modelos.map(ed => (
+            <article key={ed._id} className="atv-card">
+              {/* Viewport con model-viewer real */}
+              <div className="atv-card-viewport">
+                {ed.modeloUrl ? (
+                  <model-viewer
+                    class="atv-mv"
+                    src={ed.modeloUrl}
+                    auto-rotate
+                    auto-rotate-delay="0"
+                    rotation-per-second="30deg"
+                    interaction-prompt="none"
+                    disable-zoom
+                    shadow-intensity="0.7"
+                    exposure="0.9"
+                    camera-orbit="0deg 75deg 105%"
+                    style={{ width: '100%', height: '100%', background: 'transparent' }}
+                  />
+                ) : (
+                  <div className="atv-no-model"><Box size={32} opacity={.35} /></div>
+                )}
+                <span className={`atv-card-status ${ed.activo ? 'atv-card-status--on' : 'atv-card-status--off'}`}>
+                  {ed.activo ? <><CheckCircle size={11} /> Activo</> : <><XCircle size={11} /> Inactivo</>}
                 </span>
-                <div className="admin-tour-actions-cell">
-                  <button
-                    type="button"
-                    className="admin-tour-delete"
-                    onClick={() => handleDelete(edificio._id)}
-                  >
-                    Eliminar
+              </div>
+
+              {/* Cuerpo */}
+              <div className="atv-card-body">
+                <h4 className="atv-card-name">{ed.nombre}</h4>
+                {ed.descripcion && <p className="atv-card-desc">{ed.descripcion}</p>}
+                <div className="atv-card-footer">
+                  <button className="atv-btn-delete" onClick={() => handleDelete(ed._id)}>
+                    <Trash2 size={14} /> Eliminar
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
+            </article>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 };

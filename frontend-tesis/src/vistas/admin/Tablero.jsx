@@ -2,6 +2,7 @@ import { useAuth } from '../../contexto/ContextoAuth';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from '../../componentes/compartidos/Navbar';
+import Footer from '../../componentes/compartidos/Footer';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
 import GestionInfoUniversidad from '../../componentes/admin/GestionInfoUniversidad';
 import GestionUsuarios from '../../componentes/admin/GestionUsuarios';
@@ -159,6 +160,7 @@ const Tablero = () => {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

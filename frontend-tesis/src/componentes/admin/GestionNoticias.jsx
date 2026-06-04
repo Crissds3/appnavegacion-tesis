@@ -1,141 +1,92 @@
 import { useState, useEffect, useRef } from 'react';
-import api, { noticiasService, ubicacionesService } from '../../servicios/api';
+import { noticiasService, ubicacionesService } from '../../servicios/api';
 import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
-import { 
-  Plus, 
-  Search, 
-  Edit2, 
-  Trash2, 
-  X, 
-  Image as ImageIcon, 
-  Calendar, 
-  MapPin, 
-  Star, 
-  Eye, 
-  EyeOff,
-  Upload
+import {
+  Plus, Search, Edit2, Trash2, X, Image as ImageIcon,
+  Calendar, MapPin, Star, Eye, EyeOff, Upload, Newspaper,
 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import './GestionNoticias.css';
 
-const CAMPUS_CENTER = [-35.002607, -71.230519]; 
-const CAMPUS_BOUNDS = [
-  [-35.007000, -71.235500],
-  [-34.998000, -71.225500] 
-];
+// Fix: sin esto Leaflet intenta cargar imágenes desde rutas que no existen en Vite
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl:       'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl:     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const CAMPUS_CENTER = [-35.002607, -71.230519];
+const CAMPUS_BOUNDS = [[-35.007000, -71.235500], [-34.998000, -71.225500]];
 
 const LocationPicker = ({ onLocationSelect }) => {
-  useMapEvents({
-    click(e) {
-      onLocationSelect([e.latlng.lat, e.latlng.lng]);
-    },
-  });
+  useMapEvents({ click(e) { onLocationSelect([e.latlng.lat, e.latlng.lng]); } });
   return null;
 };
 
+const TIPOS     = ['Noticia', 'Evento', 'Anuncio'];
+const CATEGORIAS = ['Académico','Cultural','Deportivo','Investigación','Extensión','Administrativo','Otro'];
+const TIPO_COLOR = { Noticia:'#1565C0', Evento:'#E53935', Anuncio:'#E65100' };
+
 const GestionNoticias = () => {
-  const [noticias, setNoticias] = useState([]);
-  const [ubicaciones, setUbicaciones] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingNoticia, setEditingNoticia] = useState(null);
-  const [noticiaOriginal, setNoticiaOriginal] = useState(null);
-  const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
+  const [noticias,      setNoticias]      = useState([]);
+  const [ubicaciones,   setUbicaciones]   = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [showModal,     setShowModal]     = useState(false);
+  const [editingNoticia,setEditingNoticia]= useState(null);
+  const [noticiaOriginal,setNoticiaOriginal]=useState(null);
+  const [filtros,       setFiltros]       = useState({ tipo: '', categoria: '' });
+  const [busqueda,      setBusqueda]      = useState('');
   const [imagenPreview, setImagenPreview] = useState(null);
-  const [imagenFile, setImagenFile] = useState(null);       // File object para subir
-  const [eliminarImagenFlag, setEliminarImagenFlag] = useState(false);
-  const [modoUbicacion, setModoUbicacion] = useState('existente'); // 'existente' o 'mapa'
-  const [coordsEvento, setCoordsEvento] = useState(null);
+  const [imagenFile,    setImagenFile]    = useState(null);
+  const [eliminarImagenFlag,setEliminarImagenFlag]=useState(false);
+  const [modoUbicacion, setModoUbicacion] = useState('existente');
+  const [coordsEvento,  setCoordsEvento]  = useState(null);
   const fileInputRef = useRef(null);
-  
+
   const [formData, setFormData] = useState({
-    titulo: '',
-    descripcion: '',
-    contenido: '',
-    tipo: 'Noticia',
-    categoria: 'Académico',
-    fechaEvento: '',
-    ubicacionEvento: '',
-    ubicacionWayfinding: '',
-    destacado: false,
-    activo: true,
+    titulo:'', descripcion:'', contenido:'', tipo:'Noticia',
+    categoria:'Académico', fechaEvento:'', ubicacionEvento:'',
+    ubicacionWayfinding:'', destacado:false, activo:true,
   });
 
-  const tiposNoticia = ['Noticia', 'Evento', 'Anuncio'];
-  const categorias = [
-    'Académico',
-    'Cultural',
-    'Deportivo',
-    'Investigación',
-    'Extensión',
-    'Administrativo',
-    'Otro'
-  ];
-
-  useEffect(() => {
-    cargarNoticias();
-    cargarUbicaciones();
-  }, []);
+  useEffect(() => { cargarNoticias(); cargarUbicaciones(); }, []);
 
   const cargarUbicaciones = async () => {
     try {
-      const response = await ubicacionesService.getUbicacionesPublicas();
-      if (response.success) {
-        setUbicaciones(response.data);
-      } else {
-        console.error('Error en respuesta de ubicaciones:', response);
-      }
-    } catch (error) {
-      console.error('Error al cargar ubicaciones:', error);
-    }
+      const res = await ubicacionesService.getUbicacionesPublicas();
+      if (res.success) setUbicaciones(res.data);
+    } catch {}
   };
 
   const cargarNoticias = async () => {
     try {
       setLoading(true);
-      const response = await noticiasService.getAllNoticias();
-      if (response.success) {
-        setNoticias(response.data);
-      }
-    } catch (error) {
-      showError('Error al cargar noticias');
-    } finally {
-      setLoading(false);
-    }
+      const res = await noticiasService.getAllNoticias();
+      if (res.success) setNoticias(res.data);
+    } catch { showError('Error al cargar noticias'); }
+    finally { setLoading(false); }
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData(p => ({ ...p, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleImagenChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      showError('La imagen no debe superar 10 MB');
-      return;
-    }
-    if (!file.type.startsWith('image/')) {
-      showError('Solo se permiten archivos de imagen');
-      return;
-    }
-
+    if (file.size > 10 * 1024 * 1024) { showError('La imagen no debe superar 10 MB'); return; }
+    if (!file.type.startsWith('image/')) { showError('Solo se permiten imágenes'); return; }
     setImagenFile(file);
     setEliminarImagenFlag(false);
     setImagenPreview(URL.createObjectURL(file));
   };
 
   const eliminarImagen = () => {
-    setImagenFile(null);
-    setImagenPreview(null);
-    setEliminarImagenFlag(true); // indica al backend que borre la imagen actual
+    setImagenFile(null); setImagenPreview(null); setEliminarImagenFlag(true);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -143,577 +94,297 @@ const GestionNoticias = () => {
     if (!editingNoticia) return true;
     if (!noticiaOriginal) return false;
     if (imagenFile || eliminarImagenFlag) return true;
-
-    const current = {
-      titulo: formData.titulo,
-      descripcion: formData.descripcion,
-      contenido: formData.contenido,
-      tipo: formData.tipo,
-      categoria: formData.categoria,
-      fechaEvento: formData.fechaEvento,
-      ubicacionEvento: formData.ubicacionEvento,
-      ubicacionWayfinding: formData.ubicacionWayfinding,
-      destacado: formData.destacado,
-      activo: formData.activo,
-    };
-    const original = {
-      titulo: noticiaOriginal.titulo,
-      descripcion: noticiaOriginal.descripcion,
-      contenido: noticiaOriginal.contenido,
-      tipo: noticiaOriginal.tipo,
-      categoria: noticiaOriginal.categoria,
-      fechaEvento: noticiaOriginal.fechaEvento ? noticiaOriginal.fechaEvento.split('T')[0] : '',
-      ubicacionEvento: noticiaOriginal.ubicacionEvento || '',
-      ubicacionWayfinding: noticiaOriginal.ubicacionWayfinding
-        ? (noticiaOriginal.ubicacionWayfinding._id || noticiaOriginal.ubicacionWayfinding)
-        : '',
-      destacado: noticiaOriginal.destacado,
-      activo: noticiaOriginal.activo,
-    };
-    return JSON.stringify(current) !== JSON.stringify(original);
+    const cur = { titulo:formData.titulo,descripcion:formData.descripcion,contenido:formData.contenido,tipo:formData.tipo,categoria:formData.categoria,fechaEvento:formData.fechaEvento,ubicacionEvento:formData.ubicacionEvento,ubicacionWayfinding:formData.ubicacionWayfinding,destacado:formData.destacado,activo:formData.activo };
+    const orig = { titulo:noticiaOriginal.titulo,descripcion:noticiaOriginal.descripcion,contenido:noticiaOriginal.contenido,tipo:noticiaOriginal.tipo,categoria:noticiaOriginal.categoria,fechaEvento:noticiaOriginal.fechaEvento?noticiaOriginal.fechaEvento.split('T')[0]:'',ubicacionEvento:noticiaOriginal.ubicacionEvento||'',ubicacionWayfinding:noticiaOriginal.ubicacionWayfinding?(noticiaOriginal.ubicacionWayfinding._id||noticiaOriginal.ubicacionWayfinding):'',destacado:noticiaOriginal.destacado,activo:noticiaOriginal.activo };
+    return JSON.stringify(cur) !== JSON.stringify(orig);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       let ubicacionWayfindingId = formData.ubicacionWayfinding;
-
-      // Crear ubicación temporal tipo evento si se eligió del mapa
       if (formData.tipo === 'Evento' && modoUbicacion === 'mapa' && coordsEvento) {
-        const respUbicacion = await ubicacionesService.createUbicacion({
-          nombre: formData.titulo,
-          tipo: 'evento',
-          categoria: 'evento',
-          latitud: coordsEvento[0],
-          longitud: coordsEvento[1],
-          metadatos: { fechaEvento: formData.fechaEvento },
-        });
-        if (respUbicacion.success) ubicacionWayfindingId = respUbicacion.data._id;
+        const r = await ubicacionesService.createUbicacion({ nombre:formData.titulo,tipo:'evento',categoria:'evento',latitud:coordsEvento[0],longitud:coordsEvento[1],metadatos:{fechaEvento:formData.fechaEvento} });
+        if (r.success) ubicacionWayfindingId = r.data._id;
       }
-
-      // Construir FormData para soportar la imagen como archivo
       const fd = new FormData();
-      fd.append('titulo', formData.titulo);
-      fd.append('descripcion', formData.descripcion);
-      fd.append('contenido', formData.contenido);
-      fd.append('tipo', formData.tipo);
-      fd.append('categoria', formData.categoria);
-      fd.append('destacado', formData.destacado);
-      fd.append('activo', formData.activo);
-      if (formData.fechaEvento) fd.append('fechaEvento', formData.fechaEvento);
-      if (formData.ubicacionEvento) fd.append('ubicacionEvento', formData.ubicacionEvento);
+      fd.append('titulo',formData.titulo); fd.append('descripcion',formData.descripcion);
+      fd.append('contenido',formData.contenido); fd.append('tipo',formData.tipo);
+      fd.append('categoria',formData.categoria); fd.append('destacado',formData.destacado);
+      fd.append('activo',formData.activo);
+      if (formData.fechaEvento) fd.append('fechaEvento',formData.fechaEvento);
+      if (formData.ubicacionEvento) fd.append('ubicacionEvento',formData.ubicacionEvento);
       fd.append('ubicacionWayfinding', ubicacionWayfindingId || '');
       if (imagenFile) fd.append('imagen', imagenFile);
-      if (eliminarImagenFlag) fd.append('eliminarImagen', 'true');
+      if (eliminarImagenFlag) fd.append('eliminarImagen','true');
 
       if (editingNoticia) {
-        const response = await noticiasService.updateNoticia(editingNoticia._id, fd);
-        if (response.success) {
-          showSuccess('Noticia actualizada exitosamente');
-          cargarNoticias();
-          cerrarModal();
-        }
+        const res = await noticiasService.updateNoticia(editingNoticia._id, fd);
+        if (res.success) { showSuccess('Noticia actualizada'); cargarNoticias(); cerrarModal(); }
       } else {
-        const response = await noticiasService.createNoticia(fd);
-        if (response.success) {
-          showSuccess('Noticia creada exitosamente');
-          cargarNoticias();
-          cerrarModal();
-        }
+        const res = await noticiasService.createNoticia(fd);
+        if (res.success) { showSuccess('Noticia creada'); cargarNoticias(); cerrarModal(); }
       }
-    } catch (error) {
-      showError(error.message || 'Error al guardar noticia');
-    }
+    } catch (err) { showError(err.message || 'Error al guardar noticia'); }
   };
 
-  const handleEditar = (noticia) => {
-    setEditingNoticia(noticia);
-    setNoticiaOriginal(noticia);
-    setFormData({
-      titulo: noticia.titulo,
-      descripcion: noticia.descripcion,
-      contenido: noticia.contenido,
-      tipo: noticia.tipo,
-      categoria: noticia.categoria,
-      fechaEvento: noticia.fechaEvento ? noticia.fechaEvento.split('T')[0] : '',
-      ubicacionEvento: noticia.ubicacionEvento || '',
-      ubicacionWayfinding: noticia.ubicacionWayfinding
-        ? (noticia.ubicacionWayfinding._id || noticia.ubicacionWayfinding)
-        : '',
-      destacado: noticia.destacado,
-      activo: noticia.activo,
-    });
-    setImagenFile(null);
-    setEliminarImagenFlag(false);
-    setImagenPreview(noticia.imagenUrl || null);
-    setModoUbicacion('existente');
-    setCoordsEvento(null);
+  const handleEditar = (n) => {
+    setEditingNoticia(n); setNoticiaOriginal(n);
+    setFormData({ titulo:n.titulo,descripcion:n.descripcion,contenido:n.contenido,tipo:n.tipo,categoria:n.categoria,fechaEvento:n.fechaEvento?n.fechaEvento.split('T')[0]:'',ubicacionEvento:n.ubicacionEvento||'',ubicacionWayfinding:n.ubicacionWayfinding?(n.ubicacionWayfinding._id||n.ubicacionWayfinding):'',destacado:n.destacado,activo:n.activo });
+    setImagenFile(null); setEliminarImagenFlag(false);
+    setImagenPreview(n.imagenUrl || null);
+    setModoUbicacion('existente'); setCoordsEvento(null);
     setShowModal(true);
   };
 
   const handleEliminar = async (id) => {
-    const confirmado = await showConfirm({
-      title: '¿Estás seguro?',
-      text: 'Esta acción no se puede deshacer',
-      confirmText: 'Sí, eliminar',
-      cancelText: 'Cancelar'
-    });
-
-    if (!confirmado) return;
-    
+    const ok = await showConfirm({ title:'¿Eliminar noticia?', text:'Esta acción no se puede deshacer.', confirmText:'Sí, eliminar', cancelText:'Cancelar' });
+    if (!ok) return;
     try {
-      const response = await noticiasService.deleteNoticia(id);
-      if (response.success) {
-        showSuccess('Noticia eliminada exitosamente');
-        cargarNoticias();
-      }
-    } catch (error) {
-      showError('Error al eliminar noticia');
-    }
+      const res = await noticiasService.deleteNoticia(id);
+      if (res.success) { showSuccess('Noticia eliminada'); cargarNoticias(); }
+    } catch { showError('Error al eliminar'); }
   };
 
-  const toggleDestacado = async (noticia) => {
+  const toggleDestacado = async (n) => {
     try {
-      const response = await noticiasService.updateNoticia(noticia._id, {
-        ...noticia,
-        destacado: !noticia.destacado
-      });
-      if (response.success) {
-        cargarNoticias();
-      }
-    } catch (error) {
-      showError('Error al actualizar noticia');
-    }
+      const fd = new FormData();
+      Object.entries({ titulo:n.titulo,descripcion:n.descripcion,contenido:n.contenido,tipo:n.tipo,categoria:n.categoria,destacado:!n.destacado,activo:n.activo }).forEach(([k,v]) => fd.append(k,v));
+      await noticiasService.updateNoticia(n._id, fd);
+      cargarNoticias();
+    } catch { showError('Error al actualizar'); }
   };
 
   const cerrarModal = () => {
-    setShowModal(false);
-    setEditingNoticia(null);
-    setNoticiaOriginal(null);
-    setImagenPreview(null);
-    setModoUbicacion('existente');
-    setCoordsEvento(null);
-    setFormData({
-      titulo: '',
-      descripcion: '',
-      contenido: '',
-      tipo: 'Noticia',
-      categoria: 'Académico',
-      fechaEvento: '',
-      ubicacionEvento: '',
-      ubicacionWayfinding: '',
-      destacado: false,
-      activo: true,
-    });
-    setImagenFile(null);
-    setEliminarImagenFlag(false);
+    setShowModal(false); setEditingNoticia(null); setNoticiaOriginal(null);
+    setImagenPreview(null); setImagenFile(null); setEliminarImagenFlag(false);
+    setModoUbicacion('existente'); setCoordsEvento(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    setFormData({ titulo:'',descripcion:'',contenido:'',tipo:'Noticia',categoria:'Académico',fechaEvento:'',ubicacionEvento:'',ubicacionWayfinding:'',destacado:false,activo:true });
   };
 
-  const noticiasFiltradas = noticias.filter(noticia => {
-    if (filtros.tipo && noticia.tipo !== filtros.tipo) return false;
-    if (filtros.categoria && noticia.categoria !== filtros.categoria) return false;
+  const noticiasFiltradas = noticias.filter(n => {
+    if (filtros.tipo && n.tipo !== filtros.tipo) return false;
+    if (filtros.categoria && n.categoria !== filtros.categoria) return false;
+    if (busqueda && !n.titulo.toLowerCase().includes(busqueda.toLowerCase())) return false;
     return true;
   });
 
+  const formatFecha = (d) => new Date(d).toLocaleDateString('es-CL', { day:'numeric', month:'short', year:'numeric' });
+
   return (
-    <div className="gestion-noticias">
-      <div className="feed-tabs-bar">
-        <div className="filtros-inline">
-          <select 
-            value={filtros.tipo} 
-            onChange={(e) => setFiltros(prev => ({ ...prev, tipo: e.target.value }))}
-            className="filtro-select"
-          >
+    <div className="gn-wrap">
+
+      {/* ── Cabecera ── */}
+      <div className="gn-header">
+        <p className="gn-subtitle">{noticias.length} publicaciones registradas</p>
+        <div className="gn-header-right">
+          {/* Buscador */}
+          <div className="gn-search">
+            <Search size={15} />
+            <input type="text" placeholder="Buscar noticia…" value={busqueda} onChange={e => setBusqueda(e.target.value)} />
+            {busqueda && <button onClick={() => setBusqueda('')}><X size={13} /></button>}
+          </div>
+          {/* Filtros */}
+          <select className="gn-select" value={filtros.tipo} onChange={e => setFiltros(p => ({ ...p, tipo: e.target.value }))}>
             <option value="">Todos los tipos</option>
-            {tiposNoticia.map(tipo => (
-              <option key={tipo} value={tipo}>{tipo}</option>
-            ))}
+            {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-
-          <select 
-            value={filtros.categoria} 
-            onChange={(e) => setFiltros(prev => ({ ...prev, categoria: e.target.value }))}
-            className="filtro-select"
-          >
+          <select className="gn-select" value={filtros.categoria} onChange={e => setFiltros(p => ({ ...p, categoria: e.target.value }))}>
             <option value="">Todas las categorías</option>
-            {categorias.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
+            {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
+          {/* Botón nueva */}
+          <button className="gn-btn-add" onClick={() => setShowModal(true)}>
+            <Plus size={17} /> Nueva noticia
+          </button>
         </div>
-
-        <button 
-          className="btn-crear-nuevo"
-          onClick={() => setShowModal(true)}
-        >
-          <Plus size={20} />
-          Nueva Noticia
-        </button>
       </div>
 
+      {/* ── Contenido ── */}
       {loading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Cargando noticias...</p>
-          </div>
-        ) : (
-          <div className="tabla-container">
-            <table className="tabla-moderna">
-              <thead>
-                <tr>
-                  <th>Imagen</th>
-                  <th>Título</th>
-                  <th>Tipo</th>
-                  <th>Categoría</th>
-                  <th>Fecha</th>
-                  <th>Destacado</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {noticiasFiltradas.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="no-data">
-                      <div className="empty-state">
-                        <Search size={48} />
-                        <p>No se encontraron noticias</p>
-                      </div>
-                    </td>
-                  </tr>
+        <div className="gn-skeleton">
+          {[1,2,3,4].map(i => <div key={i} className="gn-skeleton-row" style={{ opacity: 1 - i * 0.15 }} />)}
+        </div>
+      ) : noticiasFiltradas.length === 0 ? (
+        <div className="gn-state">
+          <Newspaper size={36} opacity={.25} />
+          <p>{busqueda || filtros.tipo || filtros.categoria ? 'Sin resultados para este filtro' : 'Aún no hay noticias publicadas'}</p>
+        </div>
+      ) : (
+        <div className="gn-list">
+          {noticiasFiltradas.map(n => (
+            <div key={n._id} className="gn-card">
+              {/* Thumbnail */}
+              <div className="gn-card-thumb">
+                {n.imagenUrl ? (
+                  <img src={n.imagenUrl} alt={n.titulo} />
                 ) : (
-                  noticiasFiltradas.map(noticia => (
-                    <tr key={noticia._id}>
-                      <td>
-                        <div className="img-thumbnail-wrapper">
-                          {(noticia.imagenBase64 || noticia.imagenUrl) ? (
-                            <img 
-                              src={noticia.imagenBase64 || noticia.imagenUrl} 
-                              alt={noticia.titulo}
-                              className="img-thumbnail"
-                            />
-                          ) : (
-                            <div className="img-placeholder">
-                              <ImageIcon size={20} />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="fw-medium">{noticia.titulo}</td>
-                      <td>
-                        <span className={`badge badge-${noticia.tipo.toLowerCase()}`}>
-                          {noticia.tipo}
-                        </span>
-                      </td>
-                      <td>{noticia.categoria}</td>
-                      <td>{new Date(noticia.createdAt).toLocaleDateString()}</td>
-                      <td>
-                        <button
-                          className={`btn-icon-toggle ${noticia.destacado ? 'active' : ''}`}
-                          onClick={() => toggleDestacado(noticia)}
-                          title={noticia.destacado ? 'Quitar destacado' : 'Marcar como destacado'}
-                        >
-                          <Star size={18} fill={noticia.destacado ? "currentColor" : "none"} />
-                        </button>
-                      </td>
-                      <td>
-                        <span className={`status-indicator ${noticia.activo ? 'active' : 'inactive'}`}>
-                          {noticia.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="actions-group">
-                          <button 
-                            className="btn-icon-action edit"
-                            onClick={() => handleEditar(noticia)}
-                            title="Editar"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button 
-                            className="btn-icon-action delete"
-                            onClick={() => handleEliminar(noticia._id)}
-                            title="Eliminar"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  <div className="gn-card-thumb-empty"><ImageIcon size={20} /></div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </div>
 
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <div className="modal-title-wrapper">
-                <div className="modal-icon-bg">
-                  {editingNoticia ? <Edit2 size={24} /> : <Plus size={24} />}
+              {/* Info */}
+              <div className="gn-card-info">
+                <div className="gn-card-top">
+                  <span className="gn-badge-tipo" style={{ background:(TIPO_COLOR[n.tipo]||'#666')+'15', color:TIPO_COLOR[n.tipo]||'#666' }}>{n.tipo}</span>
+                  <span className="gn-badge-cat">{n.categoria}</span>
+                  {!n.activo && <span className="gn-badge-inactive">Inactivo</span>}
                 </div>
+                <h4 className="gn-card-title">{n.titulo}</h4>
+                <p className="gn-card-desc">{n.descripcion}</p>
+                <span className="gn-card-date"><Calendar size={12} /> {formatFecha(n.createdAt)}</span>
+              </div>
+
+              {/* Acciones */}
+              <div className="gn-card-actions">
+                <button
+                  className={`gn-btn-star ${n.destacado ? 'gn-btn-star--on' : ''}`}
+                  onClick={() => toggleDestacado(n)}
+                  title={n.destacado ? 'Quitar destacado' : 'Destacar'}
+                >
+                  <Star size={16} fill={n.destacado ? 'currentColor' : 'none'} />
+                </button>
+                <button className="gn-btn-icon gn-btn-edit" onClick={() => handleEditar(n)} title="Editar">
+                  <Edit2 size={15} />
+                </button>
+                <button className="gn-btn-icon gn-btn-delete" onClick={() => handleEliminar(n._id)} title="Eliminar">
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Modal crear / editar ── */}
+      {showModal && (
+        <div className="gu-modal-overlay" onClick={cerrarModal}>
+          <div className="gu-modal gn-modal" onClick={e => e.stopPropagation()}>
+
+            <div className="gu-modal-header">
+              <div className="gu-modal-title-row">
+                <div className="gu-modal-icon">{editingNoticia ? <Edit2 size={20}/> : <Plus size={20}/>}</div>
                 <h3>{editingNoticia ? 'Editar noticia' : 'Nueva noticia'}</h3>
               </div>
-              <button className="btn-close-modal" onClick={cerrarModal}>
-                <X size={24} />
-              </button>
+              <button className="gu-modal-close" onClick={cerrarModal}><X size={20}/></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="form-noticia">
-              <div className="form-grid">
-                <div className="form-group full-width">
-                  <label>Título *</label>
-                  <input
-                    type="text"
-                    name="titulo"
-                    value={formData.titulo}
-                    onChange={handleInputChange}
-                    required
-                    className="input-modern"
-                    placeholder="Ingrese el título de la noticia"
-                  />
-                </div>
+            <form onSubmit={handleSubmit} className="gu-form">
 
-                <div className="form-group">
+              {/* Título */}
+              <div className="gu-field gu-field--full">
+                <label>Título *</label>
+                <input type="text" name="titulo" value={formData.titulo} onChange={handleInputChange} required placeholder="Título de la noticia" />
+              </div>
+
+              {/* Tipo + Categoría */}
+              <div className="gu-row">
+                <div className="gu-field">
                   <label>Tipo *</label>
-                  <select
-                    name="tipo"
-                    value={formData.tipo}
-                    onChange={handleInputChange}
-                    required
-                    className="select-modern"
-                  >
-                    {tiposNoticia.map(tipo => (
-                      <option key={tipo} value={tipo}>{tipo}</option>
-                    ))}
+                  <select name="tipo" value={formData.tipo} onChange={handleInputChange} required>
+                    {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-
-                <div className="form-group">
+                <div className="gu-field">
                   <label>Categoría *</label>
-                  <select
-                    name="categoria"
-                    value={formData.categoria}
-                    onChange={handleInputChange}
-                    required
-                    className="select-modern"
-                  >
-                    {categorias.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
+                  <select name="categoria" value={formData.categoria} onChange={handleInputChange} required>
+                    {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
+              </div>
 
-                <div className="form-group full-width">
-                  <label>Descripción breve *</label>
-                  <textarea
-                    name="descripcion"
-                    value={formData.descripcion}
-                    onChange={handleInputChange}
-                    rows="2"
-                    required
-                    className="textarea-modern"
-                    placeholder="Resumen corto para la vista previa"
-                  />
-                </div>
+              {/* Descripción */}
+              <div className="gu-field gu-field--full">
+                <label>Descripción breve *</label>
+                <textarea name="descripcion" value={formData.descripcion} onChange={handleInputChange} rows={2} required placeholder="Resumen corto para la vista previa" />
+              </div>
 
-                <div className="form-group full-width">
-                  <label>Contenido completo *</label>
-                  <textarea
-                    name="contenido"
-                    value={formData.contenido}
-                    onChange={handleInputChange}
-                    rows="6"
-                    required
-                    className="textarea-modern"
-                    placeholder="Detalles completos de la noticia o evento"
-                  />
-                </div>
+              {/* Contenido */}
+              <div className="gu-field gu-field--full">
+                <label>Contenido completo *</label>
+                <textarea name="contenido" value={formData.contenido} onChange={handleInputChange} rows={5} required placeholder="Texto completo de la noticia" />
+              </div>
 
-                <div className="form-group full-width">
-                  <label>Imagen</label>
-                  <div 
-                    className="file-upload-container"
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImagenChange}
-                      className="hidden-input"
-                      ref={fileInputRef}
-                    />
-                    {imagenPreview ? (
-                      <div className="preview-container">
-                        <img src={imagenPreview} alt="Preview" className="preview-image" />
-                        <div className="preview-overlay">
-                          <span className="change-text">Cambiar imagen</span>
-                        </div>
+              {/* Imagen */}
+              <div className="gu-field gu-field--full">
+                <label>Imagen de portada</label>
+                <div className="gn-file-zone" onClick={() => fileInputRef.current?.click()}>
+                  <input type="file" accept="image/*" onChange={handleImagenChange} ref={fileInputRef} style={{ display:'none' }} />
+                  {imagenPreview ? (
+                    <div className="gn-file-preview">
+                      <img src={imagenPreview} alt="Preview" />
+                      <div className="gn-file-overlay">
+                        <Upload size={18} /> Cambiar imagen
                       </div>
+                    </div>
+                  ) : (
+                    <div className="gn-file-empty">
+                      <Upload size={22} /><span>Haz clic para subir imagen</span><small>Máx. 10 MB · JPG, PNG, WebP</small>
+                    </div>
+                  )}
+                </div>
+                {imagenPreview && (
+                  <button type="button" className="gn-btn-remove-img" onClick={e => { e.stopPropagation(); eliminarImagen(); }}>
+                    <Trash2 size={13} /> Eliminar imagen
+                  </button>
+                )}
+              </div>
+
+              {/* Campos de Evento */}
+              {formData.tipo === 'Evento' && (
+                <div className="gu-field--full gn-evento-fields">
+                  <div className="gu-row">
+                    <div className="gu-field">
+                      <label><Calendar size={13} /> Fecha del evento</label>
+                      <input type="date" name="fechaEvento" value={formData.fechaEvento} onChange={handleInputChange} />
+                    </div>
+                    <div className="gu-field">
+                      <label><MapPin size={13} /> Ubicación (texto)</label>
+                      <input type="text" name="ubicacionEvento" value={formData.ubicacionEvento} onChange={handleInputChange} placeholder="Ej: Auditorio Campus" />
+                    </div>
+                  </div>
+
+                  <div className="gu-field">
+                    <label><MapPin size={13} /> Ubicación Wayfinding</label>
+                    <div className="gn-radio-group">
+                      <label><input type="radio" checked={modoUbicacion==='existente'} onChange={() => setModoUbicacion('existente')} /> Ubicación existente</label>
+                      <label><input type="radio" checked={modoUbicacion==='mapa'} onChange={() => setModoUbicacion('mapa')} /> Fijar en el mapa</label>
+                    </div>
+                    {modoUbicacion === 'existente' ? (
+                      <select name="ubicacionWayfinding" value={formData.ubicacionWayfinding||''} onChange={handleInputChange}>
+                        <option value="">Seleccionar ubicación…</option>
+                        {ubicaciones.map(ub => <option key={ub._id} value={ub._id}>{ub.nombre}</option>)}
+                      </select>
                     ) : (
-                      <div className="upload-placeholder">
-                        <Upload size={32} />
-                        <span>Haga clic para subir una imagen</span>
-                        <small>Máximo 5MB (JPG, PNG, WebP)</small>
+                      <div className="gn-mapa-picker">
+                        <MapContainer center={CAMPUS_CENTER} zoom={16} minZoom={15} maxZoom={18} maxBounds={CAMPUS_BOUNDS} zoomControl={false} style={{ height:'100%',width:'100%' }}>
+                          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                          <LocationPicker onLocationSelect={setCoordsEvento} />
+                          {coordsEvento && <Marker position={coordsEvento} />}
+                        </MapContainer>
+                        <p className="gn-mapa-hint">{coordsEvento ? '✓ Ubicación fijada' : 'Haz clic en el mapa para fijar la ubicación'}</p>
                       </div>
                     )}
                   </div>
-                  {imagenPreview && (
-                    <button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        eliminarImagen();
-                      }}
-                      className="btn-remove-image"
-                    >
-                      <Trash2 size={14} /> Eliminar imagen
-                    </button>
-                  )}
                 </div>
+              )}
 
-                {formData.tipo === 'Evento' && (
-                  <div className="evento-fields full-width">
-                    <div className="form-group">
-                      <label><Calendar size={16} /> Fecha del evento</label>
-                      <div className="date-input-wrapper">
-                        <input
-                          type="date"
-                          name="fechaEvento"
-                          value={formData.fechaEvento}
-                          onChange={handleInputChange}
-                          className="input-modern input-date"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label><MapPin size={16} /> Ubicación del evento (Texto)</label>
-                      <input
-                        type="text"
-                        name="ubicacionEvento"
-                        value={formData.ubicacionEvento}
-                        onChange={handleInputChange}
-                        placeholder="Ej: Auditorio Campus Talca"
-                        className="input-modern"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label><MapPin size={16} /> Ubicación Wayfinding (Mapa)</label>
-                      <div className="ubicacion-radio-group">
-                        <label className="ubicacion-radio-label">
-                          <input 
-                            type="radio" 
-                            checked={modoUbicacion === 'existente'} 
-                            onChange={() => setModoUbicacion('existente')} 
-                          /> Ubicación Existente
-                        </label>
-                        <label className="ubicacion-radio-label">
-                          <input 
-                            type="radio" 
-                            checked={modoUbicacion === 'mapa'} 
-                            onChange={() => setModoUbicacion('mapa')} 
-                          /> Fijar en el Mapa
-                        </label>
-                      </div>
-
-                      {modoUbicacion === 'existente' ? (
-                        <select
-                          name="ubicacionWayfinding"
-                          value={formData.ubicacionWayfinding || ''}
-                          onChange={handleInputChange}
-                          className="select-modern"
-                        >
-                          <option value="">Seleccionar ubicación del mapa...</option>
-                          {ubicaciones.map(ub => (
-                            <option key={ub._id} value={ub._id}>{ub.nombre}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <div className="mapa-picker-wrap">
-                          <div className="mapa-picker-container">
-                            <MapContainer
-                              center={CAMPUS_CENTER}
-                              zoom={16}
-                              minZoom={15}
-                              maxZoom={18}
-                              maxBounds={CAMPUS_BOUNDS}
-                              style={{ height: '100%', width: '100%' }}
-                            >
-                              <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                maxZoom={18}
-                                maxNativeZoom={19}
-                              />
-                              <LocationPicker onLocationSelect={setCoordsEvento} />
-                              {coordsEvento && (
-                                <Marker position={coordsEvento} />
-                              )}
-                            </MapContainer>
-                          </div>
-                          {!coordsEvento ? (
-                            <small className="mapa-hint">Haz clic en el mapa para fijar la ubicación del evento.</small>
-                          ) : (
-                            <small className="mapa-hint mapa-hint--ok">Ubicación fijada correctamente.</small>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="form-checkboxes full-width">
-                  <label className={`checkbox-card ${formData.destacado ? 'checked' : ''}`}>
-                    <input
-                      type="checkbox"
-                      name="destacado"
-                      checked={formData.destacado}
-                      onChange={handleInputChange}
-                    />
-                    <div className="checkbox-content">
-                      <Star size={20} className={formData.destacado ? 'icon-active' : ''} />
-                      <div>
-                        <span className="checkbox-title">Destacado</span>
-                        <span className="checkbox-desc">Aparecerá en el carrusel principal</span>
-                      </div>
-                    </div>
-                  </label>
-
-                  <label className={`checkbox-card ${formData.activo ? 'checked' : ''}`}>
-                    <input
-                      type="checkbox"
-                      name="activo"
-                      checked={formData.activo}
-                      onChange={handleInputChange}
-                    />
-                    <div className="checkbox-content">
-                      {formData.activo ? <Eye size={20} /> : <EyeOff size={20} />}
-                      <div>
-                        <span className="checkbox-title">Visible al público</span>
-                        <span className="checkbox-desc">La noticia será visible en la app</span>
-                      </div>
-                    </div>
-                  </label>
-                </div>
+              {/* Toggles */}
+              <div className="gn-toggles gu-field--full">
+                <button type="button" className={`gn-toggle ${formData.destacado ? 'gn-toggle--on' : ''}`} onClick={() => setFormData(p => ({ ...p, destacado: !p.destacado }))}>
+                  <Star size={15} fill={formData.destacado ? 'currentColor' : 'none'} /> {formData.destacado ? 'Destacada' : 'Sin destacar'}
+                </button>
+                <button type="button" className={`gn-toggle ${formData.activo ? 'gn-toggle--active' : ''}`} onClick={() => setFormData(p => ({ ...p, activo: !p.activo }))}>
+                  {formData.activo ? <Eye size={15} /> : <EyeOff size={15} />} {formData.activo ? 'Visible al público' : 'Oculto'}
+                </button>
               </div>
 
-              <div className="modal-footer">
-                <button type="button" onClick={cerrarModal} className="btn-modal-cancel">
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  className={`btn-modal-submit ${!hasChanges() ? 'btn-modal-submit--disabled' : ''}`}
-                  disabled={!hasChanges()}
-                >
-                  {editingNoticia ? 'Actualizar' : 'Crear'}
+              {/* Acciones */}
+              <div className="gu-form-actions">
+                <button type="button" className="gu-btn-cancel" onClick={cerrarModal}>Cancelar</button>
+                <button type="submit" className="gu-btn-save" disabled={!hasChanges()}>
+                  {editingNoticia ? 'Guardar cambios' : 'Crear noticia'}
                 </button>
               </div>
             </form>
