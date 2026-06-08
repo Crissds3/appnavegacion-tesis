@@ -50,7 +50,7 @@ const Inicio = () => {
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
   const arItems1 = ['Modelos 3D de edificios del campus', 'Proyección en tu entorno real', 'Sin necesidad de estar en el campus'];
-  const arItems2 = ['Nombre del edificio o laboratorio', 'Horarios de biblioteca y casino', 'Eventos y clases en tiempo real'];
+  const arItems2 = ['Nombre del edificio o laboratorio', 'Horarios de biblioteca y casino', 'Eventos en tiempo real'];
 
   const CheckIcon = () => (
     <svg viewBox="0 0 24 24" fill="none">
@@ -112,7 +112,7 @@ const Inicio = () => {
               </div>
               <div className="hero__stats reveal" data-d="3">
                 <div className="stat">
-                  <div className="stat__num">+40 <span>lugares</span></div>
+                  <div className="stat__num">+20 <span>lugares</span></div>
                   <div className="stat__label">aulas, labs y servicios</div>
                 </div>
                 <div className="stat">
@@ -358,7 +358,7 @@ const Inicio = () => {
               <div className="steps">
                 {[
                   { num: '01', title: 'Accede al Portal', desc: 'Ingresa desde cualquier dispositivo, sin necesidad de registro previo ni descargas.' },
-                  { num: '02', title: 'Busca tu Destino', desc: 'Usa el buscador inteligente para encontrar aulas, laboratorios, servicios y más.' },
+                  { num: '02', title: 'Busca tu Destino', desc: 'Usa el buscador inteligente para encontrar edificios, laboratorios y más.' },
                   { num: '03', title: 'Sigue la Ruta', desc: 'Recibe indicaciones claras y precisas para llegar a tu destino sin perderte.' },
                 ].map(({ num, title, desc }, i) => (
                   <article key={i} className="step reveal" data-d={String(i + 1)}>
