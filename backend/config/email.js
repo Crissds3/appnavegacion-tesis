@@ -175,8 +175,8 @@ export const enviarEmail = async (opciones) => {
   return enviarEmailRecuperacion(opciones);
 };
 
-// Template HTML para bienvenida de nuevo usuario
-export const crearEmailBienvenida = (nombre, email, password, loginUrl) => {
+// Template HTML para bienvenida de nuevo usuario (envía link de configuración, no contraseña)
+export const crearEmailBienvenida = (nombre, setupUrl) => {
   return `
     <!DOCTYPE html>
     <html lang="es">
@@ -192,9 +192,9 @@ export const crearEmailBienvenida = (nombre, email, password, loginUrl) => {
         .content { padding: 40px 30px; }
         .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
         .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
-        .credentials { background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #E53935; margin: 20px 0; }
-        .credentials p { margin: 5px 0; font-family: monospace; font-size: 16px; }
-        .button { display: inline-block; padding: 12px 24px; background-color: #E53935; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
+        .warning { background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .warning p { color: #856404; margin: 0; font-size: 14px; }
+        .button { display: inline-block; padding: 15px 35px; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 20px 0; }
         .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
       </style>
     </head>
@@ -206,14 +206,16 @@ export const crearEmailBienvenida = (nombre, email, password, loginUrl) => {
         <div class="content">
           <h2>Hola, ${nombre}</h2>
           <p>Se ha creado una nueva cuenta de administrador para ti en la App de Navegaci&#243;n UTalca.</p>
-          <p>Tus credenciales de acceso son:</p>
-          <div class="credentials">
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Contrase&#241;a:</strong> ${password}</p>
-          </div>
-          <p>Te recomendamos cambiar tu contrase&#241;a despu&#233;s de iniciar sesi&#243;n por primera vez.</p>
+          <p>Para configurar tu contrase&#241;a y acceder al sistema, haz clic en el siguiente bot&#243;n:</p>
           <div style="text-align: center;">
-            <a href="${loginUrl}" class="button">Iniciar Sesi&#243;n</a>
+            <a href="${setupUrl}" class="button" style="color: #ffffff !important;">Configurar mi contrase&#241;a</a>
+          </div>
+          <p style="font-size: 14px; color: #999999; margin-top: 20px;">
+            Si el bot&#243;n no funciona, copia y pega este enlace en tu navegador:
+          </p>
+          <p style="font-size: 13px; word-break: break-all; color: #666666;">${setupUrl}</p>
+          <div class="warning">
+            <p><strong>&#9888;&#65039; Importante:</strong> Este enlace es v&#225;lido por 48 horas y solo puede usarse una vez.</p>
           </div>
         </div>
         <div class="footer">
@@ -277,8 +279,8 @@ export const crearEmailActualizacionPerfil = (nombre, cambios) => {
   `;
 };
 
-// Template HTML para cambio de contraseña por admin
-export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
+// Template HTML para notificación de cambio de contraseña por admin (sin incluir la contraseña)
+export const crearEmailCambioPasswordAdmin = (nombre, recuperacionUrl) => {
   return `
     <!DOCTYPE html>
     <html lang="es">
@@ -294,8 +296,8 @@ export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
         .content { padding: 40px 30px; }
         .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
         .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
-        .credentials { background-color: #f9f9f9; padding: 20px; border-radius: 8px; border-left: 4px solid #E53935; margin: 20px 0; }
-        .credentials p { margin: 5px 0; font-family: monospace; font-size: 16px; }
+        .warning { background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .warning p { color: #856404; margin: 0; font-size: 14px; }
         .button { display: inline-block; padding: 12px 24px; background-color: #E53935; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
         .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
       </style>
@@ -307,14 +309,13 @@ export const crearEmailCambioPasswordAdmin = (nombre, password, loginUrl) => {
         </div>
         <div class="content">
           <h2>Hola, ${nombre}</h2>
-          <p>Un administrador ha restablecido tu contrase&#241;a.</p>
-          <p>Tu nueva contrase&#241;a es:</p>
-          <div class="credentials">
-            <p><strong>${password}</strong></p>
-          </div>
-          <p>Te recomendamos cambiarla despu&#233;s de iniciar sesi&#243;n.</p>
+          <p>Un administrador ha restablecido la contrase&#241;a de tu cuenta.</p>
+          <p>Si no reconoces esta acci&#243;n o necesitas recuperar el acceso, solicita un enlace de recuperaci&#243;n:</p>
           <div style="text-align: center;">
-            <a href="${loginUrl}" class="button">Iniciar Sesi&#243;n</a>
+            <a href="${recuperacionUrl}" class="button" style="color: #ffffff !important;">Recuperar contrase&#241;a</a>
+          </div>
+          <div class="warning">
+            <p><strong>&#9888;&#65039; Si no solicitaste este cambio</strong>, contacta al administrador principal inmediatamente.</p>
           </div>
         </div>
         <div class="footer">

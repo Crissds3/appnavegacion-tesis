@@ -62,7 +62,7 @@ export const registrarUsuario = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al registrar el usuario',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -73,7 +73,7 @@ export const loginUsuario = async (req, res) => {
     const { email, password } = req.body;
 
     // Validar campos
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({
         success: false,
         message: 'Por favor proporcione email y contraseña'
@@ -124,7 +124,7 @@ export const loginUsuario = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al iniciar sesión',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -156,7 +156,7 @@ export const obtenerPerfil = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener perfil',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -197,7 +197,7 @@ export const actualizarPerfil = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al actualizar perfil',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -239,13 +239,18 @@ export const crearAdministrador = async (req, res) => {
     });
 
     if (usuario) {
-      // Enviar correo de bienvenida
+      // Generar token de activación para que el admin configure su propia contraseña
       try {
-        const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+        const setupToken = crypto.randomBytes(32).toString('hex');
+        usuario.resetPasswordToken = crypto.createHash('sha256').update(setupToken).digest('hex');
+        usuario.resetPasswordExpire = Date.now() + 48 * 60 * 60 * 1000; // 48 horas
+        await usuario.save({ validateBeforeSave: false });
+
+        const setupUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/restablecer-password/${setupToken}`;
         await enviarEmail({
           email: usuario.email,
           subject: 'Bienvenido al Sistema de Navegación UTalca',
-          html: crearEmailBienvenida(usuario.nombre, usuario.email, password, loginUrl)
+          html: crearEmailBienvenida(usuario.nombre, setupUrl)
         });
       } catch (emailError) {
         console.error('Error al enviar correo de bienvenida:', emailError);
@@ -253,7 +258,7 @@ export const crearAdministrador = async (req, res) => {
 
       res.status(201).json({
         success: true,
-        message: 'Administrador creado exitosamente. Se ha enviado un correo con las credenciales.',
+        message: 'Administrador creado exitosamente. Se ha enviado un correo con el enlace de configuración.',
         data: {
           _id: usuario._id,
           nombre: usuario.nombre,
@@ -267,7 +272,7 @@ export const crearAdministrador = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al crear el administrador',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -295,7 +300,7 @@ export const obtenerAdministradores = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener administradores',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -345,7 +350,7 @@ export const eliminarAdministrador = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al eliminar administrador',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -430,7 +435,7 @@ export const solicitarRecuperacion = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al procesar la solicitud',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -489,7 +494,7 @@ export const restablecerPassword = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al restablecer la contraseña',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -571,7 +576,7 @@ export const editarUsuario = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al editar el usuario',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -626,7 +631,7 @@ export const toggleEstadoUsuario = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al cambiar el estado del usuario',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -674,13 +679,13 @@ export const resetearPasswordPorAdmin = async (req, res) => {
     usuario.password = password;
     await usuario.save();
 
-    // Enviar correo con nueva contraseña
+    // Notificar al usuario que su contraseña fue restablecida (sin incluirla en el email)
     try {
-      const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+      const recuperacionUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/solicitar-recuperacion`;
       await enviarEmail({
         email: usuario.email,
         subject: 'Contraseña Restablecida por Administrador',
-        html: crearEmailCambioPasswordAdmin(usuario.nombre, password, loginUrl)
+        html: crearEmailCambioPasswordAdmin(usuario.nombre, recuperacionUrl)
       });
     } catch (emailError) {
       console.error('Error al enviar correo de cambio de contraseña:', emailError);
@@ -695,7 +700,7 @@ export const resetearPasswordPorAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al resetear la contraseña',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

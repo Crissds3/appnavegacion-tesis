@@ -21,7 +21,7 @@ export const obtenerUbicaciones = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener ubicaciones',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -47,7 +47,7 @@ export const obtenerUbicacionPorId = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener ubicación',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -122,7 +122,7 @@ export const crearUbicacion = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al crear ubicación',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -186,7 +186,7 @@ export const actualizarUbicacion = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al actualizar ubicación',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -212,7 +212,7 @@ export const eliminarUbicacion = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al eliminar ubicación',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -256,7 +256,7 @@ export const buscarUbicacionesCercanas = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al buscar ubicaciones cercanas',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

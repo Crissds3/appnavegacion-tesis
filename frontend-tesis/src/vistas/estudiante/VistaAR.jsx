@@ -498,7 +498,7 @@ const VistaAR = () => {
 
           {/* ── Grid de cards ── */}
           {!loading && paginadas.length > 0 && (
-            <div className="ar-grid">
+            <div className="ar-lista-grid">
               {paginadas.map(u => {
                 const evs = eventos.filter(ev => {
                   const id = ev.ubicacionWayfinding?._id || ev.ubicacionWayfinding;

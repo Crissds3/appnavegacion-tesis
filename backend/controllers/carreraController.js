@@ -16,7 +16,7 @@ export const obtenerCarrerasPublicas = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener las carreras',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -42,7 +42,7 @@ export const obtenerCarreraPorId = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener la carrera',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -72,7 +72,7 @@ export const obtenerTodasCarreras = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener las carreras',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -113,7 +113,7 @@ export const crearCarrera = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al crear la carrera',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -160,7 +160,7 @@ export const actualizarCarrera = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al actualizar la carrera',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -195,7 +195,7 @@ export const eliminarCarrera = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al eliminar la carrera',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

@@ -15,7 +15,7 @@ export const obtenerInfoPublica = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener la información',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -44,7 +44,7 @@ export const obtenerInfoPorSeccion = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener la información',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -102,7 +102,7 @@ export const actualizarInfo = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al actualizar la información',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
@@ -130,7 +130,7 @@ export const obtenerTodasSecciones = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener las secciones',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };

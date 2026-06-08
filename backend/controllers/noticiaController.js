@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import xss from 'xss';
 import Noticia from '../models/Noticia.js';
 import Ubicacion from '../models/Ubicacion.js';
 
@@ -62,7 +63,7 @@ export const obtenerNoticiasPublicas = async (req, res) => {
     res.json({ success: true, data: noticias });
   } catch (error) {
     console.error('Error en obtenerNoticiasPublicas:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener las noticias', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al obtener las noticias', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -75,7 +76,7 @@ export const obtenerTodasNoticias = async (req, res) => {
     res.json({ success: true, data: noticias });
   } catch (error) {
     console.error('Error en obtenerTodasNoticias:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener las noticias', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al obtener las noticias', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -92,7 +93,7 @@ export const obtenerNoticiaPorId = async (req, res) => {
     res.json({ success: true, data: noticia });
   } catch (error) {
     console.error('Error en obtenerNoticiaPorId:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener la noticia', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al obtener la noticia', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -115,9 +116,9 @@ export const crearNoticia = async (req, res) => {
     }
 
     const noticia = await Noticia.create({
-      titulo,
-      descripcion,
-      contenido,
+      titulo: xss(titulo || ''),
+      descripcion: xss(descripcion || ''),
+      contenido: xss(contenido || ''),
       tipo,
       categoria,
       imagenUrl,
@@ -132,7 +133,7 @@ export const crearNoticia = async (req, res) => {
     res.status(201).json({ success: true, message: 'Noticia creada exitosamente', data: noticia });
   } catch (error) {
     console.error('Error en crearNoticia:', error);
-    res.status(500).json({ success: false, message: 'Error al crear la noticia', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al crear la noticia', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -149,6 +150,10 @@ export const actualizarNoticia = async (req, res) => {
     }
 
     const campos = { ...req.body };
+    if (campos.titulo) campos.titulo = xss(campos.titulo);
+    if (campos.descripcion) campos.descripcion = xss(campos.descripcion);
+    if (campos.contenido) campos.contenido = xss(campos.contenido);
+    if (campos.ubicacionEvento) campos.ubicacionEvento = xss(campos.ubicacionEvento);
     if (campos.ubicacionWayfinding === '' || campos.ubicacionWayfinding === 'null') {
       campos.ubicacionWayfinding = null;
     }
@@ -180,7 +185,7 @@ export const actualizarNoticia = async (req, res) => {
     res.json({ success: true, message: 'Noticia actualizada exitosamente', data: noticiaActualizada });
   } catch (error) {
     console.error('Error en actualizarNoticia:', error);
-    res.status(500).json({ success: false, message: 'Error al actualizar la noticia', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al actualizar la noticia', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -211,7 +216,7 @@ export const eliminarNoticia = async (req, res) => {
     res.json({ success: true, message: 'Noticia eliminada exitosamente' });
   } catch (error) {
     console.error('Error en eliminarNoticia:', error);
-    res.status(500).json({ success: false, message: 'Error al eliminar la noticia', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al eliminar la noticia', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -229,6 +234,6 @@ export const limpiarTodasNoticias = async (req, res) => {
     res.json({ success: true, message: `${result.deletedCount} noticias eliminadas correctamente` });
   } catch (error) {
     console.error('Error en limpiarTodasNoticias:', error);
-    res.status(500).json({ success: false, message: 'Error al limpiar noticias', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al limpiar noticias', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };

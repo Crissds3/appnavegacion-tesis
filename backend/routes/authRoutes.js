@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import {
   registrarUsuario,
   loginUsuario,
@@ -17,9 +18,25 @@ import { proteger, soloSuperAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const limitadorLogin = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Demasiados intentos de inicio de sesión. Intenta de nuevo en 15 minutos.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const limitadorRecuperacion = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Demasiadas solicitudes de recuperación. Intenta de nuevo en 1 hora.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Rutas públicas
-router.post('/login', loginUsuario);
-router.post('/solicitar-recuperacion', solicitarRecuperacion);
+router.post('/login', limitadorLogin, loginUsuario);
+router.post('/solicitar-recuperacion', limitadorRecuperacion, solicitarRecuperacion);
 router.post('/restablecer-password', restablecerPassword);
 
 // Rutas protegidas (requieren autenticación)

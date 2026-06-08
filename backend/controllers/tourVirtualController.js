@@ -55,7 +55,7 @@ export const obtenerEdificiosPublicos = async (req, res) => {
     res.json({ success: true, data: edificios });
   } catch (error) {
     console.error('Error en obtenerEdificiosPublicos:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener edificios', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al obtener edificios', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -84,7 +84,7 @@ export const crearEdificio = async (req, res) => {
     res.status(201).json({ success: true, message: 'Edificio creado exitosamente', data: edificio });
   } catch (error) {
     console.error('Error en crearEdificio:', error);
-    res.status(500).json({ success: false, message: 'Error al crear edificio', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al crear edificio', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -98,7 +98,7 @@ export const obtenerEdificiosAdmin = async (req, res) => {
     res.json({ success: true, data: edificios });
   } catch (error) {
     console.error('Error en obtenerEdificiosAdmin:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener edificios', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al obtener edificios', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -127,7 +127,7 @@ export const actualizarEdificio = async (req, res) => {
     res.json({ success: true, message: 'Edificio actualizado exitosamente', data: edificio });
   } catch (error) {
     console.error('Error en actualizarEdificio:', error);
-    res.status(500).json({ success: false, message: 'Error al actualizar edificio', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al actualizar edificio', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };
 
@@ -146,6 +146,6 @@ export const eliminarEdificio = async (req, res) => {
     res.json({ success: true, message: 'Edificio eliminado exitosamente' });
   } catch (error) {
     console.error('Error en eliminarEdificio:', error);
-    res.status(500).json({ success: false, message: 'Error al eliminar edificio', error: error.message });
+    res.status(500).json({ success: false, message: 'Error al eliminar edificio', error: process.env.NODE_ENV === 'development' ? error.message : undefined });
   }
 };

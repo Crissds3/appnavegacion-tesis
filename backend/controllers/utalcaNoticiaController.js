@@ -70,7 +70,7 @@ export const obtenerNoticiasUtalca = async (req, res) => {
     res.status(502).json({
       success: false,
       message: 'No se pudo obtener las noticias de UTalca en este momento.',
-      error: error.message,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 };
