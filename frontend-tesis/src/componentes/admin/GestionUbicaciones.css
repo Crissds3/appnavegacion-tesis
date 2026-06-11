@@ -335,7 +335,9 @@
   border-radius: 22px;
   width: 100%; max-width: 620px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 24px 70px rgba(0,0,0,.22);
   animation: gu-pop .3s cubic-bezier(.34,1.4,.5,1);
 }
@@ -346,6 +348,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 22px 24px 0;
+  flex-shrink: 0;
 }
 .gu-modal-title-row {
   display: flex; align-items: center; gap: 12px;
@@ -371,6 +374,9 @@
 .gu-form {
   padding: 20px 24px 24px;
   display: flex; flex-direction: column; gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 .gu-field {
   display: flex; flex-direction: column; gap: 6px;

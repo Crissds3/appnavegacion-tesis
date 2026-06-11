@@ -16,7 +16,9 @@
 }
 .gi-tab:hover { border-color: #E53935; color: #E53935; background: #fff5f5; }
 .gi-tab--active { background: #E53935; border-color: #E53935; color: #fff; box-shadow: 0 4px 12px rgba(229,57,53,.28); }
-.gi-tab--active:hover { color: #fff; }
+.gi-tab--active:hover { color: #fff; background: #E53935; border-color: #E53935; }
+.gi-tab:focus { outline: none; }
+.gi-tab:focus-visible { outline: 2px solid #E53935; outline-offset: 2px; }
 
 .gi-header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 

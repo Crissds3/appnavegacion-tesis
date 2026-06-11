@@ -224,7 +224,7 @@ const GestionInfoUniversidad = () => {
 
       {/* ── Modal Información General ── */}
       {showInfoModal && (
-        <div className="gu-modal-overlay" onClick={cerrarInfoModal}>
+        <div className="gu-modal-overlay">
           <div className="gu-modal" onClick={e => e.stopPropagation()}>
             <div className="gu-modal-header">
               <div className="gu-modal-title-row">
@@ -284,7 +284,7 @@ const GestionInfoUniversidad = () => {
 
       {/* ── Modal Carrera ── */}
       {showCarreraModal && (
-        <div className="gu-modal-overlay" onClick={cerrarCarreraModal}>
+        <div className="gu-modal-overlay">
           <div className="gu-modal" onClick={e => e.stopPropagation()}>
             <div className="gu-modal-header">
               <div className="gu-modal-title-row">

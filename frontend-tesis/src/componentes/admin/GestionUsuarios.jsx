@@ -8,6 +8,22 @@ import {
 } from 'lucide-react';
 import './GestionUsuarios.css';
 
+const Modal = ({ title, icon: Icon, onClose, children }) => createPortal(
+  <div className="gu-modal-overlay">
+    <div className="gu-modal" onClick={e => e.stopPropagation()}>
+      <div className="gu-modal-header">
+        <div className="gu-modal-title-row">
+          <div className="gu-modal-icon"><Icon size={20} /></div>
+          <h3>{title}</h3>
+        </div>
+        <button className="gu-modal-close" onClick={onClose}><X size={20} /></button>
+      </div>
+      {children}
+    </div>
+  </div>,
+  document.body
+);
+
 const GestionUsuarios = () => {
   const [usuarios,            setUsuarios]           = useState([]);
   const [loading,             setLoading]            = useState(true);
@@ -95,22 +111,6 @@ const GestionUsuarios = () => {
   const ROL_COLOR = { superadmin: '#8B0000', admin: '#E53935' };
   const ROL_BG    = { superadmin: 'rgba(139,0,0,.12)', admin: 'rgba(229,57,53,.10)' };
   const ROL_LABEL = { superadmin: 'Super Admin', admin: 'Administrador' };
-
-  const Modal = ({ title, icon: Icon, onClose, children }) => createPortal(
-    <div className="gu-modal-overlay" onClick={onClose}>
-      <div className="gu-modal" onClick={e => e.stopPropagation()}>
-        <div className="gu-modal-header">
-          <div className="gu-modal-title-row">
-            <div className="gu-modal-icon"><Icon size={20} /></div>
-            <h3>{title}</h3>
-          </div>
-          <button className="gu-modal-close" onClick={onClose}><X size={20} /></button>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
 
   return (
     <div className="guu-wrap">

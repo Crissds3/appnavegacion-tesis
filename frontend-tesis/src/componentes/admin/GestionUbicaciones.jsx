@@ -315,7 +315,7 @@ const GestionUbicaciones = () => {
 
       {/* ── Modal editar / crear ── */}
       {showModal && (
-        <div className="gu-modal-overlay" onClick={cerrarModal}>
+        <div className="gu-modal-overlay">
           <div className="gu-modal" onClick={e => e.stopPropagation()}>
 
             <div className="gu-modal-header">

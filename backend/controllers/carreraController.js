@@ -93,6 +93,10 @@ export const crearCarrera = async (req, res) => {
       updatedBy: req.usuario.id
     };
 
+    if (!carreraData.ubicacion) {
+      delete carreraData.ubicacion;
+    }
+
     const carrera = await Carrera.create(carreraData);
 
     res.status(201).json({
@@ -137,7 +141,12 @@ export const actualizarCarrera = async (req, res) => {
       });
     }
 
-    Object.assign(carrera, req.body);
+    const updateData = { ...req.body };
+    if (updateData.ubicacion === '') {
+      updateData.ubicacion = null;
+    }
+
+    Object.assign(carrera, updateData);
     carrera.updatedBy = req.usuario.id;
 
     await carrera.save();
