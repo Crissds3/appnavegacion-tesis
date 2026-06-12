@@ -4,7 +4,7 @@ import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
 import {
   BookOpen, GraduationCap, Plus, Edit2, Trash2, X, Save,
   Link, MapPin, Clock, Target, Eye, EyeOff, Star, Phone,
-  Building2, Search,
+  Building2, Search, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import './GestionInfoUniversidad.css';
 
@@ -19,9 +19,9 @@ const iconLabels = {
   Star:'Valores', Phone:'Contacto', Building2:'Edificio',
   GraduationCap:'Educación', MapPin:'Ubicación', Clock:'Horario',
 };
-const SECCIONES     = ['Historia','Misión','Visión','Valores','Contacto'];
 const MODALIDADES   = ['Presencial','Semi-presencial','Online'];
 const ICONOS        = Object.keys(iconMap);
+const PAGE_SIZE     = 3;
 
 const renderIcon = (name) => iconMap[name] || <span>{name}</span>;
 
@@ -32,12 +32,14 @@ const GestionInfoUniversidad = () => {
   const [carreras,     setCarreras]     = useState([]);
   const [ubicaciones,  setUbicaciones]  = useState([]);
   const [busqueda,     setBusqueda]     = useState('');
+  const [paginaInfo,     setPaginaInfo]     = useState(1);
+  const [paginaCarreras, setPaginaCarreras] = useState(1);
 
   const [showInfoModal,    setShowInfoModal]    = useState(false);
   const [editingSeccion,   setEditingSeccion]   = useState(null);
   const [infoFormOriginal, setInfoFormOriginal] = useState(null);
   const [infoForm, setInfoForm] = useState({
-    seccion:'Historia', titulo:'', contenido:'', icono:'BookOpen', orden:0, activo:true,
+    titulo:'', contenido:'', icono:'BookOpen', orden:0, activo:true,
   });
 
   const [showCarreraModal,    setShowCarreraModal]    = useState(false);
@@ -64,22 +66,32 @@ const GestionInfoUniversidad = () => {
   const handleInfoSubmit = async (e) => {
     e.preventDefault();
     try {
-      const r = await infoService.updateInfo(infoForm);
+      const payload = editingSeccion ? { ...infoForm, _id: editingSeccion._id } : infoForm;
+      const r = await infoService.updateInfo(payload);
       if (r.success) { showSuccess(editingSeccion ? 'Sección actualizada' : 'Sección creada'); cargarSecciones(); cerrarInfoModal(); }
     } catch (err) { showError(err.message || 'Error al guardar sección'); }
   };
   const abrirInfoModal = (s=null) => {
     if (s) {
-      const d = { seccion:s.seccion,titulo:s.titulo,contenido:s.contenido,icono:s.icono||'BookOpen',orden:s.orden,activo:s.activo };
+      const d = { titulo:s.titulo,contenido:s.contenido,icono:s.icono||'BookOpen',orden:s.orden,activo:s.activo };
       setEditingSeccion(s); setInfoForm(d); setInfoFormOriginal(d);
     } else {
       setEditingSeccion(null); setInfoFormOriginal(null);
-      setInfoForm({ seccion:'Historia',titulo:'',contenido:'',icono:'BookOpen',orden:0,activo:true });
+      setInfoForm({ titulo:'',contenido:'',icono:'BookOpen',orden:0,activo:true });
     }
     setShowInfoModal(true);
   };
   const cerrarInfoModal    = () => { setShowInfoModal(false); setEditingSeccion(null); };
   const hasInfoChanges     = () => !editingSeccion || !infoFormOriginal || JSON.stringify(infoForm) !== JSON.stringify(infoFormOriginal);
+
+  const handleEliminarSeccion = async (id) => {
+    const ok = await showConfirm({ title:'¿Eliminar sección?', text:'Esta acción no se puede deshacer.', confirmText:'Sí, eliminar', cancelText:'Cancelar' });
+    if (!ok) return;
+    try {
+      const r = await infoService.deleteSeccion(id);
+      if (r.success) { showSuccess('Sección eliminada'); cargarSecciones(); }
+    } catch (err) { showError(err.message || 'Error al eliminar'); }
+  };
 
   // ── Carreras ──────────────────────────────────────────────────
   const handleCarreraSubmit = async (e) => {
@@ -117,6 +129,18 @@ const GestionInfoUniversidad = () => {
   };
 
   const carrerasFiltradas = carreras.filter(c => c.nombre.toLowerCase().includes(busqueda.toLowerCase()));
+
+  // Paginación — Información General
+  const totalPaginasInfo = Math.max(1, Math.ceil(secciones.length / PAGE_SIZE));
+  const paginaInfoSegura = Math.min(paginaInfo, totalPaginasInfo);
+  const seccionesPaginadas = secciones.slice((paginaInfoSegura - 1) * PAGE_SIZE, paginaInfoSegura * PAGE_SIZE);
+
+  // Paginación — Carreras
+  const totalPaginasCarreras = Math.max(1, Math.ceil(carrerasFiltradas.length / PAGE_SIZE));
+  const paginaCarrerasSegura = Math.min(paginaCarreras, totalPaginasCarreras);
+  const carrerasPaginadas = carrerasFiltradas.slice((paginaCarrerasSegura - 1) * PAGE_SIZE, paginaCarrerasSegura * PAGE_SIZE);
+
+  useEffect(() => { setPaginaCarreras(1); }, [busqueda]);
 
   // ── Skeleton ──────────────────────────────────────────────────
   const Skeleton = ({ n=3, h=100 }) => (
@@ -157,68 +181,140 @@ const GestionInfoUniversidad = () => {
       {/* ── Tab: Información General ── */}
       {activeTab === 'info' && (
         loading ? <Skeleton n={4} h={130} /> : (
-          <div className="gi-secciones-grid">
-            {secciones.length === 0 ? (
-              <div className="gi-empty"><BookOpen size={32} opacity={.25}/><p>No hay secciones creadas</p></div>
-            ) : secciones.map(s => (
-              <div key={s._id} className="gi-seccion-card">
-                <div className="gi-seccion-card-top">
-                  <div className="gi-seccion-ic">{renderIcon(s.icono)}</div>
-                  <div className="gi-seccion-meta">
-                    <span className={`gi-status ${s.activo ? 'gi-status--on':'gi-status--off'}`}>
-                      {s.activo ? 'Activo' : 'Inactivo'}
-                    </span>
+          <>
+            <div className="gi-secciones-grid">
+              {secciones.length === 0 ? (
+                <div className="gi-empty"><BookOpen size={32} opacity={.25}/><p>No hay secciones creadas</p></div>
+              ) : seccionesPaginadas.map(s => (
+                <div key={s._id} className="gi-seccion-card">
+                  <div className="gi-seccion-card-top">
+                    <div className="gi-seccion-ic">{renderIcon(s.icono)}</div>
+                    <div className="gi-seccion-meta">
+                      <span className={`gi-status ${s.activo ? 'gi-status--on':'gi-status--off'}`}>
+                        {s.activo ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                    <button className="gn-btn-icon gn-btn-edit" onClick={() => abrirInfoModal(s)} title="Editar">
+                      <Edit2 size={14}/>
+                    </button>
+                    <button className="gn-btn-icon gn-btn-delete" onClick={() => handleEliminarSeccion(s._id)} title="Eliminar">
+                      <Trash2 size={14}/>
+                    </button>
                   </div>
-                  <button className="gn-btn-icon gn-btn-edit" onClick={() => abrirInfoModal(s)} title="Editar">
-                    <Edit2 size={14}/>
-                  </button>
+                  <h4 className="gi-seccion-title">{s.titulo}</h4>
+                  <p className="gi-seccion-content">
+                    {s.contenido.length > 130 ? s.contenido.slice(0,130)+'…' : s.contenido}
+                  </p>
+                  <div className="gi-seccion-footer">
+                    <span className="gi-seccion-orden">Orden {s.orden}</span>
+                  </div>
                 </div>
-                <h4 className="gi-seccion-title">{s.titulo}</h4>
-                <p className="gi-seccion-content">
-                  {s.contenido.length > 130 ? s.contenido.slice(0,130)+'…' : s.contenido}
-                </p>
-                <div className="gi-seccion-footer">
-                  <span className="gi-seccion-type">{s.seccion}</span>
-                  <span className="gi-seccion-orden">Orden {s.orden}</span>
+              ))}
+            </div>
+
+            {/* ── Paginador ── */}
+            {totalPaginasInfo > 1 && (
+              <div className="gi-paginador">
+                <button
+                  className="gi-pag-btn"
+                  onClick={() => setPaginaInfo(p => Math.max(1, p - 1))}
+                  disabled={paginaInfoSegura === 1}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <div className="gi-pag-pages">
+                  {Array.from({ length: totalPaginasInfo }, (_, i) => i + 1).map(n => (
+                    <button
+                      key={n}
+                      className={`gi-pag-num ${n === paginaInfoSegura ? 'gi-pag-num--active' : ''}`}
+                      onClick={() => setPaginaInfo(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
                 </div>
+
+                <button
+                  className="gi-pag-btn"
+                  onClick={() => setPaginaInfo(p => Math.min(totalPaginasInfo, p + 1))}
+                  disabled={paginaInfoSegura === totalPaginasInfo}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )
       )}
 
       {/* ── Tab: Carreras ── */}
       {activeTab === 'carreras' && (
         loading ? <Skeleton n={4} h={110} /> : (
-          <div className="gi-carreras-list">
-            {carrerasFiltradas.length === 0 ? (
-              <div className="gi-empty"><GraduationCap size={32} opacity={.25}/><p>{busqueda ? 'Sin resultados' : 'No hay carreras creadas'}</p></div>
-            ) : carrerasFiltradas.map(c => (
-              <div key={c._id} className="gi-carrera-card">
-                <div className="gi-carrera-ic"><GraduationCap size={22}/></div>
-                <div className="gi-carrera-info">
-                  <div className="gi-carrera-top">
-                    <h4 className="gi-carrera-name">{c.nombre}</h4>
-                    <span className={`gi-status ${c.activo ? 'gi-status--on':'gi-status--off'}`}>{c.activo ? 'Activa':'Inactiva'}</span>
+          <>
+            <div className="gi-carreras-list">
+              {carrerasFiltradas.length === 0 ? (
+                <div className="gi-empty"><GraduationCap size={32} opacity={.25}/><p>{busqueda ? 'Sin resultados' : 'No hay carreras creadas'}</p></div>
+              ) : carrerasPaginadas.map(c => (
+                <div key={c._id} className="gi-carrera-card">
+                  <div className="gi-carrera-ic"><GraduationCap size={22}/></div>
+                  <div className="gi-carrera-info">
+                    <div className="gi-carrera-top">
+                      <h4 className="gi-carrera-name">{c.nombre}</h4>
+                      <span className={`gi-status ${c.activo ? 'gi-status--on':'gi-status--off'}`}>{c.activo ? 'Activa':'Inactiva'}</span>
+                    </div>
+                    <div className="gi-carrera-meta">
+                      {c.duracion && <span><Clock size={12}/> {c.duracion}</span>}
+                      <span><MapPin size={12}/> {c.modalidad}</span>
+                      {c.ubicacion?.nombre && <span><Building2 size={12}/> {c.ubicacion.nombre}</span>}
+                    </div>
                   </div>
-                  <div className="gi-carrera-meta">
-                    {c.duracion && <span><Clock size={12}/> {c.duracion}</span>}
-                    <span><MapPin size={12}/> {c.modalidad}</span>
-                    {c.ubicacion?.nombre && <span><Building2 size={12}/> {c.ubicacion.nombre}</span>}
+                  <div className="gi-carrera-actions">
+                    {c.enlaceOficial && (
+                      <a href={c.enlaceOficial} target="_blank" rel="noopener noreferrer" className="gn-btn-icon" title="Ver enlace oficial" style={{ color:'#1565C0' }}>
+                        <Link size={14}/>
+                      </a>
+                    )}
+                    <button className="gn-btn-icon gn-btn-edit" onClick={() => abrirCarreraModal(c)} title="Editar"><Edit2 size={14}/></button>
+                    <button className="gn-btn-icon gn-btn-delete" onClick={() => handleEliminarCarrera(c._id)} title="Eliminar"><Trash2 size={14}/></button>
                   </div>
                 </div>
-                <div className="gi-carrera-actions">
-                  {c.enlaceOficial && (
-                    <a href={c.enlaceOficial} target="_blank" rel="noopener noreferrer" className="gn-btn-icon" title="Ver enlace oficial" style={{ color:'#1565C0' }}>
-                      <Link size={14}/>
-                    </a>
-                  )}
-                  <button className="gn-btn-icon gn-btn-edit" onClick={() => abrirCarreraModal(c)} title="Editar"><Edit2 size={14}/></button>
-                  <button className="gn-btn-icon gn-btn-delete" onClick={() => handleEliminarCarrera(c._id)} title="Eliminar"><Trash2 size={14}/></button>
+              ))}
+            </div>
+
+            {/* ── Paginador ── */}
+            {totalPaginasCarreras > 1 && (
+              <div className="gi-paginador">
+                <button
+                  className="gi-pag-btn"
+                  onClick={() => setPaginaCarreras(p => Math.max(1, p - 1))}
+                  disabled={paginaCarrerasSegura === 1}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+
+                <div className="gi-pag-pages">
+                  {Array.from({ length: totalPaginasCarreras }, (_, i) => i + 1).map(n => (
+                    <button
+                      key={n}
+                      className={`gi-pag-num ${n === paginaCarrerasSegura ? 'gi-pag-num--active' : ''}`}
+                      onClick={() => setPaginaCarreras(n)}
+                    >
+                      {n}
+                    </button>
+                  ))}
                 </div>
+
+                <button
+                  className="gi-pag-btn"
+                  onClick={() => setPaginaCarreras(p => Math.min(totalPaginasCarreras, p + 1))}
+                  disabled={paginaCarrerasSegura === totalPaginasCarreras}
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )
       )}
 
@@ -234,21 +330,13 @@ const GestionInfoUniversidad = () => {
               <button className="gu-modal-close" onClick={cerrarInfoModal}><X size={20}/></button>
             </div>
             <form onSubmit={handleInfoSubmit} className="gu-form">
-              <div className="gu-row">
-                <div className="gu-field">
-                  <label>Tipo de sección</label>
-                  <select name="seccion" value={infoForm.seccion} onChange={e => setInfoForm(p=>({...p,seccion:e.target.value}))} required disabled={!!editingSeccion}>
-                    {SECCIONES.map(s => <option key={s} value={s}>{s}</option>)}
+              <div className="gu-field gu-field--full">
+                <label>Ícono</label>
+                <div className="gi-icon-row">
+                  <select name="icono" value={infoForm.icono} onChange={e => setInfoForm(p=>({...p,icono:e.target.value}))}>
+                    {ICONOS.map(ic => <option key={ic} value={ic}>{iconLabels[ic]||ic}</option>)}
                   </select>
-                </div>
-                <div className="gu-field">
-                  <label>Ícono</label>
-                  <div className="gi-icon-row">
-                    <select name="icono" value={infoForm.icono} onChange={e => setInfoForm(p=>({...p,icono:e.target.value}))}>
-                      {ICONOS.map(ic => <option key={ic} value={ic}>{iconLabels[ic]||ic}</option>)}
-                    </select>
-                    <div className="gi-icon-preview">{renderIcon(infoForm.icono)}</div>
-                  </div>
+                  <div className="gi-icon-preview">{renderIcon(infoForm.icono)}</div>
                 </div>
               </div>
               <div className="gu-field gu-field--full">

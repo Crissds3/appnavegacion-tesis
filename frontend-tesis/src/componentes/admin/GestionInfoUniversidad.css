@@ -62,8 +62,7 @@
 
 .gi-seccion-title { font-size: 15px; font-weight: 800; color: #1A1A1A; margin: 0; letter-spacing: -.01em; }
 .gi-seccion-content { font-size: 13px; color: #6b7280; line-height: 1.6; margin: 0; flex: 1; }
-.gi-seccion-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid #f0f1f3; margin-top: auto; }
-.gi-seccion-type  { font-size: 12px; font-weight: 700; color: #E53935; background: #fff5f5; padding: 2px 9px; border-radius: 999px; }
+.gi-seccion-footer { display: flex; align-items: center; justify-content: flex-end; padding-top: 12px; border-top: 1px solid #f0f1f3; margin-top: auto; }
 .gi-seccion-orden { font-size: 11.5px; color: #9aa1ab; }
 
 /* ── Lista de carreras ── */
@@ -98,6 +97,27 @@
   background: #fff5f5; color: #E53935;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   border: 1.5px solid #fecaca;
+}
+
+/* ── Paginador ── */
+.gi-paginador { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 16px; }
+.gi-pag-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid #e9ebef;
+  background: #fff; color: #555; display: grid; place-items: center;
+  cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif;
+}
+.gi-pag-btn:hover:not(:disabled) { border-color: #E53935; color: #E53935; }
+.gi-pag-btn:disabled { opacity: .35; cursor: default; }
+.gi-pag-pages { display: flex; gap: 4px; }
+.gi-pag-num {
+  width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid #e9ebef;
+  background: #fff; color: #555; font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+}
+.gi-pag-num:hover { border-color: #E53935; color: #C62828; }
+.gi-pag-num--active {
+  background: #E53935; border-color: #E53935; color: #fff;
+  box-shadow: 0 4px 12px rgba(229,57,53,.3);
 }
 
 /* Responsive */

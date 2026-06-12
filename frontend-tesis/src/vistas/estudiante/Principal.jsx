@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../componentes/compartidos/Navbar';
 import { utalcaNoticiasService, noticiasService } from '../../servicios/api';
-import { Calendar, X, ArrowRight, ExternalLink, Globe, Building2, ZoomIn } from 'lucide-react';
+import { Calendar, X, ArrowRight, ExternalLink, Globe, Building2, ZoomIn, ChevronLeft, ChevronRight } from 'lucide-react';
 import './Principal.css';
+
+const PAGE_SIZE = 12;
 
 const Principal = () => {
   const navigate = useNavigate();
@@ -23,8 +25,12 @@ const Principal = () => {
   // Filtros solo para noticias del campus
   const [filtros, setFiltros] = useState({ tipo: '', categoria: '' });
 
+  // Paginador
+  const [pagina, setPagina] = useState(1);
+
   useEffect(() => { cargarUtalca(); }, []);
   useEffect(() => { cargarCampus(); }, [filtros]);
+  useEffect(() => { setPagina(1); }, [fuente, filtros]);
 
   const cargarUtalca = async () => {
     try {
@@ -63,6 +69,11 @@ const Principal = () => {
   const noticias = esUtalca ? noticiasUtalca : noticiasCampus;
   const loading  = esUtalca ? loadingUtalca  : loadingCampus;
   const error    = esUtalca ? errorUtalca    : errorCampus;
+
+  // Paginación
+  const totalPaginas = Math.max(1, Math.ceil(noticias.length / PAGE_SIZE));
+  const paginaSegura = Math.min(pagina, totalPaginas);
+  const noticiasPaginadas = noticias.slice((paginaSegura - 1) * PAGE_SIZE, paginaSegura * PAGE_SIZE);
 
   return (
     <div className="principal-container">
@@ -143,7 +154,7 @@ const Principal = () => {
                   </div>
                 ) : (
                   <div className="news-grid">
-                    {noticias.map((noticia, i) => {
+                    {noticiasPaginadas.map((noticia, i) => {
                       const imagen = esUtalca
                         ? noticia.imagen
                         : (noticia.imagenUrl || '');
@@ -193,6 +204,39 @@ const Principal = () => {
                         </article>
                       );
                     })}
+                  </div>
+                )}
+
+                {/* ── Paginador ── */}
+                {totalPaginas > 1 && (
+                  <div className="feed-paginador">
+                    <button
+                      className="feed-pag-btn"
+                      onClick={() => setPagina(p => Math.max(1, p - 1))}
+                      disabled={paginaSegura === 1}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+
+                    <div className="feed-pag-pages">
+                      {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
+                        <button
+                          key={n}
+                          className={`feed-pag-num ${n === paginaSegura ? 'feed-pag-num--active' : ''}`}
+                          onClick={() => setPagina(n)}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      className="feed-pag-btn"
+                      onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+                      disabled={paginaSegura === totalPaginas}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
                 )}
               </div>

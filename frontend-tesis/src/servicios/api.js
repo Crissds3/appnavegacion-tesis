@@ -280,6 +280,16 @@ export const infoService = {
       throw error.response?.data || { success: false, message: 'Error al actualizar información' };
     }
   },
+
+  // Eliminar sección (admin)
+  deleteSeccion: async (id) => {
+    try {
+      const response = await api.delete(`/info/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Error al eliminar sección' };
+    }
+  },
 };
 
 // Servicios de carreras

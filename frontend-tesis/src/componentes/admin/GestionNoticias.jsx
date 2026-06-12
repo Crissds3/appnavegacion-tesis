@@ -4,6 +4,7 @@ import { showSuccess, showError, showConfirm } from '../../utils/sweetAlert';
 import {
   Plus, Search, Edit2, Trash2, X, Image as ImageIcon,
   Calendar, MapPin, Star, Eye, EyeOff, Upload, Newspaper,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -29,6 +30,7 @@ const LocationPicker = ({ onLocationSelect }) => {
 const TIPOS     = ['Noticia', 'Evento', 'Anuncio'];
 const CATEGORIAS = ['Académico','Cultural','Deportivo','Investigación','Extensión','Administrativo','Otro'];
 const TIPO_COLOR = { Noticia:'#1565C0', Evento:'#E53935', Anuncio:'#E65100' };
+const PAGE_SIZE = 6;
 
 const GestionNoticias = () => {
   const [noticias,      setNoticias]      = useState([]);
@@ -44,6 +46,7 @@ const GestionNoticias = () => {
   const [eliminarImagenFlag,setEliminarImagenFlag]=useState(false);
   const [modoUbicacion, setModoUbicacion] = useState('existente');
   const [coordsEvento,  setCoordsEvento]  = useState(null);
+  const [pagina,        setPagina]        = useState(1);
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
@@ -170,6 +173,13 @@ const GestionNoticias = () => {
     return true;
   });
 
+  // Paginación
+  const totalPaginas = Math.max(1, Math.ceil(noticiasFiltradas.length / PAGE_SIZE));
+  const paginaSegura = Math.min(pagina, totalPaginas);
+  const noticiasPaginadas = noticiasFiltradas.slice((paginaSegura - 1) * PAGE_SIZE, paginaSegura * PAGE_SIZE);
+
+  useEffect(() => { setPagina(1); }, [busqueda, filtros]);
+
   const formatFecha = (d) => new Date(d).toLocaleDateString('es-CL', { day:'numeric', month:'short', year:'numeric' });
 
   return (
@@ -213,7 +223,7 @@ const GestionNoticias = () => {
         </div>
       ) : (
         <div className="gn-list">
-          {noticiasFiltradas.map(n => (
+          {noticiasPaginadas.map(n => (
             <div key={n._id} className="gn-card">
               {/* Thumbnail */}
               <div className="gn-card-thumb">
@@ -254,6 +264,39 @@ const GestionNoticias = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── Paginador ── */}
+      {!loading && totalPaginas > 1 && (
+        <div className="gn-paginador">
+          <button
+            className="gn-pag-btn"
+            onClick={() => setPagina(p => Math.max(1, p - 1))}
+            disabled={paginaSegura === 1}
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          <div className="gn-pag-pages">
+            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(n => (
+              <button
+                key={n}
+                className={`gn-pag-num ${n === paginaSegura ? 'gn-pag-num--active' : ''}`}
+                onClick={() => setPagina(n)}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+
+          <button
+            className="gn-pag-btn"
+            onClick={() => setPagina(p => Math.min(totalPaginas, p + 1))}
+            disabled={paginaSegura === totalPaginas}
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
       )}
 

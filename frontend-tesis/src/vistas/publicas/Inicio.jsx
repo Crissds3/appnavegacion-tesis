@@ -113,7 +113,7 @@ const Inicio = () => {
               <div className="hero__stats reveal" data-d="3">
                 <div className="stat">
                   <div className="stat__num">+20 <span>lugares</span></div>
-                  <div className="stat__label">aulas, labs y servicios</div>
+                  <div className="stat__label">edificios, labs y servicios</div>
                 </div>
                 <div className="stat">
                   <div className="stat__num">3D <span>· AR</span></div>

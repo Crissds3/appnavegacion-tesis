@@ -1,12 +1,6 @@
 import mongoose from 'mongoose';
 
 const infoUniversidadSchema = new mongoose.Schema({
-  seccion: {
-    type: String,
-    required: [true, 'La sección es obligatoria'],
-    enum: ['Misión', 'Visión', 'Historia', 'Valores', 'Carreras', 'Contacto'],
-    unique: true
-  },
   titulo: {
     type: String,
     required: [true, 'El título es obligatorio'],
@@ -44,5 +38,9 @@ infoUniversidadSchema.pre('save', function(next) {
 });
 
 const InfoUniversidad = mongoose.model('InfoUniversidad', infoUniversidadSchema);
+
+// El campo "seccion" se eliminó del esquema; se borra el índice único
+// antiguo si existe para no bloquear la creación de nuevos documentos.
+InfoUniversidad.collection.dropIndex('seccion_1').catch(() => {});
 
 export default InfoUniversidad;

@@ -3,7 +3,8 @@ import {
   obtenerInfoPublica,
   obtenerInfoPorSeccion,
   actualizarInfo,
-  obtenerTodasSecciones
+  obtenerTodasSecciones,
+  eliminarSeccion
 } from '../controllers/infoController.js';
 import { proteger } from '../middleware/auth.js';
 
@@ -17,5 +18,6 @@ router.get('/publica/:seccion', obtenerInfoPorSeccion);
 router.get('/', proteger, obtenerTodasSecciones);
 router.post('/', proteger, actualizarInfo);
 router.put('/', proteger, actualizarInfo);
+router.delete('/:id', proteger, eliminarSeccion);
 
 export default router;

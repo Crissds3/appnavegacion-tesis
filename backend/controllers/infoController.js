@@ -59,14 +59,11 @@ export const actualizarInfo = async (req, res) => {
       });
     }
 
-    const { seccion, titulo, contenido, icono, orden, activo } = req.body;
+    const { _id, titulo, contenido, icono, orden, activo } = req.body;
 
-    let info = await InfoUniversidad.findOne({ seccion });
-
-    if (!info) {
+    if (!_id) {
       // Crear nueva sección
-      info = await InfoUniversidad.create({
-        seccion,
+      const info = await InfoUniversidad.create({
         titulo,
         contenido,
         icono,
@@ -83,6 +80,15 @@ export const actualizarInfo = async (req, res) => {
     }
 
     // Actualizar sección existente
+    const info = await InfoUniversidad.findById(_id);
+
+    if (!info) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sección no encontrada'
+      });
+    }
+
     info.titulo = titulo || info.titulo;
     info.contenido = contenido || info.contenido;
     info.icono = icono || info.icono;
@@ -130,6 +136,39 @@ export const obtenerTodasSecciones = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener las secciones',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// Eliminar una sección (admin)
+export const eliminarSeccion = async (req, res) => {
+  try {
+    if (!['admin', 'superadmin'].includes(req.usuario.rol)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso no autorizado'
+      });
+    }
+
+    const info = await InfoUniversidad.findByIdAndDelete(req.params.id);
+
+    if (!info) {
+      return res.status(404).json({
+        success: false,
+        message: 'Sección no encontrada'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Sección eliminada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error en eliminarSeccion:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al eliminar la sección',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }

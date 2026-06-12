@@ -1409,6 +1409,27 @@
 }
 .news-card:hover .news-leer-mas { gap: 8px; }
 
+/* ── Paginador ── */
+.feed-paginador { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 28px; }
+.feed-pag-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid rgba(20,15,12,.1);
+  background: #fff; color: #555; display: grid; place-items: center;
+  cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif;
+}
+.feed-pag-btn:hover:not(:disabled) { border-color: #E53935; color: #E53935; }
+.feed-pag-btn:disabled { opacity: .35; cursor: default; }
+.feed-pag-pages { display: flex; gap: 4px; }
+.feed-pag-num {
+  width: 36px; height: 36px; border-radius: 10px; border: 1.5px solid rgba(20,15,12,.1);
+  background: #fff; color: #555; font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s;
+}
+.feed-pag-num:hover { border-color: #E53935; color: #C62828; }
+.feed-pag-num--active {
+  background: #E53935; border-color: #E53935; color: #fff;
+  box-shadow: 0 4px 12px rgba(229,57,53,.3);
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .news-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
