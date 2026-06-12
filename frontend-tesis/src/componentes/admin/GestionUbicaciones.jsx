@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { MapContainer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import api from '../../servicios/api';
 import { showSuccess, showError, showConfirm, showToast } from '../../utils/sweetAlert';
 import { getIconoPorCategoria, CATEGORIAS, CATEGORIA_CONFIG } from '../../utils/iconosMapa';
+import { TileLayerCapas, BotonCapas } from '../compartidos/CapaBaseMapa';
 import {
   MapPin, Plus, Edit2, Trash2, Save, X, Search,
   Eye, EyeOff, Navigation, Info,
@@ -49,6 +50,7 @@ const GestionUbicaciones = () => {
   const [formularioOriginal, setFormularioOriginal] = useState(null);
   const [coordenadaSeleccionada, setCoordenadaseleccionada] = useState(null);
   const [seleccionandoUbicacion, setSeleccionandoUbicacion] = useState(false);
+  const [capaBase, setCapaBase] = useState('mapa'); // 'mapa' | 'satelite'
 
   useEffect(() => { cargarUbicaciones(); }, []);
 
@@ -228,7 +230,7 @@ const GestionUbicaciones = () => {
             zoomControl={false}
             style={{ height: '100%', width: '100%' }}
           >
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
+            <TileLayerCapas capaBase={capaBase} />
             <MapClickHandler onLocationSelect={handleMapClick} isSelecting={seleccionandoUbicacion} />
 
             {coordenadaSeleccionada && (
@@ -260,6 +262,10 @@ const GestionUbicaciones = () => {
               );
             })}
           </MapContainer>
+          <BotonCapas
+            esSatelite={capaBase === 'satelite'}
+            onToggle={() => setCapaBase(c => (c === 'mapa' ? 'satelite' : 'mapa'))}
+          />
         </div>
 
         {/* Lista */}

@@ -63,6 +63,16 @@ const Wayfinding = () => {
     }
   }, [ubicaciones, routerLoc.state]);
 
+  // ── Destino desde un enlace compartido (?destino=<id>) ─────────────────────
+  useEffect(() => {
+    if (ubicaciones.length === 0) return;
+    const destinoId = new URLSearchParams(routerLoc.search).get('destino');
+    if (!destinoId) return;
+    const found = ubicaciones.find(u => u._id === destinoId);
+    if (found) { setDestino(found); setLocationCard(found); }
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }, [ubicaciones]);
+
   // ── Detección de llegada ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isNavigating || !ubicacionActual || !destino) return;
@@ -132,7 +142,7 @@ const Wayfinding = () => {
     const texto = `Mira esta ubicación en el campus: ${ub.nombre}`;
     const base  = window.location.origin.includes('localhost')
       ? 'https://appnavegacion-tesis.vercel.app' : window.location.origin;
-    const url   = `${base}${window.location.pathname}`;
+    const url   = `${base}${window.location.pathname}?destino=${ub._id}`;
     if (navigator.share) {
       try { await navigator.share({ title: 'Campus U. de Talca', text: texto, url }); }
       catch (e) { if (e.name !== 'AbortError') console.error(e); }

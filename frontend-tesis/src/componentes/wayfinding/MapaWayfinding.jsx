@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Popup, Polyline, CircleMarker, useMap } from 'react-leaflet';
 import { Target } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { calcularRuta } from '../../utils/calculadorRutas';
 import grafoCampus from '../../data/grafoCampus.json';
 import { getIconoPorCategoria, CATEGORIA_CONFIG, CATEGORIAS } from '../../utils/iconosMapa';
+import { TileLayerCapas, BotonCapas } from '../compartidos/CapaBaseMapa';
 import './MapaWayfinding.css';
 
 
@@ -179,6 +180,7 @@ const MapaWayfinding = ({
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState(null);
   const [flyTarget, setFlyTarget]   = useState(null);  // [lat, lng] para animar cámara
   const [selectedId, setSelectedId] = useState(null);  // _id del marcador activo
+  const [capaBase, setCapaBase]     = useState('mapa'); // 'mapa' | 'satelite'
 
   // Usar filtro externo si se provee
   const filtroTipo = filtroExterno ?? filtroTipoInterno;
@@ -276,10 +278,13 @@ const MapaWayfinding = ({
   const handleCompartir = async (ubicacion) => {
     const texto = `¡Hola! Mira esta ubicación en el campus: ${ubicacion.nombre}`;
     // Reemplaza localhost por Vercel para que siempre se comparta el enlace de producción
-    const baseUrl = window.location.origin.includes('localhost') 
-      ? 'https://appnavegacion-tesis.vercel.app' 
+    const baseUrl = window.location.origin.includes('localhost')
+      ? 'https://appnavegacion-tesis.vercel.app'
       : window.location.origin;
-    const url = `${baseUrl}${window.location.pathname}`;
+    // "mi-ubicacion" es la posición del usuario, no un lugar que se pueda compartir
+    const destinoParam = ubicacion._id && ubicacion._id !== 'mi-ubicacion'
+      ? `?destino=${ubicacion._id}` : '';
+    const url = `${baseUrl}${window.location.pathname}${destinoParam}`;
 
     if (navigator.share) {
       try {
@@ -550,6 +555,12 @@ const MapaWayfinding = ({
 
           {/* Botón flotante para centrar la cámara */}
           <BotonCentrar ubicacionActual={ubicacionUsuario} />
+          {/* Botón flotante para cambiar entre mapa y satélite */}
+          <BotonCapas
+            esSatelite={capaBase === 'satelite'}
+            onToggle={() => setCapaBase(c => (c === 'mapa' ? 'satelite' : 'mapa'))}
+            className="btn-capas-wrapper--wayfinding"
+          />
           {/* Controlador de navegación en tiempo real */}
           <NavigationController
             ubicacionUsuario={ubicacionUsuario}
@@ -587,12 +598,7 @@ const MapaWayfinding = ({
             </>
           )}
           
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            maxZoom={18}
-            maxNativeZoom={19}
-          />
+          <TileLayerCapas capaBase={capaBase} />
 
           {/* Marcadores de ubicaciones (excluye origen/destino para evitar superposición) */}
           {ubicacionesFiltradas.map((ubicacion) => {

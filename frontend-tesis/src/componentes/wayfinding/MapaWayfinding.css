@@ -680,3 +680,18 @@ path[stroke] {
     right: 16px;
   }
 }
+
+/* ---------------------------------------------------------------
+   BOTON CAMBIAR CAPA (MAPA / SATELITE) - posicion sobre boton GPS
+--------------------------------------------------------------- */
+.btn-capas-wrapper.btn-capas-wrapper--wayfinding {
+  bottom: 180px; /* apilado sobre el boton de centrar GPS */
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  .btn-capas-wrapper.btn-capas-wrapper--wayfinding {
+    bottom: 200px; /* apilado sobre el boton de centrar GPS en movil */
+    right: 16px;
+  }
+}
