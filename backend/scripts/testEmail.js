@@ -11,9 +11,8 @@ const testEmail = async () => {
 
   // Verificar variables de entorno
   console.log('📋 Configuración detectada:');
-  console.log('- SendGrid API Key:', process.env.SENDGRID_API_KEY ? '✓ Configurado' : '✗ No configurado');
-  console.log('- Email Host:', process.env.EMAIL_HOST || 'No configurado');
-  console.log('- Email User:', process.env.EMAIL_USER || 'No configurado');
+  console.log('- Brevo API Key:', process.env.BREVO_API_KEY ? '✓ Configurado' : '✗ No configurado');
+  console.log('- Email From:', process.env.EMAIL_FROM || 'No configurado');
   console.log('- Frontend URL:', process.env.FRONTEND_URL || 'http://localhost:5173');
   console.log('');
 
@@ -39,10 +38,9 @@ const testEmail = async () => {
     console.error('❌ Error al enviar correo:');
     console.error(error.message);
     console.error('\n💡 Sugerencias:');
-    console.error('1. Verifica que las variables de entorno estén configuradas correctamente');
-    console.error('2. Si usas Gmail, asegúrate de usar una "Contraseña de aplicación"');
-    console.error('3. Si usas SendGrid, verifica que la API Key sea válida');
-    console.error('4. Revisa el archivo .env.example para la configuración correcta\n');
+    console.error('1. Verifica que BREVO_API_KEY esté configurada correctamente');
+    console.error('2. Verifica que EMAIL_FROM sea un remitente verificado en Brevo');
+    console.error('3. Revisa el archivo .env.example para la configuración correcta\n');
   }
 };
 

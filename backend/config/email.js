@@ -1,52 +1,43 @@
-import nodemailer from 'nodemailer';
-
-// Configuración del transportador de correo (Gmail SMTP)
-const crearTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    },
-    // Sin estos límites, una conexión SMTP atascada puede tardar varios
-    // minutos en fallar (los defaults de nodemailer llegan hasta 10 min),
-    // dejando colgada cualquier petición que espere el envío del correo.
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000
-  });
-};
+// Envío de correos vía la API HTTP de Brevo (https://api.brevo.com).
+// Render bloquea/filtra de forma intermitente las conexiones SMTP salientes
+// hacia Gmail (puerto 587), así que se usa una API sobre HTTPS en su lugar.
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 export const enviarEmailRecuperacion = async (opciones) => {
   try {
-    const transporter = crearTransporter();
-
-    const mailOptions = {
-      from: process.env.EMAIL_FROM || 'noreply@tuapp.com',
-      to: opciones.email,
-      subject: opciones.subject,
-      // Declaración explícita de charset UTF-8 para evitar caracteres corruptos
-      alternatives: [
-        {
-          contentType: 'text/html; charset=utf-8',
-          content: opciones.html
-        }
-      ]
-    };
-
     console.log('Intentando enviar correo a:', opciones.email);
     console.log('Desde:', process.env.EMAIL_FROM);
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Correo enviado exitosamente:', info.messageId);
-    return { success: true, messageId: info.messageId };
+    const response = await fetch(BREVO_API_URL, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': process.env.BREVO_API_KEY,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'Portal de Navegación UTalca',
+          email: process.env.EMAIL_FROM || 'noreply@tuapp.com'
+        },
+        to: [{ email: opciones.email }],
+        subject: opciones.subject,
+        htmlContent: opciones.html
+      }),
+      signal: AbortSignal.timeout(10000)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || `Brevo respondió con estado ${response.status}`);
+    }
+
+    console.log('Correo enviado exitosamente:', data.messageId);
+    return { success: true, messageId: data.messageId };
   } catch (error) {
     console.error('Error detallado al enviar correo:');
     console.error('Mensaje:', error.message);
-    console.error('Codigo:', error.code);
-    console.error('Response:', error.response);
     throw new Error('No se pudo enviar el correo electronico: ' + error.message);
   }
 };
