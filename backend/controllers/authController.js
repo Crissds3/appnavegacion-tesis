@@ -248,20 +248,15 @@ export const crearAdministrador = async (req, res) => {
 
     if (usuario) {
       // Generar token de activación para que el admin configure su propia contraseña
+      let setupUrl = null;
       try {
         const setupToken = crypto.randomBytes(32).toString('hex');
         usuario.resetPasswordToken = crypto.createHash('sha256').update(setupToken).digest('hex');
         usuario.resetPasswordExpire = Date.now() + 48 * 60 * 60 * 1000; // 48 horas
         await usuario.save({ validateBeforeSave: false });
-
-        const setupUrl = `${getFrontendUrl()}/restablecer-password/${setupToken}`;
-        await enviarEmail({
-          email: usuario.email,
-          subject: 'Bienvenido al Sistema de Navegación UTalca',
-          html: crearEmailBienvenida(usuario.nombre, setupUrl)
-        });
-      } catch (emailError) {
-        console.error('Error al enviar correo de bienvenida:', emailError);
+        setupUrl = `${getFrontendUrl()}/restablecer-password/${setupToken}`;
+      } catch (tokenError) {
+        console.error('Error al generar token de configuración:', tokenError);
       }
 
       res.status(201).json({
@@ -274,6 +269,18 @@ export const crearAdministrador = async (req, res) => {
           rol: usuario.rol
         }
       });
+
+      // El envío del correo puede demorar (SMTP); se hace después de responder
+      // para no dejar la petición esperando.
+      if (setupUrl) {
+        enviarEmail({
+          email: usuario.email,
+          subject: 'Bienvenido al Sistema de Navegación UTalca',
+          html: crearEmailBienvenida(usuario.nombre, setupUrl)
+        }).catch((emailError) => {
+          console.error('Error al enviar correo de bienvenida:', emailError);
+        });
+      }
     }
   } catch (error) {
     console.error('Error en crearAdministrador:', error);
@@ -414,30 +421,20 @@ export const solicitarRecuperacion = async (req, res) => {
     // Crear URL de recuperación
     const resetUrl = `${getFrontendUrl()}/restablecer-password/${resetToken}`;
 
-    try {
-      // Enviar email
-      await enviarEmailRecuperacion({
-        email: usuario.email,
-        subject: 'Recuperación de Contraseña',
-        html: crearEmailRecuperacion(usuario.nombre, resetUrl)
-      });
+    // Responder de inmediato: el envío del correo puede demorar (SMTP) y no
+    // debe dejar la petición esperando.
+    res.json({
+      success: true,
+      message: 'Si el correo existe en nuestro sistema, recibirás un email con las instrucciones'
+    });
 
-      res.json({
-        success: true,
-        message: 'Si el correo existe en nuestro sistema, recibirás un email con las instrucciones'
-      });
-    } catch (error) {
-      // Si falla el envío del correo, limpiar los campos de recuperación
-      usuario.resetPasswordToken = undefined;
-      usuario.resetPasswordExpire = undefined;
-      await usuario.save({ validateBeforeSave: false });
-
-      console.error('Error al enviar email:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error al enviar el correo electrónico. Intente nuevamente más tarde'
-      });
-    }
+    enviarEmailRecuperacion({
+      email: usuario.email,
+      subject: 'Recuperación de Contraseña',
+      html: crearEmailRecuperacion(usuario.nombre, resetUrl)
+    }).catch((error) => {
+      console.error('Error al enviar email de recuperación:', error);
+    });
   } catch (error) {
     console.error('Error en solicitarRecuperacion:', error);
     res.status(500).json({
@@ -555,19 +552,6 @@ export const editarUsuario = async (req, res) => {
 
     await usuario.save();
 
-    // Enviar correo si hubo cambios
-    if (Object.keys(cambios).length > 0) {
-      try {
-        await enviarEmail({
-          email: usuario.email,
-          subject: 'Actualización de Perfil - App Navegación UTalca',
-          html: crearEmailActualizacionPerfil(usuario.nombre, cambios)
-        });
-      } catch (emailError) {
-        console.error('Error al enviar correo de actualización:', emailError);
-      }
-    }
-
     res.json({
       success: true,
       message: 'Usuario actualizado exitosamente',
@@ -579,6 +563,18 @@ export const editarUsuario = async (req, res) => {
         activo: usuario.activo
       }
     });
+
+    // Enviar correo si hubo cambios (después de responder, ya que el envío
+    // por SMTP puede demorar y no debe bloquear la petición)
+    if (Object.keys(cambios).length > 0) {
+      enviarEmail({
+        email: usuario.email,
+        subject: 'Actualización de Perfil - App Navegación UTalca',
+        html: crearEmailActualizacionPerfil(usuario.nombre, cambios)
+      }).catch((emailError) => {
+        console.error('Error al enviar correo de actualización:', emailError);
+      });
+    }
   } catch (error) {
     console.error('Error en editarUsuario:', error);
     res.status(500).json({
@@ -687,21 +683,21 @@ export const resetearPasswordPorAdmin = async (req, res) => {
     usuario.password = password;
     await usuario.save();
 
-    // Notificar al usuario que su contraseña fue restablecida (sin incluirla en el email)
-    try {
-      const recuperacionUrl = `${getFrontendUrl()}/solicitar-recuperacion`;
-      await enviarEmail({
-        email: usuario.email,
-        subject: 'Contraseña Restablecida por Administrador',
-        html: crearEmailCambioPasswordAdmin(usuario.nombre, recuperacionUrl)
-      });
-    } catch (emailError) {
-      console.error('Error al enviar correo de cambio de contraseña:', emailError);
-    }
-
     res.json({
       success: true,
       message: 'Contraseña actualizada exitosamente. Se ha notificado al usuario por correo.'
+    });
+
+    // Notificar al usuario que su contraseña fue restablecida (sin incluirla
+    // en el email). Se hace después de responder porque el envío por SMTP
+    // puede demorar y no debe bloquear la petición.
+    const recuperacionUrl = `${getFrontendUrl()}/solicitar-recuperacion`;
+    enviarEmail({
+      email: usuario.email,
+      subject: 'Contraseña Restablecida por Administrador',
+      html: crearEmailCambioPasswordAdmin(usuario.nombre, recuperacionUrl)
+    }).catch((emailError) => {
+      console.error('Error al enviar correo de cambio de contraseña:', emailError);
     });
   } catch (error) {
     console.error('Error en resetearPasswordPorAdmin:', error);

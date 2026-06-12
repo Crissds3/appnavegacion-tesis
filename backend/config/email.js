@@ -9,7 +9,13 @@ const crearTransporter = () => {
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
-    }
+    },
+    // Sin estos límites, una conexión SMTP atascada puede tardar varios
+    // minutos en fallar (los defaults de nodemailer llegan hasta 10 min),
+    // dejando colgada cualquier petición que espere el envío del correo.
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
   });
 };
 
