@@ -45,287 +45,194 @@ export const enviarEmailRecuperacion = async (opciones) => {
   }
 };
 
-// Template HTML para el correo de recuperación
-export const crearEmailRecuperacion = (nombre, resetUrl) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body {
-          font-family: 'Arial', sans-serif;
-          background-color: #f5f5f5;
-          margin: 0;
-          padding: 0;
-        }
-        .container {
-          max-width: 600px;
-          margin: 20px auto;
-          background-color: #ffffff;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        .header {
-          background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
-          padding: 30px 20px;
-          text-align: center;
-        }
-        .header h1 {
-          color: #ffffff;
-          margin: 0;
-          font-size: 28px;
-        }
-        .content {
-          padding: 40px 30px;
-        }
-        .content h2 {
-          color: #333333;
-          font-size: 24px;
-          margin-bottom: 20px;
-        }
-        .content p {
-          color: #666666;
-          font-size: 16px;
-          line-height: 1.6;
-          margin-bottom: 20px;
-        }
-        .button {
-          display: inline-block;
-          padding: 15px 35px;
-          background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
-          color: #ffffff !important;
-          text-decoration: none;
-          border-radius: 8px;
-          font-weight: bold;
-          font-size: 16px;
-          margin: 20px 0;
-        }
-        .warning {
-          background-color: #FFF3CD;
-          border-left: 4px solid #FFC107;
-          padding: 15px;
-          margin: 20px 0;
-          border-radius: 4px;
-        }
-        .warning p {
-          color: #856404;
-          margin: 0;
-          font-size: 14px;
-        }
-        .footer {
-          background-color: #f5f5f5;
-          padding: 20px;
-          text-align: center;
-          font-size: 14px;
-          color: #999999;
-        }
-        .divider {
-          height: 1px;
-          background-color: #eeeeee;
-          margin: 30px 0;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Recuperaci&#243;n de Contrase&#241;a</h1>
+// ─── Plantilla base compartida por todos los correos ────────────────────────
+const ESTILOS = `
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #f1f2f4;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrapper {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 40px 16px;
+  }
+  .card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e6e7eb;
+    overflow: hidden;
+  }
+  .accent {
+    height: 4px;
+    background-color: #C62828;
+  }
+  .brand {
+    padding: 28px 32px 0 32px;
+  }
+  .brand-eyebrow {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #C62828;
+  }
+  .brand-sub {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #80868b;
+  }
+  .content {
+    padding: 18px 32px 32px 32px;
+  }
+  .content h1 {
+    font-size: 21px;
+    font-weight: 700;
+    color: #202124;
+    margin: 12px 0 18px 0;
+  }
+  .content p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #4d5156;
+    margin: 0 0 16px 0;
+  }
+  .content ul {
+    margin: 0 0 16px 0;
+    padding: 16px 20px 16px 36px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+  .content li {
+    font-size: 14px;
+    color: #4d5156;
+    line-height: 1.9;
+  }
+  .btn-wrap {
+    text-align: center;
+    margin: 28px 0;
+  }
+  .btn {
+    display: inline-block;
+    padding: 13px 32px;
+    background-color: #C62828;
+    color: #ffffff !important;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .fallback {
+    font-size: 12px;
+    color: #9aa0a6;
+    line-height: 1.6;
+    word-break: break-all;
+    margin: 0;
+  }
+  .note {
+    margin-top: 24px;
+    padding: 12px 16px;
+    border-left: 3px solid #C62828;
+    background-color: #fdf2f2;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #8a3434;
+  }
+  .footer {
+    padding: 24px 12px 0 12px;
+    text-align: center;
+  }
+  .footer p {
+    margin: 0 0 4px 0;
+    font-size: 12px;
+    color: #9aa0a6;
+    line-height: 1.6;
+  }
+`;
+
+const crearLayoutEmail = (titulo, contenidoHtml) => `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${titulo}</title>
+    <style>${ESTILOS}</style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="accent"></div>
+        <div class="brand">
+          <p class="brand-eyebrow">Portal de Navegación</p>
+          <p class="brand-sub">Universidad de Talca · Campus Curicó</p>
         </div>
         <div class="content">
-          <h2>Hola ${nombre},</h2>
-          <p>
-            Hemos recibido una solicitud para restablecer la contrase&#241;a de tu cuenta.
-            Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.
-          </p>
-          <p>
-            Para restablecer tu contrase&#241;a, haz clic en el siguiente bot&#243;n:
-          </p>
-          <div style="text-align: center;">
-            <a href="${resetUrl}" class="button" style="color: #ffffff !important;">Restablecer Contrase&#241;a</a>
-          </div>
-          <p style="font-size: 14px; color: #999999; margin-top: 20px;">
-            Si el bot&#243;n no funciona, copia y pega el siguiente enlace en tu navegador:
-          </p>
-          <p style="font-size: 14px; word-break: break-all; color: #666666;">
-            ${resetUrl}
-          </p>
-          <div class="warning">
-            <p><strong>&#9888;&#65039; Importante:</strong> Este enlace es v&#225;lido solo por 1 hora y puede ser usado una &#250;nica vez.</p>
-          </div>
-          <div class="divider"></div>
-          <p style="font-size: 14px; color: #999999;">
-            Si no solicitaste restablecer tu contrase&#241;a, por favor ignora este correo o contacta al administrador si tienes dudas.
-          </p>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} Sistema de Navegaci&#243;n Universitaria</p>
-          <p>Este es un correo autom&#225;tico, por favor no respondas a este mensaje.</p>
+          ${contenidoHtml}
         </div>
       </div>
-    </body>
-    </html>
-  `;
-};
+      <div class="footer">
+        <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
+        <p>&copy; ${new Date().getFullYear()} Portal de Navegación · Universidad de Talca, Campus Curicó</p>
+      </div>
+    </div>
+  </body>
+  </html>
+`;
+
+// Template para el correo de recuperación de contraseña
+export const crearEmailRecuperacion = (nombre, resetUrl) => crearLayoutEmail('Recuperación de contraseña', `
+  <h1>Restablece tu contraseña</h1>
+  <p>Hola ${nombre}, recibimos una solicitud para restablecer la contraseña de tu cuenta. Si no fuiste tú, puedes ignorar este correo con tranquilidad.</p>
+  <div class="btn-wrap">
+    <a href="${resetUrl}" class="btn">Restablecer contraseña</a>
+  </div>
+  <p class="fallback">¿El botón no funciona? Copia y pega este enlace en tu navegador:<br>${resetUrl}</p>
+  <div class="note"><strong>Este enlace expira en 1 hora</strong> y solo puede usarse una vez.</div>
+`);
 
 export const enviarEmail = async (opciones) => {
   return enviarEmailRecuperacion(opciones);
 };
 
-// Template HTML para bienvenida de nuevo usuario (envía link de configuración, no contraseña)
-export const crearEmailBienvenida = (nombre, setupUrl) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
-        .header { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); padding: 30px 20px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
-        .content { padding: 40px 30px; }
-        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
-        .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
-        .warning { background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .warning p { color: #856404; margin: 0; font-size: 14px; }
-        .button { display: inline-block; padding: 15px 35px; background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 20px 0; }
-        .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Bienvenido/a al Sistema</h1>
-        </div>
-        <div class="content">
-          <h2>Hola, ${nombre}</h2>
-          <p>Se ha creado una nueva cuenta de administrador para ti en la App de Navegaci&#243;n UTalca.</p>
-          <p>Para configurar tu contrase&#241;a y acceder al sistema, haz clic en el siguiente bot&#243;n:</p>
-          <div style="text-align: center;">
-            <a href="${setupUrl}" class="button" style="color: #ffffff !important;">Configurar mi contrase&#241;a</a>
-          </div>
-          <p style="font-size: 14px; color: #999999; margin-top: 20px;">
-            Si el bot&#243;n no funciona, copia y pega este enlace en tu navegador:
-          </p>
-          <p style="font-size: 13px; word-break: break-all; color: #666666;">${setupUrl}</p>
-          <div class="warning">
-            <p><strong>&#9888;&#65039; Importante:</strong> Este enlace es v&#225;lido por 48 horas y solo puede usarse una vez.</p>
-          </div>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} App Navegaci&#243;n UTalca. Todos los derechos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-};
+// Template para bienvenida de nuevo administrador (envía link de configuración, no contraseña)
+export const crearEmailBienvenida = (nombre, setupUrl) => crearLayoutEmail('Bienvenido al Portal de Navegación', `
+  <h1>Bienvenido/a, ${nombre}</h1>
+  <p>Se creó una cuenta de administrador para ti en el Portal de Navegación del Campus Curicó. Antes de ingresar, configura tu contraseña.</p>
+  <div class="btn-wrap">
+    <a href="${setupUrl}" class="btn">Configurar mi contraseña</a>
+  </div>
+  <p class="fallback">¿El botón no funciona? Copia y pega este enlace en tu navegador:<br>${setupUrl}</p>
+  <div class="note"><strong>Este enlace expira en 48 horas</strong> y solo puede usarse una vez.</div>
+`);
 
-// Template HTML para actualización de perfil
+// Template para notificación de actualización de perfil
 export const crearEmailActualizacionPerfil = (nombre, cambios) => {
   const listaCambios = Object.entries(cambios)
     .map(([campo, valor]) => `<li><strong>${campo}:</strong> ${valor}</li>`)
     .join('');
 
-  return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
-        .header { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); padding: 30px 20px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
-        .content { padding: 40px 30px; }
-        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
-        .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
-        .changes { background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .changes ul { margin: 0; padding-left: 20px; }
-        .changes li { margin-bottom: 10px; color: #333; }
-        .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Actualizaci&#243;n de Perfil</h1>
-        </div>
-        <div class="content">
-          <h2>Hola, ${nombre}</h2>
-          <p>Te informamos que los datos de tu cuenta han sido actualizados por un administrador.</p>
-          <p>Los siguientes campos fueron modificados:</p>
-          <div class="changes">
-            <ul>
-              ${listaCambios}
-            </ul>
-          </div>
-          <p>Si no reconoces estos cambios, por favor contacta al administrador principal inmediatamente.</p>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} App Navegaci&#243;n UTalca. Todos los derechos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
+  return crearLayoutEmail('Actualización de perfil', `
+    <h1>Tu perfil fue actualizado</h1>
+    <p>Hola ${nombre}, un administrador modificó los siguientes datos de tu cuenta:</p>
+    <ul>${listaCambios}</ul>
+    <div class="note">Si no reconoces estos cambios, contacta al administrador principal lo antes posible.</div>
+  `);
 };
 
-// Template HTML para notificación de cambio de contraseña por admin (sin incluir la contraseña)
-export const crearEmailCambioPasswordAdmin = (nombre, recuperacionUrl) => {
-  return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
-        .header { background: linear-gradient(135deg, #E53935 0%, #C62828 100%); padding: 30px 20px; text-align: center; }
-        .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
-        .content { padding: 40px 30px; }
-        .content h2 { color: #333333; font-size: 24px; margin-bottom: 20px; }
-        .content p { color: #666666; font-size: 16px; line-height: 1.6; margin-bottom: 20px; }
-        .warning { background-color: #FFF3CD; border-left: 4px solid #FFC107; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .warning p { color: #856404; margin: 0; font-size: 14px; }
-        .button { display: inline-block; padding: 12px 24px; background-color: #E53935; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 20px 0; }
-        .footer { background-color: #f9f9f9; padding: 20px; text-align: center; color: #999999; font-size: 14px; border-top: 1px solid #eeeeee; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>Contrase&#241;a Actualizada</h1>
-        </div>
-        <div class="content">
-          <h2>Hola, ${nombre}</h2>
-          <p>Un administrador ha restablecido la contrase&#241;a de tu cuenta.</p>
-          <p>Si no reconoces esta acci&#243;n o necesitas recuperar el acceso, solicita un enlace de recuperaci&#243;n:</p>
-          <div style="text-align: center;">
-            <a href="${recuperacionUrl}" class="button" style="color: #ffffff !important;">Recuperar contrase&#241;a</a>
-          </div>
-          <div class="warning">
-            <p><strong>&#9888;&#65039; Si no solicitaste este cambio</strong>, contacta al administrador principal inmediatamente.</p>
-          </div>
-        </div>
-        <div class="footer">
-          <p>&copy; ${new Date().getFullYear()} App Navegaci&#243;n UTalca. Todos los derechos reservados.</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-};
+// Template para notificación de cambio de contraseña por un administrador (sin incluirla)
+export const crearEmailCambioPasswordAdmin = (nombre, recuperacionUrl) => crearLayoutEmail('Contraseña actualizada', `
+  <h1>Tu contraseña fue restablecida</h1>
+  <p>Hola ${nombre}, un administrador restableció la contraseña de tu cuenta.</p>
+  <p>Si necesitas recuperar el acceso, solicita un enlace de recuperación:</p>
+  <div class="btn-wrap">
+    <a href="${recuperacionUrl}" class="btn">Recuperar contraseña</a>
+  </div>
+  <div class="note">Si no reconoces esta acción, contacta al administrador principal de inmediato.</div>
+`);
 
 export default {
   enviarEmailRecuperacion,

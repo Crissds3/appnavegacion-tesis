@@ -16,6 +16,14 @@ const generarToken = (id) => {
   });
 };
 
+// URL del frontend para enlaces en correos. Si FRONTEND_URL no está configurada
+// en el entorno, se usa Vercel en producción y localhost en desarrollo.
+const getFrontendUrl = () =>
+  process.env.FRONTEND_URL
+  || (process.env.NODE_ENV === 'production'
+    ? 'https://appnavegacion-tesis.vercel.app'
+    : 'http://localhost:5173');
+
 //Registrar nuevo usuario
 export const registrarUsuario = async (req, res) => {
   try {
@@ -246,7 +254,7 @@ export const crearAdministrador = async (req, res) => {
         usuario.resetPasswordExpire = Date.now() + 48 * 60 * 60 * 1000; // 48 horas
         await usuario.save({ validateBeforeSave: false });
 
-        const setupUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/restablecer-password/${setupToken}`;
+        const setupUrl = `${getFrontendUrl()}/restablecer-password/${setupToken}`;
         await enviarEmail({
           email: usuario.email,
           subject: 'Bienvenido al Sistema de Navegación UTalca',
@@ -404,7 +412,7 @@ export const solicitarRecuperacion = async (req, res) => {
     await usuario.save({ validateBeforeSave: false });
 
     // Crear URL de recuperación
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/restablecer-password/${resetToken}`;
+    const resetUrl = `${getFrontendUrl()}/restablecer-password/${resetToken}`;
 
     try {
       // Enviar email
@@ -681,7 +689,7 @@ export const resetearPasswordPorAdmin = async (req, res) => {
 
     // Notificar al usuario que su contraseña fue restablecida (sin incluirla en el email)
     try {
-      const recuperacionUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/solicitar-recuperacion`;
+      const recuperacionUrl = `${getFrontendUrl()}/solicitar-recuperacion`;
       await enviarEmail({
         email: usuario.email,
         subject: 'Contraseña Restablecida por Administrador',
