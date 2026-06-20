@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
+import mongoose from 'mongoose';
 import TourVirtual from '../models/TourVirtual.js';
 
 const configurarCloudinary = () => {
@@ -9,11 +10,14 @@ const configurarCloudinary = () => {
   });
 };
 
-const subirArchivoACloudinary = (buffer, filename) => {
+// El public_id se basa en un id único (no en el nombre del archivo subido):
+// usar el nombre original podía hacer que dos edificios con archivos .glb
+// homónimos (ej. exportados con el mismo nombre genérico) se sobrescribieran
+// entre sí en Cloudinary, dejando el modeloUrl de uno apuntando a un 404.
+const subirArchivoACloudinary = (buffer, id) => {
   configurarCloudinary();
   return new Promise((resolve, reject) => {
-    // Limpiar nombre: quitar extensión y caracteres problemáticos
-    const publicId = `tour-virtual/${filename.replace(/\.glb$/i, '').replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+    const publicId = `tour-virtual/${id}`;
 
     const uploadStream = cloudinary.uploader.upload_stream(
       {
@@ -70,10 +74,12 @@ export const crearEdificio = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Debe subir un archivo .glb' });
     }
 
-    // Subir a Cloudinary
-    const { url, publicId } = await subirArchivoACloudinary(req.file.buffer, req.file.originalname);
+    // Subir a Cloudinary usando un id único propio (no el del documento, que aún no existe)
+    const nuevoId = new mongoose.Types.ObjectId();
+    const { url, publicId } = await subirArchivoACloudinary(req.file.buffer, nuevoId.toString());
 
     const edificio = await TourVirtual.create({
+      _id: nuevoId,
       nombre: nombre.trim(),
       descripcion: descripcion.trim(),
       modeloUrl: url,
@@ -118,7 +124,7 @@ export const actualizarEdificio = async (req, res) => {
     // Si se sube un nuevo GLB, reemplazar el anterior en Cloudinary
     if (req.file) {
       await eliminarDeCloudinary(edificio.cloudinaryPublicId);
-      const { url, publicId } = await subirArchivoACloudinary(req.file.buffer, req.file.originalname);
+      const { url, publicId } = await subirArchivoACloudinary(req.file.buffer, edificio._id.toString());
       edificio.modeloUrl = url;
       edificio.cloudinaryPublicId = publicId;
     }
