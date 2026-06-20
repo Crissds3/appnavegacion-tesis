@@ -139,6 +139,9 @@
 
 /* ============================================================ CARD */
 .tv-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: var(--tv-card);
   border-radius: 24px;
   border: 1px solid var(--tv-line);
@@ -201,7 +204,12 @@
 }
 
 /* ── Card body ── */
-.tv-card-body { padding: 20px 22px 22px; }
+.tv-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px 22px 22px;
+}
 .tv-card-name {
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-size: 20px;
@@ -220,7 +228,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 18px;
+  margin-top: auto;
+  padding-top: 18px;
   flex-wrap: wrap;
   gap: 10px;
 }
