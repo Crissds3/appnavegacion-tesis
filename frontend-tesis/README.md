@@ -1,16 +1,66 @@
-# React + Vite
+# Frontend - Portal de Navegación
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web construida con React y Vite. Es el cliente de la plataforma de navegación, portal de noticias, minitour virtual y realidad aumentada del Campus Curicó de la Universidad de Talca.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 18 o superior
+- El backend del proyecto corriendo localmente o desplegado (ver `backend/README.md`)
 
-## React Compiler
+## Instalación
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+```
 
-## Expanding the ESLint configuration
+Copia el archivo de variables de entorno:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Descripción |
+|---|---|
+| `VITE_API_URL` | URL base de la API del backend (ej. `http://localhost:5000/api` en desarrollo). |
+
+## Ejecución
+
+```bash
+npm run dev       # servidor de desarrollo con recarga en caliente
+npm run build     # build de producción en dist/
+npm run preview   # sirve el build de producción localmente
+npm run lint      # revisa el código con ESLint
+```
+
+## Pruebas
+
+```bash
+npm test
+```
+
+Las pruebas cubren utilidades puras en JavaScript plano (por ejemplo `src/utils/calculadorRutas.js`). No se prueban componentes `.jsx` directamente, ya que el proyecto no tiene configurado un transform de JSX para Jest.
+
+## Funcionalidades principales
+
+- **Portal de noticias:** noticias propias del sistema y noticias oficiales de la Universidad de Talca obtenidas desde su feed RSS.
+- **Mapa interactivo y wayfinding:** mapa 2D del campus (Leaflet) con cálculo de rutas peatonales entre ubicaciones.
+- **Minitour virtual:** catálogo de modelos 3D (.glb) de edificios del campus, visualizados con `<model-viewer>`.
+- **Realidad aumentada:** superposición de información de puntos de interés sobre la cámara del dispositivo, usando geolocalización y orientación nativas del navegador.
+- **Panel de administración:** gestión de noticias, ubicaciones, modelos 3D, puntos de interés AR, información institucional, carreras y cuentas de administrador.
+
+## Estructura del proyecto
+
+```
+src/
+├── vistas/        # páginas (públicas, estudiante, admin, auth)
+├── componentes/   # componentes reutilizables, organizados por área
+├── contexto/      # contexto de autenticación
+├── servicios/     # cliente HTTP (axios) hacia la API
+├── hooks/         # hooks personalizados
+├── utils/         # funciones puras (ej. cálculo de rutas)
+└── data/          # datos estáticos del cliente
+```
+
+## Despliegue
+
+El proyecto está pensado para desplegarse en Vercel (ver `vercel.json`, que redirige todas las rutas a `index.html` para que funcione el ruteo del lado del cliente).

@@ -1,12 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Beaker } from 'lucide-react';
 import './Visor3D.css';
 
 const Visor3D = ({ url, nombre, onClose }) => {
   const [usarPrueba, setUsarPrueba] = useState(false);
   const astronautaUrl = "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
-  
+
   const currentUrl = usarPrueba ? astronautaUrl : url;
+
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const { style } = document.body;
+    const previousOverflow = style.overflow;
+    const previousPosition = style.position;
+    const previousTop = style.top;
+    const previousWidth = style.width;
+
+    style.overflow = 'hidden';
+    style.position = 'fixed';
+    style.top = `-${scrollY}px`;
+    style.width = '100%';
+
+    return () => {
+      style.overflow = previousOverflow;
+      style.position = previousPosition;
+      style.top = previousTop;
+      style.width = previousWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   return (
     <div className="visor3d-overlay" role="dialog" aria-modal="true">

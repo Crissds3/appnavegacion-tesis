@@ -7,6 +7,8 @@
   flex-direction: column;
   padding: 16px;
   font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  touch-action: none;
 }
 
 .visor3d-topbar {
@@ -69,6 +71,7 @@
   flex-grow: 1;
   background: #111;
   border-radius: 16px;
+  touch-action: none;
 }
 
 .visor3d-empty {
