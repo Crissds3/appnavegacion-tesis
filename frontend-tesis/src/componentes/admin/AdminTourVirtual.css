@@ -93,6 +93,7 @@
 .atv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; }
 
 .atv-card {
+  display: flex; flex-direction: column; height: 100%;
   background: #fff; border-radius: 24px;
   border: 1px solid var(--atv-line); box-shadow: var(--atv-shadow-card);
   overflow: hidden; will-change: transform;
@@ -121,10 +122,10 @@
 .atv-card-status--on  svg { color: #4ade80; }
 .atv-card-status--off svg { color: #f87171; }
 
-.atv-card-body { padding: 18px 20px 20px; }
+.atv-card-body { display: flex; flex-direction: column; flex: 1; padding: 18px 20px 20px; }
 .atv-card-name { font-size: 17px; font-weight: 800; color: var(--atv-ink); letter-spacing: -.015em; margin: 0 0 6px; }
 .atv-card-desc { font-size: 13.5px; color: var(--atv-muted); margin: 0 0 16px; line-height: 1.55; }
-.atv-card-footer { display: flex; justify-content: flex-end; padding-top: 14px; border-top: 1px solid var(--atv-line); }
+.atv-card-footer { display: flex; justify-content: flex-end; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--atv-line); }
 .atv-btn-delete {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 16px; border-radius: 10px;
