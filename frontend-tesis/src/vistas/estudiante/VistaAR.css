@@ -190,9 +190,9 @@
 /* ── Responsive ── */
 @media(max-width:768px){
   .ar-main{padding-top:80px}
-  .ar-page-header{padding:30px 20px;border-radius:16px}
-  .ar-page-header h1{font-size:28px}
-  .ar-page-subtitle{font-size:16px}
+  .ar-page-header{margin:14px 12px 16px;padding:28px 18px;border-radius:18px}
+  .ar-page-header h1{font-size:26px}
+  .ar-page-subtitle{font-size:15px}
   .ar-page-content{padding:0 15px 40px}
   .ar-launch-card{flex-direction:column;padding:24px}
   .ar-launch-btn{width:100%;justify-content:center}
@@ -203,8 +203,8 @@
 }
 @media(max-width:480px){
   .ar-main{padding-top:70px}
-  .ar-page-header{padding:22px 15px;border-radius:12px}
-  .ar-page-header h1{font-size:24px}
+  .ar-page-header{padding:25px 15px;border-radius:12px}
+  .ar-page-header h1{font-size:22px}
   .ar-page-subtitle{font-size:14px}
   .ar-page-content{padding:0 10px 30px}
 }

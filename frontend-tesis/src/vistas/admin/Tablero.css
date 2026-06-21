@@ -405,24 +405,6 @@
     padding-top: 90px;
   }
 
-  .dashboard-header {
-    max-width: 95%;
-    padding: 32px 20px;
-    border-radius: 18px;
-  }
-
-  .dashboard-header h1 {
-    font-size: 30px;
-  }
-
-  .dashboard-subtitle {
-    font-size: 14px;
-  }
-
-  .dashboard-content {
-    padding: 0 16px 24px;
-  }
-
   .section-card {
     padding: 20px;
   }
@@ -440,8 +422,9 @@
 
 /* ── Responsive global para todas las vistas admin ── */
 @media (max-width: 860px) {
-  .dashboard-header { margin: 14px 12px 0; padding: 26px 18px; border-radius: 16px; }
-  .dashboard-header h1 { font-size: 22px; }
+  .dashboard-header { max-width: none; margin: 14px 12px 0; padding: 28px 18px; border-radius: 18px; }
+  .dashboard-header h1 { font-size: 26px; }
+  .dashboard-subtitle { font-size: 15px; }
   .dashboard-content { padding: 12px 12px 32px; }
   /* GestionUbicaciones */
   .gu-grid { grid-template-columns: 1fr !important; height: auto !important; }
@@ -463,7 +446,8 @@
 }
 
 @media (max-width: 560px) {
-  .dashboard-header h1 { font-size: 19px; }
+  .dashboard-header h1 { font-size: 22px; }
+  .dashboard-subtitle { font-size: 14px; }
   .guu-grid { grid-template-columns: 1fr !important; }
   .guu-header { flex-direction: column; align-items: flex-start; }
   .guu-header-right { width: 100%; flex-direction: column; }
@@ -724,23 +708,6 @@
 @media (max-width: 768px) {
   .main-content {
     padding-top: 90px;
-  }
-
-  .dashboard-header {
-    max-width: 90%;
-    padding: 30px 15px;
-  }
-
-  .dashboard-header h1 {
-    font-size: 32px;
-  }
-
-  .dashboard-subtitle {
-    font-size: 16px;
-  }
-
-  .dashboard-content {
-    padding: 0 15px 20px;
   }
 
   .tabs-container {

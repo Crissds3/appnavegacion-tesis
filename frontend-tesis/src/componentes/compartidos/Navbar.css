@@ -210,6 +210,13 @@
   color: #333;
   font-weight: 500;
   border-radius: 8px;
+  width: 100%;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .mobile-nav-link:hover,
@@ -225,6 +232,33 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.5rem 0.25rem;
+}
+
+.mobile-user-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.mobile-user-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
 }
 
 .mobile-btn-login,

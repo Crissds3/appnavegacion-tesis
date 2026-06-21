@@ -743,17 +743,17 @@
 
   .feed-noticias-header {
     max-width: 1200px;
-    padding: 30px 20px;
-    border-radius: 16px;
-    margin-bottom: 25px;
+    margin: 14px 12px 25px;
+    padding: 28px 18px;
+    border-radius: 18px;
   }
 
   .feed-noticias-header h1 {
-    font-size: 32px;
+    font-size: 26px;
   }
 
   .feed-subtitle {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .feed-noticias-content {
@@ -869,7 +869,7 @@
   }
 
   .feed-noticias-header h1 {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .feed-subtitle {

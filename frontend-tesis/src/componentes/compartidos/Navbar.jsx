@@ -130,9 +130,15 @@ const Navbar = ({
           <div className="mobile-auth-actions">
             {children ? (
                isAuthenticated && (
-                  <button onClick={() => { logout(); setIsMenuOpen(false); }} className="mobile-btn-logout">
-                    <LogOut size={18} /> Cerrar Sesión
-                  </button>
+                 <>
+                   <div className="mobile-user-info">
+                     <div className="mobile-user-avatar">{user?.nombre?.charAt(0)}</div>
+                     <span className="mobile-user-name">{user?.nombre}</span>
+                   </div>
+                   <button onClick={() => { logout(); setIsMenuOpen(false); }} className="mobile-btn-logout">
+                     <LogOut size={18} /> Cerrar Sesión
+                   </button>
+                 </>
                )
             ) : (
               isAuthenticated ? (

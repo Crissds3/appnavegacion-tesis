@@ -1,6 +1,7 @@
 import { useAuth } from '../../contexto/ContextoAuth';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Newspaper, MapPin, ScanLine, Users } from 'lucide-react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import Footer from '../../componentes/compartidos/Footer';
 import GestionNoticias from '../../componentes/admin/GestionNoticias';
@@ -24,13 +25,13 @@ const Tablero = () => {
   };
 
   const navLinks = [
-    { name: 'Contenidos', onClick: () => setActiveTab('contenidos'), active: activeTab === 'contenidos' },
-    { name: 'Ubicaciones', onClick: () => setActiveTab('ubicaciones'), active: activeTab === 'ubicaciones' },
-    { name: 'AR', onClick: () => setActiveTab('ar'), active: activeTab === 'ar' },
+    { name: 'Contenidos', icon: <Newspaper size={18} />, onClick: () => setActiveTab('contenidos'), active: activeTab === 'contenidos' },
+    { name: 'Ubicaciones', icon: <MapPin size={18} />, onClick: () => setActiveTab('ubicaciones'), active: activeTab === 'ubicaciones' },
+    { name: 'AR', icon: <ScanLine size={18} />, onClick: () => setActiveTab('ar'), active: activeTab === 'ar' },
   ];
 
   if (user?.rol === 'superadmin') {
-    navLinks.push({ name: 'Usuarios', onClick: () => setActiveTab('admin'), active: activeTab === 'admin' });
+    navLinks.push({ name: 'Usuarios', icon: <Users size={18} />, onClick: () => setActiveTab('admin'), active: activeTab === 'admin' });
   }
 
   const formatName = (fullName) => {

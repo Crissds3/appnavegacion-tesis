@@ -512,9 +512,9 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sobre-universidad-container .main-content { padding-top: 80px; }
-  .sobre-header { padding: 30px 20px; border-radius: 16px; }
-  .sobre-header h1 { font-size: 28px; }
-  .sobre-subtitle { font-size: 16px; }
+  .sobre-header { margin: 14px 12px 16px; padding: 28px 18px; border-radius: 18px; }
+  .sobre-header h1 { font-size: 26px; }
+  .sobre-subtitle { font-size: 15px; }
   .sobre-content { padding: 0 15px 40px; }
   .tabs-navigation { flex-wrap: wrap; }
   .info-grid, .carreras-grid { grid-template-columns: 1fr; }
@@ -524,8 +524,8 @@
 }
 @media (max-width: 480px) {
   .sobre-universidad-container .main-content { padding-top: 70px; }
-  .sobre-header { padding: 22px 15px; border-radius: 12px; }
-  .sobre-header h1 { font-size: 24px; }
+  .sobre-header { padding: 25px 15px; border-radius: 12px; }
+  .sobre-header h1 { font-size: 22px; }
   .sobre-subtitle { font-size: 14px; }
   .sobre-content { padding: 0 10px 30px; }
 }
