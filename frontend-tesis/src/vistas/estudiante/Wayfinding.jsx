@@ -6,6 +6,7 @@ import {
   Search, CheckCircle, RefreshCw, X, Target, Share2,
   Building2, BookOpen, UtensilsCrossed, Activity,
   FlaskConical, LogIn, Settings, LayoutGrid,
+  SlidersHorizontal, ChevronUp,
 } from 'lucide-react';
 import Navbar from '../../componentes/compartidos/Navbar';
 import MapaWayfinding from '../../componentes/wayfinding/MapaWayfinding';
@@ -43,6 +44,9 @@ const Wayfinding = () => {
   const [haLlegado,            setHaLlegado]            = useState(false);
   const [locationCard,         setLocationCard]         = useState(null); // preview card
   const [filtroTipo,           setFiltroTipo]           = useState('todos');
+  const [filtrosExpandidos,    setFiltrosExpandidos]    = useState(false);
+
+  const CHIPS_VISIBLES = 2;
 
   const { ubicacion: ubicacionUsuario, error: errorGeo, cargando: cargandoGeo } =
     useGeolocation({ enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
@@ -252,9 +256,9 @@ const Wayfinding = () => {
         <p>Encuentra tu camino en el Campus Curicó - Universidad de Talca</p>
       </div>
 
-      {/* Barra de filtros — en flujo normal, siempre visible */}
+      {/* Barra de filtros — 2 visibles + botón para desplegar el resto */}
       <div className="wf-chips-bar">
-        {CHIPS.map(({ tipo, label, Icon }) => {
+        {(filtrosExpandidos ? CHIPS : CHIPS.slice(0, CHIPS_VISIBLES)).map(({ tipo, label, Icon }) => {
           const cnt = tipo === 'todos'
             ? ubicaciones.length
             : ubicaciones.filter(u =>
@@ -273,6 +277,15 @@ const Wayfinding = () => {
             </button>
           );
         })}
+        {CHIPS.length > CHIPS_VISIBLES && (
+          <button
+            className="wf-chip wf-chip-toggle"
+            onClick={() => setFiltrosExpandidos(p => !p)}
+          >
+            {filtrosExpandidos ? <ChevronUp size={14} /> : <SlidersHorizontal size={14} />}
+            {filtrosExpandidos ? 'Ver menos' : 'Ver más filtros'}
+          </button>
+        )}
       </div>
 
       {/* Body: mapa + sidebar */}

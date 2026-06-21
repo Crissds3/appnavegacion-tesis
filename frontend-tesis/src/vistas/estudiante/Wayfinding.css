@@ -39,12 +39,9 @@ button{font-family:inherit}
   margin: 12px auto 0;
   padding: 0 20px;
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-.wf-chips-bar::-webkit-scrollbar { display: none; }
 
 .wf-chip {
   display: inline-flex;
@@ -73,9 +70,13 @@ button{font-family:inherit}
   background: var(--red);
   border-color: var(--red);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(211,47,47,.28);
 }
-.wf-chip--active:hover { background: var(--red-dark); }
+.wf-chip--active svg { color: #fff; }
+.wf-chip--active:hover {
+  background: var(--red-dark);
+  border-color: var(--red-dark);
+  color: #fff;
+}
 .wf-chip-cnt {
   font-size: 11px;
   font-weight: 800;
@@ -85,7 +86,18 @@ button{font-family:inherit}
   min-width: 20px;
   text-align: center;
 }
-.wf-chip--active .wf-chip-cnt { background: rgba(255,255,255,.25); }
+.wf-chip--active .wf-chip-cnt { background: rgba(0,0,0,.18); color: #fff; }
+
+.wf-chip-toggle {
+  border-style: dashed;
+  color: var(--gray);
+  background: #fff;
+}
+.wf-chip-toggle:hover {
+  border-color: var(--gray-2);
+  color: var(--ink-2);
+  background: var(--line-2);
+}
 
 /* =================== LAYOUT =================== */
 .wf-body{
@@ -372,7 +384,7 @@ button{font-family:inherit}
   .wf-header{margin:14px 12px 0;padding:28px 18px;border-radius:18px}
   .wf-header h1{font-size:26px}
   .wf-header p{font-size:15px}
-  .wf-chips-bar{padding:0 12px;margin-top:10px}
+  .wf-chips-bar{ padding:0 12px;margin-top:10px; }
   .wf-body{padding:12px 12px 80px;gap:14px}
   .side{grid-template-columns:1fr}
   .map-panel{height:calc(100svh - 310px);min-height:400px}
