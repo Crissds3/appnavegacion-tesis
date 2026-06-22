@@ -1,13 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, Beaker } from 'lucide-react';
+import { useEffect } from 'react';
+import { X } from 'lucide-react';
 import './Visor3D.css';
 
 const Visor3D = ({ url, nombre, onClose }) => {
-  const [usarPrueba, setUsarPrueba] = useState(false);
-  const astronautaUrl = "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
-
-  const currentUrl = usarPrueba ? astronautaUrl : url;
-
   useEffect(() => {
     const scrollY = window.scrollY;
     const { style } = document.body;
@@ -35,23 +30,9 @@ const Visor3D = ({ url, nombre, onClose }) => {
       <div className="visor3d-topbar">
         <div className="visor3d-info">
           <span className="visor3d-label">Minitour Virtual</span>
-          <h2 className="visor3d-title">
-            {usarPrueba ? 'Astronauta (Modo Prueba)' : (nombre || 'Modelo 3D')}
-          </h2>
+          <h2 className="visor3d-title">{nombre || 'Modelo 3D'}</h2>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            type="button" 
-            className="visor3d-close" 
-            onClick={() => setUsarPrueba(!usarPrueba)}
-            style={{ 
-              backgroundColor: usarPrueba ? '#FFF5F5' : 'white', 
-              color: usarPrueba ? '#E53935' : '#1f1f1f',
-              border: usarPrueba ? '1px solid #FFCDD2' : 'none'
-            }}
-          >
-            <Beaker size={18} /> {usarPrueba ? 'Ver mi modelo' : 'Probar Astronauta'}
-          </button>
           <button type="button" className="visor3d-close" onClick={onClose}>
             <X size={18} /> Cerrar Tour
           </button>
@@ -59,10 +40,10 @@ const Visor3D = ({ url, nombre, onClose }) => {
       </div>
 
       <div className="visor3d-stage">
-        {currentUrl ? (
+        {url ? (
           <model-viewer
             className="visor3d-viewer"
-            src={currentUrl}
+            src={url}
             auto-rotate
             camera-controls
             shadow-intensity="1"
