@@ -96,7 +96,7 @@ const Inicio = () => {
                 Encuentra tu camino dentro del <span className="acento">campus</span>
               </h1>
               <p className="hero__sub reveal" data-d="2">
-                Navega el campus, consulta las noticias de la universidad y explora sus edificios con Realidad Aumentada — desde tu computador o tu celular.
+                Navega el campus, consulta las noticias de la universidad y explora sus edificios con Realidad Aumentada desde tu computador o tu celular.
               </p>
               <div className="hero__cta reveal" data-d="3">
                 <button className="btn btn-primary btn-lg" onClick={() => navigate('/estudiante')}>
